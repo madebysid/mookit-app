@@ -1,0 +1,271 @@
+@font-face{
+	font-family: 'RobotoThin';
+	src: url('../fonts/Roboto-Thin.ttf')
+}
+
+@font-face{
+	font-family: 'RobotoLight';
+	src: url('../fonts/Roboto-Light.ttf')
+}
+
+@font-face{
+	font-family: 'RobotoRegular';
+	src: url('../fonts/Roboto-Regular.ttf')
+}
+
+@font-face{
+	font-family: 'RobotoBold';
+	src: url('../fonts/Roboto-Medium.ttf')
+}
+
+@font-face{
+	font-family: 'Mookit';
+	src: url('../fonts/mookit.ttf')
+}
+
+html, body{
+	font-family: 'RobotoLight';
+	background-color: #FCFCFC;
+	transform: translateZ(0);
+	-webkit-transform: translateZ(0);
+}
+
+.hasTitleBar{
+	margin-top: 2em;
+}
+
+a{
+	text-decoration: none;
+}
+
+/*
+	LOGIN
+*/
+
+.login{
+	background-color: #F3F4F4;
+}
+
+.loginLogo{
+	display: block;
+	height: 5em;
+	margin-top: 5em;
+}
+
+.loginInput{
+	margin-top: 5em;
+}
+
+.loginUsername{
+	text-align: center;
+}
+
+.loginPassword{
+	text-align: center;
+}
+
+.loginBtn{
+	background-color: #2CB158;
+	color: #FCFCFC;
+	transition: 0.5s;
+}
+
+.loginBtnError{
+	background-color: #E94849;
+	color: #FCFCFC;
+}
+
+.signUpBtn{
+	color: #30A9E5;
+}
+
+
+/*
+	SIGN UP
+*/
+
+.signupForm{
+	margin-top: 5em;
+}
+
+
+
+/*
+	DASHBOARD
+*/
+
+ion-refresher{
+	background-color: black;
+}
+
+md-toolbar{
+	background-color: #2CB158;
+}
+
+.md-toolbar-tools{
+	margin-top: 0.5em;
+}
+
+.dashProfile{
+	height: 23em;
+	background-color: #2CB158;
+}
+
+.dashPic{
+	height: 8em;
+}
+
+.dashPic > img{
+	margin-top: 2em;
+	display: block;
+	height: 8em;
+	border-radius: 50%;
+}
+
+.dashName{
+	text-align: center;
+	margin-top: 2em;
+	color: #FCFCFC;
+	font-size: 2em;
+}
+
+.dashNick{
+	text-align: center;
+	margin-top: 0.5em;
+	color: #FCFCFC;
+	font-size: 1em;
+}
+
+.dashTopics{
+	font-family: 'RobotoBold';
+	color: #6CD888;
+	text-align: center;
+	margin-top: 2em;
+}
+
+.dashTopics > p{ /*Number*/
+	color: #FCFCFC;
+	margin-bottom: 0em;
+}
+
+.dashDiscussions{
+	font-family: 'RobotoBold';
+	color: #6CD888;
+	text-align: center;
+	margin-top: 2em;
+}
+
+.dashDiscussions > p{ /*Number*/
+	color: #FCFCFC;
+	margin-bottom: 0em;
+}
+
+.card{
+	animation: card-left .5s ease both;
+	-webkit-animation-name: card-left;
+	-webkit-animation-duration: .5s;
+	-webkit-animation-timing-function: ease-in-out;
+  	transform-origin: top left;
+	-webkit-transform-origin: top left;
+}
+
+.card:after {
+  position:absolute;
+  font-size:.9rem;
+  top:1.5rem;
+  right:1rem;
+  content:"i";
+  border:thin solid gray;
+  color:gray;
+  width:1rem;
+  line-height:1rem;
+  text-align:center;
+  border-radius:50%;
+  pointer-events:none;
+}
+
+.dashCourseTitle{
+	font-size: 1.5em;
+	line-height: 1em;
+}
+
+.dashCourseInst{
+	font-size: 1em;
+}
+
+.md-tab{
+	font-family: 'Mookit';
+	font-size: 5vw;
+	background-color: #2CB158;
+	width: 100%;
+}
+
+.tabHeading{
+	font-size: 2em;
+}
+
+.md-tab > a{
+	text-decoration: none;
+	color: white;
+}
+
+.md-tab.md-active{
+	background-color: #238742;
+}
+
+
+
+
+
+@keyframes card-left {
+  from {
+    transform:translateY(15rem) rotate(15deg);
+    -webkit-transform:translateY(15rem) rotate(15deg);
+    opacity:0;
+  }
+}
+
+@-webkit-keyframes card-left {
+  from {
+    transform:translateY(15rem) rotate(15deg);
+    -webkit-transform:translateY(15rem) rotate(15deg);
+    opacity:0;
+  }
+}
+
+
+/*
+	COURSE
+*/
+
+.scroll{
+	height: 100%;
+}
+
+.courseHeader{
+	height: 10em;
+}
+
+.courseContent{
+	margin-top: 6em;
+}
+
+/*
+	COURSE CONTENTS
+*/
+
+.ng-hide-add{
+	animation: 0.3s fadeOutUp;
+	-webkit-animation-name: fadeOutUp;
+	-webkit-animation-duration: 0.3s;
+}
+
+.ng-hide-remove{
+	animation: 0.3s fadeInDown;
+	-webkit-animation-name: fadeInDown;
+	-webkit-animation-duration: 0.3s;
+}
+
+.activeWeek{
+	background-color: #F3F4F4;
+}
