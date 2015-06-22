@@ -6,7 +6,7 @@
                         <p>{{week[0].week}}</p>
                         <md-icon md-svg-src="img/downarrow.svg"></md-icon>
                   </md-list-item>
-                  <md-list-item ng-repeat="lecture in week" ng-show="expandWeek[week[0].week]" ng-class="{activeWeek: expandWeek[week[0].week]}" ng-click="goToLecture(courseId, lecture.lid, lecture.vurl)">
+                  <md-list-item ng-repeat="lecture in week" ng-show="expandWeek[week[0].week]" ng-class="{activeWeek: expandWeek[week[0].week]}" ng-click="goToLecture(courseId, lecture.lid, lecture.title, lecture.vurl)">
                         <md-icon md-svg-src="img/listborder.svg"></md-icon>
                         <p>{{lecture.title}}</p>
                   </md-list-item>

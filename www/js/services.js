@@ -1,9 +1,15 @@
 angular.module('mookit.services', ['ionic', 'ngStorage'])
 
-.service('authService', ['$http', '$state', '$localStorage', '$ionicLoading', 'transformRequestAsFormPost', function($http, $state, $localStorage, $ionicLoading, transformRequestAsFormPost){
+.service('linkService', [function(){
 	var self = this;
 	
-	self.serverUrl = 'http://mooconmooc.org/api/user/login.json';
+	self.serverUrl = "http://node.mooconmooc.org";
+}])
+
+.service('authService', ['$window', '$http', '$state', '$localStorage', '$ionicLoading', 'linkService', 'transformRequestAsFormPost', function($window, $http, $state, $localStorage, $ionicLoading, linkService, transformRequestAsFormPost){
+	var self = this;
+	
+	self.serverUrl = 'http://mooconmooc.org/api/user/login.json'//'http://staging.mookit.co/api/user/login.json';
 	self.isLoggedIn = $localStorage.isLoggedIn;
 	self.token = $localStorage.token;
 	self.userId = $localStorage.userId;
@@ -13,7 +19,6 @@ angular.module('mookit.services', ['ionic', 'ngStorage'])
 	$localStorage.userData = self.userObj;
 	
 	self.login = function(username, password, callback){
-		console.log('Called Login')
 		$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 		$http({
 			method: 'POST',
@@ -61,6 +66,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage'])
 		$localStorage.role = '';
 		
 		$state.transitionTo('login');
+		$window.location.reload();
 	}
 	
 	self.signUp = function(fname, lname, username, email){
@@ -69,10 +75,10 @@ angular.module('mookit.services', ['ionic', 'ngStorage'])
 	}
 }])
 
-.service('profileService', ['$http', 'transformRequestAsFormPost', 'authService', function($http, transformRequestAsFormPost, authService){
+.service('profileService', ['$http', 'transformRequestAsFormPost', 'authService', 'linkService', function($http, transformRequestAsFormPost, authService, linkService){
 	var self = this;
 	
-	self.serverUrl = 'http://node.mooconmooc.org/users/' + authService.userId;
+	self.serverUrl = linkService.serverUrl + '/users/' + authService.userId;
 	
 	self.getProfile = function(){
 		return $http({
@@ -86,9 +92,9 @@ angular.module('mookit.services', ['ionic', 'ngStorage'])
 	}
 }])
 
-.service('courseService', ['$http', 'authService', function($http, authService){
+.service('courseService', ['$http', 'authService', 'linkService', function($http, authService, linkService){
 	var self = this;
-	self.serverUrl = "http://node.mooconmooc.org";
+	self.serverUrl = linkService.serverUrl;
 	
 	self.getCourses = function(){
 		return $http.get('http://demo6849607.mockable.io/courses')
@@ -109,6 +115,50 @@ angular.module('mookit.services', ['ionic', 'ngStorage'])
 		return $http({
 			method: 'GET',
 			url: self.serverUrl + "/announcement/summary",
+			headers: {
+				token: authService.token,
+				uid: authService.userId,
+			}
+		});
+	}
+	
+	self.getCourseResources = function(courseId){
+		return $http({
+			method: 'GET',
+			url: self.serverUrl + "/resources",
+			headers: {
+				token: authService.token,
+				uid: authService.userId,
+			}
+		}); 
+	}
+	
+	self.getGeneralForums = function(){
+		return $http({
+			method: 'GET',
+			url: self.serverUrl + "/forums/getdiscussions/general",
+			headers: {
+				token: authService.token,
+				uid: authService.userId,
+			}
+		});
+	}
+	
+	self.getTopicForums = function(){
+		return $http({
+			method: 'GET',
+			url: self.serverUrl + "/forums/getdiscussions/lectures",
+			headers: {
+				token: authService.token,
+				uid: authService.userId,
+			}
+		});
+	}
+	
+	self.getSubscribedForums = function(){
+		return $http({
+			method: 'GET',
+			url: self.serverUrl + "/forums/getdiscussions/subscribed",
 			headers: {
 				token: authService.token,
 				uid: authService.userId,

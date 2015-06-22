@@ -84,6 +84,31 @@ angular.module('mookit-app', ['ionic', 'mookit.controllers', 'mookit.services', 
           }
         }
       })
+      .state('course.forum.general', {
+        url: '/general',
+        views: {
+          'forumView': {
+            templateUrl: 'templates/forumGeneral.html'
+          }
+        }
+      })
+      .state('course.forum.subscribed', {
+        url: '/subscribed',
+        views: {
+          'forumView': {
+            templateUrl: 'templates/forumSubscribed.html'
+          }
+        }
+      })
+      .state('course.forum.topics', {
+        url: '/topics',
+        views: {
+          'forumView': {
+            templateUrl: 'templates/forumTopics.html'
+          }
+        }
+      })
+      
       .state('course.chat', {
         url: '/chat',
         views: {

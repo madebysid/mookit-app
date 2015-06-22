@@ -5,10 +5,8 @@
 				<md-button class="md-icon-button" aria-label="More" ng-click="logout()">
 		          <md-icon md-svg-icon="img/logout.svg"></md-icon>
 		        </md-button>
-				<span flex></span>
-				<md-button class="md-icon-button" aria-label="More">
-		          <md-icon md-svg-icon="img/edit.svg"></md-icon>
-		        </md-button>
+				
+				<span class="heading" flex>Dashboard</span>
 				
 				<md-menu md-position-mode="target-right target">
 			      <md-button aria-label="Open phone interactions menu" class="md-icon-button" ng-click="$mdOpenMenu()">
@@ -40,10 +38,10 @@
 				<img ng-src="{{avatar}}">
 			</div>
 			<div class="dashName">
-				Siddhant Sinha
+				{{firstname}} {{lastname}}
 			</div>
 			<div class="dashNick">
-				@madebysid
+				@{{username}}
 			</div>
 			
 			<md-button class="dashTopics col col-50">
@@ -75,7 +73,6 @@
 			        </md-button>
 				</div>
 			</div>
-			<br>
 			
 		</div>
 	</ion-content>

@@ -1,3 +1,12 @@
-<md-content class="md-padding">
-	<h1 class="md-display-2  tabHeading">Forums</h1>
-</md-content>
+<ion-view>
+	<ion-content class="forum" scroll="false">
+		<div class="row">
+		<md-button href="#/course/{{courseId}}/forum/general" class="forumTabs col col-30" ng-class="{forumActiveTab: forumSelectedTab == 'general'}" ng-click="getGeneralForums()">General</md-button>
+		<md-button href="#/course/{{courseId}}/forum/topics" class="forumTabs col col-30" ng-class="{forumActiveTab: forumSelectedTab == 'topics'}" ng-click="getTopicForums()">Topics</md-button>
+		<md-button href="#/course/{{courseId}}/forum/subscribed" class="forumTabs col col-30" ng-class="{forumActiveTab: forumSelectedTab == 'subscribed'}" ng-click="getSubscribedForums()">Subscribed</md-button>
+		</div>
+		
+		<ion-nav-view name="forumView">
+		</ion-nav-view>
+	</ion-content>
+</ion-view>

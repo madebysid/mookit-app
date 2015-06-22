@@ -5,7 +5,8 @@
                 <md-button class="md-icon-button" aria-label="More" ng-click="goBack()">
                     <md-icon md-svg-icon="img/back.svg"></md-icon>
                 </md-button>
-                <span flex></span>
+                
+                <span class="heading" flex>{{heading}}</span>
                 
                 <md-menu md-position-mode="target-right target">
 			      <md-button aria-label="Open phone interactions menu" class="md-icon-button" ng-click="$mdOpenMenu()">
@@ -28,7 +29,7 @@
             </div>
         </md-toolbar>
         
-        <md-tabs md-stretch-tabs md-selected="selectedIndex">
+        <md-tabs class="courseTabs" md-stretch-tabs md-selected="selectedIndex">
             <md-tab ng-class="{active: selectedIndex==0}">
                 <a href="#/course/{{courseId}}/content">C</a> 
             </md-tab>
@@ -39,7 +40,7 @@
                 <a href="#/course/{{courseId}}/resource">R</a>
             </md-tab>
             <md-tab>
-                <a href="#/course/{{courseId}}/forum">F</a>
+                <a href="#/course/{{courseId}}/forum/general">F</a>
             </md-tab>
             <md-tab>
                 <a href="#/course/{{courseId}}/chat">H</a>

@@ -18,7 +18,6 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 			$timeout(function(){
 				$scope.loginError = false;
 				$scope.loginText = "Login";
-				console.log($scope.loginError, $scope.loginText);
 			}, 2000);
 		});
 	}
@@ -78,7 +77,11 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 	$scope.favIcon = "favorite_outline";
 	$scope.courses;
 	$scope.avatar = 'img/profile.svg';
+	$scope.heading;
 	profileService.getProfile().then(function(response){
+		$scope.firstname = response.data[0].firstname;
+		$scope.lastname = response.data[0].lastname;
+		$scope.username = response.data[0].username;
 		$scope.avatar = "http://mooconmooc.org/sites/default/files/pictures/" + response.data[0].avatar;
 	});
 }])
@@ -141,8 +144,9 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 	    $scope.modal.remove();
 	  });
 	
-	$scope.goToLecture = function(cid, lid, vurl){
+	$scope.goToLecture = function(cid, lid, lt, vurl){
 		$scope.lectureId = lid;
+		$scope.lectureTitle = lt;
 		$scope.openModal(vurl);
 	}
 	
@@ -151,16 +155,21 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		$ionicLoading.show();
 		courseService.getCourseAnnouncements().then(function(response){
 			$scope.announcements = response.data;
-			console.log(response.data[0])
 		})
 		$ionicLoading.hide();
 	}
 	
 	$scope.expandAnnouncement = function(t, bv){
+		
+		var html = bv;
+		var div = document.createElement("div");
+		div.innerHTML = html;
+		var text = div.textContent || div.innerText || "";
+		
 	    var confirm = $mdDialog.confirm()
 	      .parent(angular.element(document.body))
 	      .title(t)
-	      .content(bv)
+	      .content(text)
 	      .ok('Okay')
 	    $mdDialog.show(confirm).then(function() {
 	      
@@ -171,19 +180,76 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 	
 	//Resources Tab
 	
+	$scope.expandResource = [];
+	
 	$scope.getResources = function(){
 		$ionicLoading.show();
-		console.log('Fetching Resources for ', $scope.courseId);		
+		
+		courseService.getCourseResources($scope.courseId).then(function(response){
+			if(response.data.data == "null")
+				console.log("No resources")
+			
+			var maxResource = response.data.length;
+			
+			for(var i=0 ; i<=maxResource ; i++){
+				$scope.expandResource[i] = false;
+		}
+			
+			$scope.resources = response.data;
+			if($scope.resources.filename != null)
+				console.log('File here')
+		})
 		$ionicLoading.hide();
+	}
+	
+	$scope.goToResource = function(bv){
+		console.log($scope.expandResource[bv])
+		$scope.expandResource[bv] = !$scope.expandResource[bv]
+	}
+	
+	$scope.downloadResource = function(filename){
+		console.log("Downloading ", filename)
 	}
 	
 	//Forums Tab
 	
-	$scope.getForums = function(){
+	$scope.getGeneralForums = function(){
 		$ionicLoading.show();
-		console.log('Fetching Forums for ', $scope.courseId);		
+		$scope.forumSelectedTab = 'general';
+		courseService.getGeneralForums().then(function(response){
+			$scope.generalForums = response.data;
+			if(response.data.data == 'null'){
+				$scope.generalForums[0].topic = 'Nothing to show!';
+			}
+		});
 		$ionicLoading.hide();
 	}
+	
+	$scope.getTopicForums = function(){
+		$ionicLoading.show();
+		$scope.forumSelectedTab = 'topics';
+		courseService.getTopicForums().then(function(response){
+			$scope.topicForums = response.data;
+			if(response.data.data == 'null'){
+				$scope.topicForums[0].topic = 'Nothing to show!';
+			}
+		});
+		$ionicLoading.hide();
+	}
+	
+	$scope.getSubscribedForums = function(){
+		$ionicLoading.show();
+		$scope.forumSelectedTab = 'subscribed';
+		courseService.getSubscribedForums().then(function(response){
+			$scope.subscribedForums = response.data;
+			if(response.data.data == 'null'){
+				$scope.subscribedForums[0].topic = 'Nothing to show!';
+			}
+		});
+		$ionicLoading.hide();
+	}
+	
+	$scope.forumSelectedTab = 'general'
 	
 	//Chats Tab
 	
@@ -208,22 +274,27 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 	$scope.$watch('selectedIndex', function(newValue, oldValue){
 		switch(newValue){
 			case 0:
+				$scope.heading = 'Content'
 			 	$state.transitionTo('course.content', {courseId:$scope.courseId});
 				$scope.getContents();
 				break;
 			case 1:
+				$scope.heading = 'Announcements'
 				$state.transitionTo('course.announcement', {courseId:$scope.courseId});
 				$scope.getAnnouncements();
 				break;
 			case 2:
+				$scope.heading = 'Resources'
 				$state.transitionTo('course.resource', {courseId:$scope.courseId});
 				$scope.getResources();
 				break;
 			case 3:
-				$state.transitionTo('course.forum', {courseId:$scope.courseId});
-				$scope.getForums();
+				$scope.heading = 'Forums'
+				$state.transitionTo('course.forum.general', {courseId:$scope.courseId});
+				$scope.getGeneralForums();
 				break;
 			case 4:
+				$scope.heading = 'Chat'
 				$state.transitionTo('course.chat', {courseId:$scope.courseId});
 				$scope.getChats();
 				break;

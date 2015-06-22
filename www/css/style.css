@@ -65,7 +65,7 @@ a{
 }
 
 .loginBtn{
-	background-color: #2CB158;
+	background-color: #0C5F51;
 	color: #FCFCFC;
 	transition: 0.5s;
 }
@@ -99,7 +99,7 @@ ion-refresher{
 }
 
 md-toolbar{
-	background-color: #2CB158;
+	background-color: #0C5F51;
 }
 
 .md-toolbar-tools{
@@ -108,7 +108,7 @@ md-toolbar{
 
 .dashProfile{
 	height: 23em;
-	background-color: #2CB158;
+	background-color: #0C5F51;
 }
 
 .dashPic{
@@ -138,7 +138,7 @@ md-toolbar{
 
 .dashTopics{
 	font-family: 'RobotoBold';
-	color: #6CD888;
+	color: #1E8773;
 	text-align: center;
 	margin-top: 2em;
 }
@@ -150,7 +150,7 @@ md-toolbar{
 
 .dashDiscussions{
 	font-family: 'RobotoBold';
-	color: #6CD888;
+	color: #1E8773;
 	text-align: center;
 	margin-top: 2em;
 }
@@ -193,26 +193,6 @@ md-toolbar{
 	font-size: 1em;
 }
 
-.md-tab{
-	font-family: 'Mookit';
-	font-size: 5vw;
-	background-color: #2CB158;
-	width: 100%;
-}
-
-.tabHeading{
-	font-size: 2em;
-}
-
-.md-tab > a{
-	text-decoration: none;
-	color: white;
-}
-
-.md-tab.md-active{
-	background-color: #238742;
-}
-
 
 
 
@@ -246,8 +226,32 @@ md-toolbar{
 	height: 10em;
 }
 
+.heading{
+	text-align: center;
+}
+
 .courseContent{
 	margin-top: 6em;
+}
+
+.courseTabs{
+	font-family: 'Mookit';
+	font-size: 5vw;
+	background-color: #0C5F51;
+	width: 100%;
+}
+
+.tabHeading{
+	font-size: 2em;
+}
+
+.md-tab > a{
+	text-decoration: none;
+	color: white;
+}
+
+.md-tab.md-active:not(.forum){
+	background-color: #093A30;
 }
 
 /*
@@ -267,5 +271,29 @@ md-toolbar{
 }
 
 .activeWeek{
+	background-color: #F3F4F4;
+}
+
+
+/*
+	FORUM
+*/
+
+.forumTabs{
+	font-size: 4vw;
+	text-align: center;
+}
+
+.forumActiveTab{
+	border-bottom: 1px solid #E94849;
+}
+
+
+/*
+	CHAT
+*/
+
+.yourMsg{
+	text-align: right;
 	background-color: #F3F4F4;
 }

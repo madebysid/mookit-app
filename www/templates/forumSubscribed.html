@@ -1,0 +1,15 @@
+<ion-view>
+	<ion-content>
+		<md-list>
+			<div ng-repeat="subscribedForum in subscribedForums">
+			<md-list-item class="md-2-line">
+				<div class="md-list-item-text">
+		          <h3 style="line-height: 1.2em;">{{subscribedForum.topic}}</h3>
+		          <p>by {{subscribedForum.authorName}}</p>
+		        </div>
+			</md-list-item>
+			<md-divider></md-divider>
+			</div>
+		</md-list>
+	</ion-content>
+</ion-view>
