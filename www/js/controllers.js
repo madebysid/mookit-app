@@ -52,8 +52,7 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 			$scope.$broadcast('scroll.refreshComplete');
 			$scope.favIcon = [];
 			for(var i=0 ; i<$scope.courses.length ; i++)
-				$scope.favIcon.push("favorite_outline");
-			console.log($scope.favIcon)
+				$scope.favIcon.push("favorite_outline")
 		});
 	}
 	
