@@ -44,14 +44,16 @@
 				@{{username}}
 			</div>
 			
-			<md-button class="dashTopics col col-50">
-				<p>7</p>
-				TOPICS
-			</md-button>
-			<md-button class="dashDiscussions col-50">
-				<p>1</p>
-				DICUSSIONS
-			</md-button>
+			<div class="row">
+				<div class="dashTopics col-50" ng-click="openTopics()">
+					<p>7</p>
+					TOPICS
+				</div>
+				<div class="dashDiscussions col-50" ng-click="openDiscussions()">
+					<p>1</p>
+					DICUSSIONS
+				</div>
+			</div>
 		</div>
 		
 		<!--Main Content-->
@@ -65,7 +67,7 @@
 				</div></a>
 				<div class="row dashCourseDetails">
 					<md-button class="tab-item md-icon-button" aria-label="More" ng-click="toggleFav(course.id)">
-			          <md-icon md-svg-icon="img/{{favIcon}}.svg"></md-icon>
+			          <md-icon md-svg-icon="img/{{isFav(course.id)}}.svg"></md-icon>
 			        </md-button>
 					<md-button class="tab-item md-icon-button" aria-label="More">
 			          <md-icon md-svg-icon="img/seen.svg"></md-icon>

@@ -41,23 +41,37 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 	}
 }])
 
-.controller('dashCtrl', ['$scope', '$state', 'authService', 'profileService', 'courseService', 'menuService', function($scope, $state, authService, profileService, courseService, menuService){
+.controller('dashCtrl', ['$scope', '$state', 'authService', 'profileService', 'courseService', 'menuService', 'linkService', function($scope, $state, authService, profileService, courseService, menuService, linkService){
 	
 	//Definitions
+
+	
 	$scope.getCourses = function(){
 		$scope.courses = courseService.getCourses().then(function(response){;
 			$scope.courses = response.data;
 			$scope.$broadcast('scroll.refreshComplete');
+			$scope.favIcon = [];
+			for(var i=0 ; i<$scope.courses.length ; i++)
+				$scope.favIcon.push("favorite_outline");
+			console.log($scope.favIcon)
 		});
 	}
 	
-	$scope.toggleFav = function(courseId){
-		if( $scope.favIcon == "favorite_outline" ){
-			$scope.favIcon = "favorite";
+	$scope.toggleFav = function(cid){
+		var id = parseInt(cid)
+		if( $scope.favIcon[id-1] == "favorite_outline" ){
+			$scope.favIcon[id-1] = "favorite";
+			console.log($scope.favIcon)
 		}
 		else{
-			$scope.favIcon = "favorite_outline";
+			$scope.favIcon[id-1] = "favorite_outline";
+			console.log($scope.favIcon)		
 		}
+	}
+	
+	$scope.isFav = function(cid){
+		var id = parseInt(cid)
+		return $scope.favIcon[id-1]
 	}
 	
 	$scope.logout = function(){
@@ -72,6 +86,14 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		menuService.settings();
 	}
 	
+	$scope.openTopics = function(){
+		console.log("Hey 1")
+	}
+	
+	$scope.openDiscussions = function(){
+		console.log("Hey 2")
+	}
+	
 	//Initializers
 	$scope.getCourses();
 	$scope.favIcon = "favorite_outline";
@@ -82,7 +104,7 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		$scope.firstname = response.data[0].firstname;
 		$scope.lastname = response.data[0].lastname;
 		$scope.username = response.data[0].username;
-		$scope.avatar = "http://mooconmooc.org/sites/default/files/pictures/" + response.data[0].avatar;
+		$scope.avatar = linkService.loginUrl + "/sites/default/files/pictures/" + response.data[0].avatar;
 	});
 }])
 
@@ -166,16 +188,12 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		div.innerHTML = html;
 		var text = div.textContent || div.innerText || "";
 		
-	    var confirm = $mdDialog.confirm()
-	      .parent(angular.element(document.body))
-	      .title(t)
-	      .content(text)
-	      .ok('Okay')
-	    $mdDialog.show(confirm).then(function() {
-	      
-	    }, function() {
-	      
-	    });
+	    var confirm = $mdDialog.alert()
+		      .parent(angular.element(document.body))
+		      .title(t)
+		      .content(text)
+		      .ok('Okay')
+	    $mdDialog.show(confirm);
 	}
 	
 	//Resources Tab

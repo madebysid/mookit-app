@@ -1,15 +1,16 @@
-angular.module('mookit.services', ['ionic', 'ngStorage'])
+angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 
 .service('linkService', [function(){
 	var self = this;
 	
 	self.serverUrl = "http://node.mooconmooc.org";
+	self.loginUrl = "http://mooconmooc.org";
 }])
 
 .service('authService', ['$window', '$http', '$state', '$localStorage', '$ionicLoading', 'linkService', 'transformRequestAsFormPost', function($window, $http, $state, $localStorage, $ionicLoading, linkService, transformRequestAsFormPost){
 	var self = this;
 	
-	self.serverUrl = 'http://mooconmooc.org/api/user/login.json'//'http://staging.mookit.co/api/user/login.json';
+	self.serverUrl = linkService.loginUrl + '/api/user/login.json'//'http://staging.mookit.co/api/user/login.json';
 	self.isLoggedIn = $localStorage.isLoggedIn;
 	self.token = $localStorage.token;
 	self.userId = $localStorage.userId;
@@ -167,15 +168,35 @@ angular.module('mookit.services', ['ionic', 'ngStorage'])
 	}
 }])
 
-.service('menuService', ['$ionicModal', function($ionicModal){
+.service('menuService', ['$ionicModal', '$mdDialog', function($ionicModal, $mdDialog){
 	var self = this;
 	
+	self.dialogCtrl = ['$scope', '$mdDialog', function($scope, $mdDialog){
+		$scope.save = function(){
+			$mdDialog.hide();
+		}
+		
+		$scope.okay = function(){
+			$mdDialog.hide();
+		}
+	}]
+	
 	self.about = function(){
-		console.log('Opened About');
+		$mdDialog.show({
+			controller: self.dialogCtrl,
+	      	templateUrl: 'templates/about.html',
+	      	parent: angular.element(document.body),
+	    })
+	    .then(function(answer) {}, function() {});
 	}
 	
 	self.settings = function(){
-		console.log('Opened Settings');
+		$mdDialog.show({
+			controller: self.dialogCtrl,
+	      	templateUrl: 'templates/settings.html',
+	      	parent: angular.element(document.body),
+	    })
+	    .then(function(answer) {}, function() {});
 	}
 }])
 
