@@ -1,14 +1,15 @@
 <ion-view>
 	<ion-content>
 		<md-list>
-			<div ng-repeat="subscribedForum in subscribedForums">
-			<md-list-item class="md-2-line">
+			<div >
+			<md-list-item class="md-2-line" ng-click="openForum(subscribedForum.tid)" collection-repeat="subscribedForum in subscribedForums">
+				<img ng-src="{{translateLink(subscribedForum.authorAvatar)}}" class="md-avatar">
 				<div class="md-list-item-text">
-		          <h3 style="line-height: 1.2em;">{{subscribedForum.topic}}</h3>
+		          <h3 style="line-height: 1em;">{{subscribedForum.topic}}</h3>
 		          <p>by {{subscribedForum.authorName}}</p>
 		        </div>
+				<md-divider></md-divider>
 			</md-list-item>
-			<md-divider></md-divider>
 			</div>
 		</md-list>
 	</ion-content>

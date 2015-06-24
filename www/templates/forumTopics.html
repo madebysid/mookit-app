@@ -1,8 +1,9 @@
 <ion-view>
 	<ion-content>
 		<md-list>
-			<div ng-repeat="topicForum in topicForums">
-			<md-list-item class="md-2-line">
+			<div collection-repeat="topicForum in topicForums">
+			<md-list-item class="md-2-line" ng-click="openForum(topicForum.tid)">
+				<img ng-src="{{translateLink(topicForum.authorAvatar)}}" class="md-avatar">
 				<div class="md-list-item-text">
 		          <h3 style="line-height: 1.2em;">{{topicForum.topic}}</h3>
 		          <p>by {{topicForum.authorName}}</p>

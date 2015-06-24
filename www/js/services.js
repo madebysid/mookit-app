@@ -1,24 +1,24 @@
-angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
+angular.module('mookit.services', ['ionic', 'ngStorage'])
 
 .service('linkService', [function(){
 	var self = this;
-	
+
 	self.serverUrl = "http://node.mooconmooc.org";
 	self.loginUrl = "http://mooconmooc.org";
 }])
 
 .service('authService', ['$window', '$http', '$state', '$localStorage', '$ionicLoading', 'linkService', 'transformRequestAsFormPost', function($window, $http, $state, $localStorage, $ionicLoading, linkService, transformRequestAsFormPost){
 	var self = this;
-	
+
 	self.serverUrl = linkService.loginUrl + '/api/user/login.json'//'http://staging.mookit.co/api/user/login.json';
 	self.isLoggedIn = $localStorage.isLoggedIn;
 	self.token = $localStorage.token;
 	self.userId = $localStorage.userId;
 	self.username = $localStorage.username;
 	self.role = $localStorage.role;
-	
+
 	$localStorage.userData = self.userObj;
-	
+
 	self.login = function(username, password, callback){
 		$http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
 		$http({
@@ -35,15 +35,15 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			self.userId = response.uid;
 			self.username = response.username;
 			self.role = response.role;
-			
+
 			$localStorage.isLoggedIn = true;
 			$localStorage.token = response.token;
 			$localStorage.userId = response.uid;
 			$localStorage.username = response.username;
 			$localStorage.role = response.role;
-			
+
 			console.log("Logged in as ", response.token)
-			$ionicLoading.hide();			
+			$ionicLoading.hide();
 			$state.transitionTo('dash');
 		})
 		.error(function(response){
@@ -51,7 +51,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			callback();
 		})
 	}
-	
+
 	self.logout = function(){
 		//Actual Logout
 		self.isLoggedIn = false;
@@ -59,17 +59,17 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 		self.userId = '';
 		self.username = '';
 		self.role = '';
-		
+
 		$localStorage.isLoggedIn = false;
 		$localStorage.token = '';
 		$localStorage.userId = '';
 		$localStorage.username = '';
 		$localStorage.role = '';
-		
+
 		$state.transitionTo('login');
 		$window.location.reload();
 	}
-	
+
 	self.signUp = function(fname, lname, username, email){
 		console.log('Sign Up')
 		$state.transitionTo('login');
@@ -78,9 +78,9 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 
 .service('profileService', ['$http', 'transformRequestAsFormPost', 'authService', 'linkService', function($http, transformRequestAsFormPost, authService, linkService){
 	var self = this;
-	
+
 	self.serverUrl = linkService.serverUrl + '/users/' + authService.userId;
-	
+
 	self.getProfile = function(){
 		return $http({
 			method: 'GET',
@@ -96,11 +96,11 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 .service('courseService', ['$http', 'authService', 'linkService', function($http, authService, linkService){
 	var self = this;
 	self.serverUrl = linkService.serverUrl;
-	
+
 	self.getCourses = function(){
 		return $http.get('http://demo6849607.mockable.io/courses')
 	}
-	
+
 	self.getCourseContents = function(courseId){
 		return $http({
 			method: 'GET',
@@ -111,7 +111,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			}
 		});
 	}
-	
+
 	self.getCourseAnnouncements = function(courseId){
 		return $http({
 			method: 'GET',
@@ -122,7 +122,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			}
 		});
 	}
-	
+
 	self.getCourseResources = function(courseId){
 		return $http({
 			method: 'GET',
@@ -131,9 +131,9 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 				token: authService.token,
 				uid: authService.userId,
 			}
-		}); 
+		});
 	}
-	
+
 	self.getGeneralForums = function(){
 		return $http({
 			method: 'GET',
@@ -144,7 +144,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			}
 		});
 	}
-	
+
 	self.getTopicForums = function(){
 		return $http({
 			method: 'GET',
@@ -155,7 +155,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			}
 		});
 	}
-	
+
 	self.getSubscribedForums = function(){
 		return $http({
 			method: 'GET',
@@ -166,21 +166,32 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			}
 		});
 	}
+
+	self.getForumComments = function(tid){
+		return $http({
+			method: 'GET',
+			url: self.serverUrl + "/forums/comments/" + tid,
+			headers: {
+				token: authService.token,
+				uid: authService.userId,
+			}
+		});
+	}
 }])
 
 .service('menuService', ['$ionicModal', '$mdDialog', function($ionicModal, $mdDialog){
 	var self = this;
-	
+
 	self.dialogCtrl = ['$scope', '$mdDialog', function($scope, $mdDialog){
 		$scope.save = function(){
 			$mdDialog.hide();
 		}
-		
+
 		$scope.okay = function(){
 			$mdDialog.hide();
 		}
 	}]
-	
+
 	self.about = function(){
 		$mdDialog.show({
 			controller: self.dialogCtrl,
@@ -189,7 +200,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 	    })
 	    .then(function(answer) {}, function() {});
 	}
-	
+
 	self.settings = function(){
 		$mdDialog.show({
 			controller: self.dialogCtrl,
@@ -200,6 +211,14 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 	}
 }])
 
+.service('linkTranslator', ['linkService', function(linkService){
+	var self = this;
+
+	self.translate = function(link){
+		return (linkService.loginUrl + '/sites/default/files' + link.slice(8))
+	}
+}])
+
 
 .factory('transformRequestAsFormPost', function() {
 	function transformRequest( data, getHeaders ) {
@@ -207,16 +226,16 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 		headers[ "Content-type" ] = "application/x-www-form-urlencoded; charset=utf-8";
 		return( serializeData( data ) );
 	}
-	
+
 	return( transformRequest );
-	
+
 	function serializeData( data ) {
 		if ( !angular.isObject( data ) ) {
 			return( ( data == null ) ? "" : data.toString() );
 		}
-		
+
 		var buffer = [];
-		
+
 		for ( var name in data ) {
 			if ( ! data.hasOwnProperty( name ) ) {
 				continue;
@@ -224,7 +243,7 @@ angular.module('mookit.services', ['ionic', 'ngStorage', 'ngMaterial'])
 			var value = data[ name ];
 			buffer.push(encodeURIComponent( name ) + "=" + encodeURIComponent( ( value == null ) ? "" : value ));
 		}
-		
+
 		var source = buffer.join( "&" ).replace( /%20/g, "+" );
 		return( source );
 	}

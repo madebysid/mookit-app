@@ -1,4 +1,4 @@
-angular.module('mookit-app', ['ionic', 'mookit.controllers', 'mookit.services', 'ngMaterial'])
+angular.module('mookit-app', ['ionic', 'ngMaterial', 'mookit.controllers', 'mookit.services'])
 
 .run(['$ionicPlatform', '$rootScope', '$location', 'authService', function($ionicPlatform, $rootScope, $location, authService) {
   $ionicPlatform.ready(function() {
@@ -8,14 +8,14 @@ angular.module('mookit-app', ['ionic', 'mookit.controllers', 'mookit.services', 
     if(window.StatusBar) {
       StatusBar.styleDefault();
     }
-    
+
     $rootScope.$on('$stateChangeStart', function(event, newValue){
       // if( !authService.isLoggedIn ){
       //   event.preventDefault();
       //   $location.url('/login');
       // }
     });
-    
+
   });
 }])
 
@@ -26,19 +26,19 @@ angular.module('mookit-app', ['ionic', 'mookit.controllers', 'mookit.services', 
         templateUrl: 'templates/login.html',
         controller: 'loginCtrl'
       })
-      
+
       .state('signup', {
         url: '/signup',
         templateUrl: 'templates/signup.html',
         controller: 'signupCtrl'
       })
-    
+
       .state('dash', {
         url: '/dash',
         templateUrl: 'templates/dash.html',
         controller: 'dashCtrl'
       })
-      
+
       .state('course', {
         url: '/course/:courseId',
         templateUrl: 'templates/course.html',
@@ -108,7 +108,15 @@ angular.module('mookit-app', ['ionic', 'mookit.controllers', 'mookit.services', 
           }
         }
       })
-      
+      .state('course.forum.comments', {
+        url: '/comments/',
+        views: {
+          'forumView': {
+            templateUrl: 'templates/forumComments.html'
+          }
+        }
+      })
+
       .state('course.chat', {
         url: '/chat',
         views: {
@@ -117,6 +125,6 @@ angular.module('mookit-app', ['ionic', 'mookit.controllers', 'mookit.services', 
           }
         }
       })
-      
+
     $urlRouterProvider.otherwise('/login');
 }])

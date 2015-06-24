@@ -1,15 +1,15 @@
-angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtube-embed'])
+angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'youtube-embed'])
 
 .controller('appCtrl', ['$scope', function($scope){
-	
+
 }])
 
 .controller('loginCtrl', ['$scope', '$state', '$timeout', '$ionicLoading', 'authService', function($scope, $state, $timeout, $ionicLoading, authService){
-	$scope.username = '';
-	$scope.password = '';
+	$scope.username = 'user';
+	$scope.password = '1';
 	$scope.loginError = false;
 	$scope.loginText = "Login";
-	
+
 	$scope.login = function(username, password){
 		$ionicLoading.show();
 		authService.login(username,password, function(){
@@ -21,31 +21,31 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 			}, 2000);
 		});
 	}
-	
+
 	$scope.signUp = function(){
 		$state.transitionTo('signup');
 	}
-	
+
 	//$scope.login($scope.username, $scope.password)
 }])
 
 .controller('signupCtrl', ['$scope', '$state', 'authService', function($scope, $state, authService){
-	
+
 	//Definitions
 	$scope.goBack = function(){
 		$state.transitionTo('login');
 	}
-	
+
 	$scope.signup = function(fname, lname, username, email){
 		authService.signUp(fname, lname, username, email);
 	}
 }])
 
 .controller('dashCtrl', ['$scope', '$state', 'authService', 'profileService', 'courseService', 'menuService', 'linkService', function($scope, $state, authService, profileService, courseService, menuService, linkService){
-	
+
 	//Definitions
 
-	
+
 	$scope.getCourses = function(){
 		$scope.courses = courseService.getCourses().then(function(response){;
 			$scope.courses = response.data;
@@ -55,7 +55,7 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 				$scope.favIcon.push("favorite_outline")
 		});
 	}
-	
+
 	$scope.toggleFav = function(cid){
 		var id = parseInt(cid)
 		if( $scope.favIcon[id-1] == "favorite_outline" ){
@@ -64,35 +64,35 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		}
 		else{
 			$scope.favIcon[id-1] = "favorite_outline";
-			console.log($scope.favIcon)		
+			console.log($scope.favIcon)
 		}
 	}
-	
+
 	$scope.isFav = function(cid){
 		var id = parseInt(cid)
 		return $scope.favIcon[id-1]
 	}
-	
+
 	$scope.logout = function(){
 		authService.logout();
 	};
-	
+
 	$scope.openAbout = function(){
 		menuService.about();
 	}
-	
+
 	$scope.openSettings = function(){
 		menuService.settings();
 	}
-	
+
 	$scope.openTopics = function(){
 		console.log("Hey 1")
 	}
-	
+
 	$scope.openDiscussions = function(){
 		console.log("Hey 2")
 	}
-	
+
 	//Initializers
 	$scope.getCourses();
 	$scope.favIcon = "favorite_outline";
@@ -107,38 +107,42 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 	});
 }])
 
-.controller('courseCtrl', ['$scope', '$state', '$stateParams', '$ionicLoading', '$ionicModal', '$mdDialog', 'courseService', 'menuService', function($scope, $state, $stateParams, $ionicLoading, $ionicModal, $mdDialog, courseService, menuService){
-	
+.controller('courseCtrl', ['$scope', '$state', '$stateParams', '$ionicLoading', '$ionicModal', '$mdDialog', 'courseService', 'menuService', 'linkTranslator', function($scope, $state, $stateParams, $ionicLoading, $ionicModal, $mdDialog, courseService, menuService, linkTranslator){
+
 	//Definitions
 	$scope.goBack = function(){
 		$state.transitionTo('dash');
 	}
-	
+
+	$scope.translateLink = function(link){
+		return linkTranslator.translate(link)
+	}
+
 	//Contents Tab
-	
+
 	$scope.expandWeek = [];
 	$scope.lectures = [];
-	
+
 	$scope.toggleWeek = function(weekId){
 		$scope.expandWeek[weekId] = !$scope.expandWeek[weekId];
 	}
-	
+
 	$scope.getContents = function(){
 		$ionicLoading.show();
 		courseService.getCourseContents().then(function(response){
 			$scope.contents = response.data;
-			
+
 			var maxWeek = 0;
 			response.data.forEach(function(element){
 				if( element.week.slice(5) > maxWeek)
 					maxWeek = element.week.slice(5);
 			});
-			
+
 			for(var i=0 ; i<=maxWeek ; i++){
 				$scope.lectures[i] = new Array(0);
 				$scope.expandWeek[i] = false;
 			}
-			
+
 			response.data.forEach(function(element){
 				var index = parseInt(element.week.slice(5));
 				$scope.lectures[index].push(element);
@@ -146,7 +150,7 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		});
 		$ionicLoading.hide();
 	}
-	
+
 	//Video Modal
 	$ionicModal.fromTemplateUrl('templates/lecture.html', {
 	    scope: $scope,
@@ -164,13 +168,13 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 	  $scope.$on('$destroy', function() {
 	    $scope.modal.remove();
 	  });
-	
+
 	$scope.goToLecture = function(cid, lid, lt, vurl){
 		$scope.lectureId = lid;
 		$scope.lectureTitle = lt;
 		$scope.openModal(vurl);
 	}
-	
+
 	//Announcements Tab
 	$scope.getAnnouncements = function(){
 		$ionicLoading.show();
@@ -179,14 +183,14 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		})
 		$ionicLoading.hide();
 	}
-	
+
 	$scope.expandAnnouncement = function(t, bv){
-		
+
 		var html = bv;
 		var div = document.createElement("div");
 		div.innerHTML = html;
 		var text = div.textContent || div.innerText || "";
-		
+
 	    var confirm = $mdDialog.alert()
 		      .parent(angular.element(document.body))
 		      .title(t)
@@ -194,42 +198,42 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 		      .ok('Okay')
 	    $mdDialog.show(confirm);
 	}
-	
+
 	//Resources Tab
-	
+
 	$scope.expandResource = [];
-	
+
 	$scope.getResources = function(){
 		$ionicLoading.show();
-		
+
 		courseService.getCourseResources($scope.courseId).then(function(response){
 			if(response.data.data == "null")
 				console.log("No resources")
-			
+
 			var maxResource = response.data.length;
-			
+
 			for(var i=0 ; i<=maxResource ; i++){
 				$scope.expandResource[i] = false;
 		}
-			
+
 			$scope.resources = response.data;
 			if($scope.resources.filename != null)
 				console.log('File here')
 		})
 		$ionicLoading.hide();
 	}
-	
+
 	$scope.goToResource = function(bv){
 		console.log($scope.expandResource[bv])
 		$scope.expandResource[bv] = !$scope.expandResource[bv]
 	}
-	
+
 	$scope.downloadResource = function(filename){
 		console.log("Downloading ", filename)
 	}
-	
+
 	//Forums Tab
-	
+
 	$scope.getGeneralForums = function(){
 		$ionicLoading.show();
 		$scope.forumSelectedTab = 'general';
@@ -238,10 +242,11 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 			if(response.data.data == 'null'){
 				$scope.generalForums[0].topic = 'Nothing to show!';
 			}
+			console.log(response.data[0].tid)
+			$ionicLoading.hide();
 		});
-		$ionicLoading.hide();
 	}
-	
+
 	$scope.getTopicForums = function(){
 		$ionicLoading.show();
 		$scope.forumSelectedTab = 'topics';
@@ -250,10 +255,10 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 			if(response.data.data == 'null'){
 				$scope.topicForums[0].topic = 'Nothing to show!';
 			}
+			$ionicLoading.hide();
 		});
-		$ionicLoading.hide();
 	}
-	
+
 	$scope.getSubscribedForums = function(){
 		$ionicLoading.show();
 		$scope.forumSelectedTab = 'subscribed';
@@ -262,32 +267,43 @@ angular.module('mookit.controllers', ['ionic', 'ngAnimate', 'ngMaterial', 'youtu
 			if(response.data.data == 'null'){
 				$scope.subscribedForums[0].topic = 'Nothing to show!';
 			}
+			$ionicLoading.hide();
 		});
-		$ionicLoading.hide();
 	}
-	
+
+	$scope.openForum = function(forum, tid){
+		$ionicLoading.show();
+		courseService.getForumComments(tid).then(function(response){
+			$scope.comments = response.data;
+			$scope.forum = forum;
+			console.log($scope.comments[0])
+			$state.transitionTo('course.forum.comments', {courseId: $scope.courseId})
+			$ionicLoading.hide();
+		})
+	}
+
 	$scope.forumSelectedTab = 'general'
-	
+
 	//Chats Tab
-	
+
 	$scope.getChats = function(){
 		$ionicLoading.show();
-		console.log('Fetching Chats for ', $scope.courseId);		
+		console.log('Fetching Chats for ', $scope.courseId);
 		$ionicLoading.hide();
 	}
-	
+
 	$scope.openAbout = function(){
 		menuService.about();
 	}
-	
+
 	$scope.openSettings = function(){
 		menuService.settings();
 	}
-	
+
 	//Initializers
 	$scope.courseId = $stateParams.courseId;
 	$scope.selectedIndex;
-	
+
 	$scope.$watch('selectedIndex', function(newValue, oldValue){
 		switch(newValue){
 			case 0:

@@ -1,4 +1,11 @@
 {
   "name": "mookit-app",
-  "app_id": "ce3b537f"
+  "app_id": "ce3b537f",
+  "browsers": [
+    {
+      "platform": "android",
+      "browser": "crosswalk",
+      "version": "12.41.296.5"
+    }
+  ]
 }
