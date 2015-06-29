@@ -1,52 +1,57 @@
-var gulp = require('gulp');
-var gutil = require('gulp-util');
-var bower = require('bower');
-var concat = require('gulp-concat');
-var sass = require('gulp-sass');
-var minifyCss = require('gulp-minify-css');
-var rename = require('gulp-rename');
-var sh = require('shelljs');
+var gulp = require('gulp'),
+    watch = require('gulp-watch'),
+    batch = require('gulp-batch'),
+    browserSync = require('browser-sync').create(),
+    browserify = require('gulp-browserify'),
+    concat = require('gulp-concat'),
+    reactify = require('reactify');
 
 var paths = {
-  sass: ['./scss/**/*.scss']
-};
+    html: 'app-dev/index.html',
+    js: 'app-dev/js/**/*.js',
+    css: 'app-dev/css/*.css',
+    img: ['app-dev/img/*.png', 'app-dev/img/*.jpg', 'app-dev/img/*.svg'],
+    all: ['app-dev/index.html' , 'app-dev/js/**/*.js' , 'app-dev/css/*.css'],
+    dist: 'app-dist',
+    distImg: 'app-dist/img'
+}
 
-gulp.task('default', ['sass']);
-
-gulp.task('sass', function(done) {
-  gulp.src('./scss/ionic.app.scss')
-    .pipe(sass({
-      errLogToConsole: true
-    }))
-    .pipe(gulp.dest('./www/css/'))
-    .pipe(minifyCss({
-      keepSpecialComments: 0
-    }))
-    .pipe(rename({ extname: '.min.css' }))
-    .pipe(gulp.dest('./www/css/'))
-    .on('end', done);
+gulp.task('refreshServer', function() {
+    browserSync.reload()
 });
 
-gulp.task('watch', function() {
-  gulp.watch(paths.sass, ['sass']);
-});
-
-gulp.task('install', ['git-check'], function() {
-  return bower.commands.install()
-    .on('log', function(data) {
-      gutil.log('bower', gutil.colors.cyan(data.id), data.message);
+gulp.task('startServer', function(){
+    browserSync.init({
+        server: {
+            baseDir: "app-dist"
+        }
     });
-});
+})
 
-gulp.task('git-check', function(done) {
-  if (!sh.which('git')) {
-    console.log(
-      '  ' + gutil.colors.red('Git is not installed.'),
-      '\n  Git, the version control system, is required to download Ionic.',
-      '\n  Download git here:', gutil.colors.cyan('http://git-scm.com/downloads') + '.',
-      '\n  Once git is installed, run \'' + gutil.colors.cyan('gulp install') + '\' again.'
-    );
-    process.exit(1);
-  }
-  done();
-});
+gulp.task('main', function(){
+
+    //Copy HTML
+    gulp.src(paths.html)
+        .pipe(gulp.dest(paths.dist))
+    //Copy CSS
+    gulp.src(paths.css)
+        .pipe(gulp.dest(paths.dist))
+    //Copy Assets
+    gulp.src(paths.img)
+        .pipe(gulp.dest(paths.distImg))
+
+    //Concatenate and browserify all files
+    gulp.src(paths.js)
+        .pipe(concat('app.js'))
+        .pipe(browserify({
+            insertGlobals : true,
+            transform: reactify
+        }))
+        .pipe(gulp.dest(paths.dist))
+
+})
+
+gulp.task('default', function(){
+    //gulp.run('startServer')
+    gulp.watch(paths.all, ['main'])
+})
