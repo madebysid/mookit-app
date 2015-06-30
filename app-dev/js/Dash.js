@@ -19,9 +19,13 @@ var React = require('react'),
 var DashHeaderBar = React.createClass({
     mixins: [material],
 
+    leftTouch: function(){
+        window.location.hash = "/Login"
+    },
+
     render: function(){
         var AppBarStyle = {
-            backgroundColor: "#238743"
+            backgroundColor: "#238743",
         },
         AppBarExtensionStyle = {
             height: '35vh',
@@ -37,7 +41,7 @@ var DashHeaderBar = React.createClass({
         }
         return (
             <div>
-                <AppBar style={AppBarStyle} title='' zDepth={0} iconClassNameLeft="mdi mdi-arrow-left" iconClassNameRight="mdi mdi-dots-vertical" />
+                <AppBar style={AppBarStyle} title='' onLeftIconButtonTouchTap={this.leftTouch}  zDepth={0} iconClassNameLeft="mdi mdi-arrow-left" iconClassNameRight="mdi mdi-dots-vertical" />
                 <div style={AppBarExtensionStyle}>
                     <Avatar style={AvatarStyle} src="img/profile.jpg"/>
                     {this.props.children}
@@ -72,10 +76,11 @@ var DashUserEngagements = React.createClass({
     render: function(){
         var EngagementStyle = {
             float: this.props.align,
+            fontSize: '0.75em',
             textAlign: 'center',
             marginTop: '4vh',
-            paddingLeft: '15vw',
-            paddingRight: '15vw'
+            paddingLeft: '11vw',
+            paddingRight: '18vw',
         }
         if (this.props.type=='discussions'){
             EngagementStyle['borderRight'] = '1px solid white'
@@ -83,7 +88,7 @@ var DashUserEngagements = React.createClass({
 
         return (
             <div style={EngagementStyle}>
-                <p style={{fontFamily: 'Roboto-Bold', lineHeight: '0.1em'}}>7</p>
+                <p style={{fontFamily: 'RobotoBold', lineHeight: '0.1em'}}>7</p>
                 {this.props.type.toUpperCase()}
                 {/*Divider*/}
             </div>
@@ -127,18 +132,15 @@ var DashCard = React.createClass({
     mixins: [material],
 
     render: function(){
-        var imgStyles = {
-            overflow: 'hidden',
-        }
         return (
-            <div>
-                <Card style={this.props.styles}>
-                    <CardMedia style={imgStyles}>
-                        <img src={this.props.img} className="cardImg"/>
-                    </CardMedia>
-                    <CardTitle title="Title"/>
-                </Card>
-            </div>
+            <Card style={this.props.styles}>
+                <CardMedia className={this.props.mediaClass}>
+                    <img src={this.props.img} />
+                </CardMedia>
+                <CardText className="CardText" style={{color: 'white'}}>
+                    {this.props.children}
+                </CardText>
+            </Card>
         )
     }
 })
@@ -148,42 +150,64 @@ var DashBody = React.createClass({
 
     render: function(){
         var AvailableStyles = {
+            backgroundColor: '#43A8DE',
             margin: '2vw',
             width: '46vw',
             float: 'left',
             height: '32vh',
-            position: 'relative',
+            animation: 'fly-in-from-bottom .3s ease both',
+            animationDelay: '0s',
+            transformOrigin: 'top left'
         }
 
         var SubscribedStyles = {
+            backgroundColor: '#7A53A2',
             margin: '2vw',
             width: '46vw',
             float: 'right',
             height: '15vh',
-            position: 'relative',
+            animation: 'fly-in-from-bottom .3s ease both',
+            animationDelay: '0.1s',
+            transformOrigin: 'top left'
         }
 
         var FavouriteStyles = {
+            backgroundColor: '#52BA66',
             margin: '2vw',
             width: '46vw',
             float: 'right',
             height: '15vh',
-            position: 'relative',
+            animation: 'fly-in-from-bottom .3s ease both',
+            animationDelay: '0.2s',
+            transformOrigin: 'top left'
         }
 
         var DownloadStyles = {
+            backgroundColor: '#FEC432',
             margin: '2vw',
-            width: '100%',
-            height: '30vh',
-            position: 'relative',
+            width: '96vw',
+            marginTop: '0',
+            float: 'left',
+            height: '18vh',
+            animation: 'fly-in-from-bottom .3s ease both',
+            animationDelay: '0.3s',
+            transformOrigin: 'top left'
         }
 
         return (
             <div>
-                <DashCard styles={AvailableStyles} img="img/tick.svg" imgBg="#43A8DE" text="Available"></DashCard>
-                <DashCard styles={SubscribedStyles} img="img/book.svg" imgBg="#7A53A2" text="Subscribed"></DashCard>
-                <DashCard styles={FavouriteStyles} img="img/heart.svg" imgBg="#52BA66" text="Favourites"></DashCard>
-                <DashCard styles={DownloadStyles} img="img/download.svg" imgBg="#FEC432" text="Subscribed"></DashCard>
+                <a href="#/Available">
+                    <DashCard styles={AvailableStyles} mediaClass="cardImg cardAvailable" img="img/tick.svg" imgBg="#43A8DE">Available</DashCard>
+                </a>
+                <a href="#/Subscribed">
+                    <DashCard styles={SubscribedStyles} mediaClass="cardImg cardSubscribed" img="img/book.svg" imgBg="#7A53A2">Subscribed</DashCard>
+                </a>
+                <a href="#/Favourites">
+                    <DashCard styles={FavouriteStyles} mediaClass="cardImg cardFavourites" img="img/heart.svg" imgBg="#52BA66">Favourites</DashCard>
+                </a>
+                <a href="#/Downloads">
+                    <DashCard styles={DownloadStyles} mediaClass="cardImg cardDownloads" img="img/download.svg" imgBg="#FEC432">Downloads</DashCard>
+                </a>
             </div>
         )
     }
@@ -220,10 +244,5 @@ var Dash = React.createClass({
         )
     }
 })
-
-React.render(
-    <Dash />,
-    document.getElementById('content')
-)
 
 module.exports = Dash;

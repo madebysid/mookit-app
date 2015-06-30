@@ -1,9 +1,99 @@
+@font-face{
+    font-family: 'RobotoThin';
+    src: url('fonts/Roboto-Thin.ttf')
+}
+
+@font-face{
+    font-family: 'RobotoBold';
+    src: url('fonts/Roboto-Bold.ttf')
+}
+
+@font-face{
+    font-family: 'RobotoLight';
+    src: url('fonts/Roboto-Light.ttf')
+}
+
+@font-face{
+    font-family: 'RobotoRegular';
+    src: url('fonts/Roboto-Regular.ttf')
+}
+
 body{
     padding: 0;
     margin: 0;
-    font-family: 'Roboto-Thin';
+    font-family: 'RobotoThin';
+    overflow-x: hidden;
+}
+
+
+
+
+
+
+
+
+
+
+
+img{
+    max-width: 100%;
 }
 
 .cardImg{
-    width: 30vw;
+    right: 0;
+    max-width: 20%;
+    min-width: 20%;
+    margin: auto;
+}
+
+.cardAvailable{
+    margin-top: 10vh;
+    max-width: 40%;
+    min-width: 40%;
+    height: 15vh;
+}
+
+.cardFavourites{
+    margin-top: 2vh;
+    height: 6vh;
+}
+
+.cardSubscribed{
+    margin-top: 3vh;
+    height: 6vh;
+}
+
+.cardDownloads{
+    margin-top: 2vh;
+    height: 10vh;
+    max-width: 15vw;
+    min-width: 15vw;
+}
+
+@keyframes fly-in-from-left {
+    from {
+        transform: translateY(15rem) rotate(15deg);
+        opacity:0;
+    }
+}
+
+@-webkit-keyframes fly-in-from-left {
+    from {
+        -webkit-transform: translateY(15rem) rotate(15deg);
+        opacity:0;
+    }
+}
+
+@keyframes fly-in-from-bottom {
+    from {
+        transform: translateY(15rem);
+        opacity:0;
+    }
+}
+
+@-webkit-keyframes fly-in-from-bottom {
+    from {
+        -webkit-transform: translateY(15rem);
+        opacity:0;
+    }
 }
