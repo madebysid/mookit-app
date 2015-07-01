@@ -3,7 +3,6 @@ var React = require('react'),
     mui = require('material-ui'),
     material = require('./Material.js'),
     reqwest = require('reqwest'),
-    injectTapEventPlugin = require("react-tap-event-plugin"),
     AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
@@ -14,14 +13,17 @@ var React = require('react'),
     ListItem = mui.ListItem,
     ListDivider = mui.ListDivider
 
-injectTapEventPlugin();
+React.initializeTouchEvents(true)
 
 var expanded = []
 
 var NormalText = React.createClass({
+    handleClick: function(){
+        this.props.onTouchStart()
+    },
     render: function(){
         return (
-            <div>
+            <div onTouchStart={this.handleClick} style={{width: '100%'}}>
                 {this.props.text[0].week}
             </div>
         )
@@ -29,11 +31,14 @@ var NormalText = React.createClass({
 })
 
 var CardList = React.createClass({
+    handleClick: function(){
+        this.props.onTouchStart()
+    },
     render: function() {
         var self = this
         return (
             <div>
-                <h3>
+                <h3 onTouchStart={self.handleClick}>
                     {self.props.text[0].week}
                 </h3>
                 <ListDivider />
@@ -68,9 +73,9 @@ var ExpandableListItem = React.createClass({
         var ToRender = expanded[this.props.id] ? CardList : NormalText
         return (
             <div>
-                <Card zDepth={1} rounded={false} style={Styles} onTouchTap={this.toggle}>
+                <Card zDepth={1} rounded={false} style={Styles}>
                     <CardText>
-                        <ToRender id={this.props.id} text={this.props.data}/>
+                        <ToRender onTouchStart={this.toggle} id={this.props.id} text={this.props.data}/>
                     </CardText>
                 </Card>
             </div>

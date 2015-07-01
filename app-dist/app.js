@@ -69,7 +69,6 @@ var React = require('react'),
     mui = require('material-ui'),
     material = require('./Material.js'),
     reqwest = require('reqwest'),
-    injectTapEventPlugin = require("react-tap-event-plugin"),
     AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
@@ -80,14 +79,17 @@ var React = require('react'),
     ListItem = mui.ListItem,
     ListDivider = mui.ListDivider
 
-injectTapEventPlugin();
+React.initializeTouchEvents(true)
 
 var expanded = []
 
 var NormalText = React.createClass({displayName: "NormalText",
+    handleClick: function(){
+        this.props.onTouchStart()
+    },
     render: function(){
         return (
-            React.createElement("div", null, 
+            React.createElement("div", {onTouchStart: this.handleClick, style: {width: '100%'}}, 
                 this.props.text[0].week
             )
         )
@@ -95,11 +97,14 @@ var NormalText = React.createClass({displayName: "NormalText",
 })
 
 var CardList = React.createClass({displayName: "CardList",
+    handleClick: function(){
+        this.props.onTouchStart()
+    },
     render: function() {
         var self = this
         return (
             React.createElement("div", null, 
-                React.createElement("h3", null, 
+                React.createElement("h3", {onTouchStart: self.handleClick}, 
                     self.props.text[0].week
                 ), 
                 React.createElement(ListDivider, null), 
@@ -134,9 +139,9 @@ var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
         var ToRender = expanded[this.props.id] ? CardList : NormalText
         return (
             React.createElement("div", null, 
-                React.createElement(Card, {zDepth: 1, rounded: false, style: Styles, onTouchTap: this.toggle}, 
+                React.createElement(Card, {zDepth: 1, rounded: false, style: Styles}, 
                     React.createElement(CardText, null, 
-                        React.createElement(ToRender, {id: this.props.id, text: this.props.data})
+                        React.createElement(ToRender, {onTouchStart: this.toggle, id: this.props.id, text: this.props.data})
                     )
                 )
             )
@@ -289,7 +294,7 @@ module.exports = Course;
 
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/Course.js","/")
-},{"./Material.js":8,"buffer":12,"material-ui":49,"oMfpAn":15,"react":352,"react-router":161,"react-tap-event-plugin":179,"reqwest":353}],4:[function(require,module,exports){
+},{"./Material.js":8,"buffer":12,"material-ui":49,"oMfpAn":15,"react":352,"react-router":161,"reqwest":353}],4:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     Link = require('react-router').Link,
@@ -801,7 +806,6 @@ var React = require('react'),
     mui = require('material-ui'),
     material = require('./Material.js'),
     reqwest = require('reqwest'),
-    injectTapEventPlugin = require("react-tap-event-plugin"),
     AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
@@ -812,14 +816,17 @@ var React = require('react'),
     ListItem = mui.ListItem,
     ListDivider = mui.ListDivider
 
-injectTapEventPlugin();
+React.initializeTouchEvents(true)
 
 var expanded = []
 
 var NormalText = React.createClass({displayName: "NormalText",
+    handleClick: function(){
+        this.props.onTouchStart()
+    },
     render: function(){
         return (
-            React.createElement("div", null, 
+            React.createElement("div", {onTouchStart: this.handleClick, style: {width: '100%'}}, 
                 this.props.text[0].week
             )
         )
@@ -827,11 +834,14 @@ var NormalText = React.createClass({displayName: "NormalText",
 })
 
 var CardList = React.createClass({displayName: "CardList",
+    handleClick: function(){
+        this.props.onTouchStart()
+    },
     render: function() {
         var self = this
         return (
             React.createElement("div", null, 
-                React.createElement("h3", null, 
+                React.createElement("h3", {onTouchStart: self.handleClick}, 
                     self.props.text[0].week
                 ), 
                 React.createElement(ListDivider, null), 
@@ -866,9 +876,9 @@ var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
         var ToRender = expanded[this.props.id] ? CardList : NormalText
         return (
             React.createElement("div", null, 
-                React.createElement(Card, {zDepth: 1, rounded: false, style: Styles, onTouchTap: this.toggle}, 
+                React.createElement(Card, {zDepth: 1, rounded: false, style: Styles}, 
                     React.createElement(CardText, null, 
-                        React.createElement(ToRender, {id: this.props.id, text: this.props.data})
+                        React.createElement(ToRender, {onTouchStart: this.toggle, id: this.props.id, text: this.props.data})
                     )
                 )
             )
@@ -1471,7 +1481,7 @@ module.exports = (
 )
 
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_772702d.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_925f52fe.js","/")
 },{"./App.js":1,"./Available.js":2,"./Course.js":3,"./Dash.js":4,"./Downloads.js":5,"./Favourites.js":6,"./Login.js":7,"./Material.js":8,"./Subscribed.js":9,"./routes.js":11,"buffer":12,"material-ui":49,"oMfpAn":15,"react":352,"react-router":161,"react-tap-event-plugin":179,"reqwest":353}],11:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
