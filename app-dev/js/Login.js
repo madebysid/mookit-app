@@ -1,5 +1,6 @@
 var React = require('react'),
     mui = require('material-ui'),
+    Link = require('react-router').Link,
     material = require('./Material.js'),
     TextField= mui.TextField,
     FlatButton = mui.FlatButton,
@@ -43,7 +44,9 @@ var LoginForm = React.createClass({
                 <TextField style={textStyle} floatingLabelText="Password">
                     <input type="password"/>
                 </TextField>
-                <FlatButton style={buttonStyle} label="Login" onClick={this.loginDude}></FlatButton>
+                <Link to="/dash">
+                    <FlatButton style={buttonStyle} label="Login" />
+                </Link>
             </div>
         )
     }

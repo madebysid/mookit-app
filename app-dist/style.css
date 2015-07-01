@@ -25,6 +25,9 @@ body{
     overflow-x: hidden;
 }
 
+.headerBar > h1{
+    font-size: 0.5em;
+}
 
 
 
@@ -33,7 +36,9 @@ body{
 
 
 
-
+a{
+    text-decoration: none;
+}
 
 img{
     max-width: 100%;

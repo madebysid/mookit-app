@@ -18,5 +18,12 @@
     "react": "^0.13.3",
     "reactify": "^1.1.1"
   },
-  "browserify": {"transform": ["reactify"]}
+  "browserify": {
+    "transform": [
+      "reactify"
+    ]
+  },
+  "dependencies": {
+    "react-router": "^0.13.3"
+  }
 }

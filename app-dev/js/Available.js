@@ -1,16 +1,31 @@
 var React = require('react'),
+    material = require('./Material.js'),
+    Link = require('react-router').Link,
+    reqwest = require('reqwest'),
     mui = require('material-ui'),
-    material = require('./Material.js')
+    FlatButton = mui.FlatButton
 
 var Available = React.createClass({
+    mixins: [material],
+
+    componentWillMount: function(){
+        reqwest({
+            url: './courseData.json',
+            method: 'GET',
+            success: function(data){
+                console.log(data)
+            }
+        })
+    },
+
     render: function(){
         return (
             <div>
-                <a href="#/Dash">Back</a><br />
-                Available Courses
+                <Link to="/dash">Back</Link><br />
+                Available
             </div>
         )
     }
 })
 
-module.exports = Available;
+module.exports = Available

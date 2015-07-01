@@ -1,4 +1,5 @@
 var React = require('react'),
+    Link = require('react-router').Link,
     mui = require('material-ui'),
     material = require('./Material.js'),
     RaisedButton = mui.RaisedButton,
@@ -20,7 +21,8 @@ var DashHeaderBar = React.createClass({
     mixins: [material],
 
     leftTouch: function(){
-        window.location.hash = "/Login"
+        //Save username for future
+        window.location.hash = "/login"
     },
 
     render: function(){
@@ -196,18 +198,18 @@ var DashBody = React.createClass({
 
         return (
             <div>
-                <a href="#/Available">
+                <Link to="/available">
                     <DashCard styles={AvailableStyles} mediaClass="cardImg cardAvailable" img="img/tick.svg" imgBg="#43A8DE">Available</DashCard>
-                </a>
-                <a href="#/Subscribed">
+                </Link>
+                <Link to="/subscribed">
                     <DashCard styles={SubscribedStyles} mediaClass="cardImg cardSubscribed" img="img/book.svg" imgBg="#7A53A2">Subscribed</DashCard>
-                </a>
-                <a href="#/Favourites">
+                </Link>
+                <Link to="/favourites">
                     <DashCard styles={FavouriteStyles} mediaClass="cardImg cardFavourites" img="img/heart.svg" imgBg="#52BA66">Favourites</DashCard>
-                </a>
-                <a href="#/Downloads">
+                </Link>
+                <Link to="/downloads">
                     <DashCard styles={DownloadStyles} mediaClass="cardImg cardDownloads" img="img/download.svg" imgBg="#FEC432">Downloads</DashCard>
-                </a>
+                </Link>
             </div>
         )
     }
