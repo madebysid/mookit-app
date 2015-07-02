@@ -30,11 +30,23 @@ var OutgoingChat = React.createClass({
 })
 
 var ChatWindow = React.createClass({
+    componentWillUpdate: function() {
+        var node = this.getDOMNode();
+        this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
+    },
+
+    componentDidUpdate: function() {
+        if (this.shouldScrollBottom) {
+            var node = this.getDOMNode();
+            node.scrollTop = node.scrollHeight
+        }
+    },
     render: function(){
         var WindowStyle = {
-            height: '60vh',
+            height: '55vh',
             margin: '-1vh 5vw',
-            padding: '1vh'
+            padding: '1vh',
+            overflow: 'scroll'
         },
         self = this
         return (
@@ -80,12 +92,12 @@ var ChatInput = React.createClass({
     render: function(){
         var Style = {
             position: 'absolute',
-            bottom: '-5vh',
+            bottom: '-10vh',
             left: '5vw'
         },
         SendStyle = {
             position: 'absolute',
-            bottom: '-5vh',
+            bottom: '-10vh',
             right: '0'
         }
         return (
@@ -101,18 +113,22 @@ var ChatInput = React.createClass({
 
 var Chat = React.createClass({
     mixins: [material],
-    getInitialState: function(){
-        return {
-            incoming: [],
-            outgoing: []
-        }
-    },
+
+
     handleSend: function(msg){
         var newMsg = this.state.outgoing
         newMsg.push(msg)
         this.setState({
             outgoing: newMsg
         })
+    },
+
+
+    getInitialState: function(){
+        return {
+            incoming: [],
+            outgoing: []
+        }
     },
     componentDidMount: function(){
         this.setState({

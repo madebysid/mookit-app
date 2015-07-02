@@ -94,11 +94,23 @@ var OutgoingChat = React.createClass({displayName: "OutgoingChat",
 })
 
 var ChatWindow = React.createClass({displayName: "ChatWindow",
+    componentWillUpdate: function() {
+        var node = this.getDOMNode();
+        this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
+    },
+
+    componentDidUpdate: function() {
+        if (this.shouldScrollBottom) {
+            var node = this.getDOMNode();
+            node.scrollTop = node.scrollHeight
+        }
+    },
     render: function(){
         var WindowStyle = {
-            height: '60vh',
+            height: '55vh',
             margin: '-1vh 5vw',
-            padding: '1vh'
+            padding: '1vh',
+            overflow: 'scroll'
         },
         self = this
         return (
@@ -144,12 +156,12 @@ var ChatInput = React.createClass({displayName: "ChatInput",
     render: function(){
         var Style = {
             position: 'absolute',
-            bottom: '-5vh',
+            bottom: '-10vh',
             left: '5vw'
         },
         SendStyle = {
             position: 'absolute',
-            bottom: '-5vh',
+            bottom: '-10vh',
             right: '0'
         }
         return (
@@ -165,18 +177,22 @@ var ChatInput = React.createClass({displayName: "ChatInput",
 
 var Chat = React.createClass({displayName: "Chat",
     mixins: [material],
-    getInitialState: function(){
-        return {
-            incoming: [],
-            outgoing: []
-        }
-    },
+
+
     handleSend: function(msg){
         var newMsg = this.state.outgoing
         newMsg.push(msg)
         this.setState({
             outgoing: newMsg
         })
+    },
+
+
+    getInitialState: function(){
+        return {
+            incoming: [],
+            outgoing: []
+        }
     },
     componentDidMount: function(){
         this.setState({
@@ -1416,11 +1432,23 @@ var OutgoingChat = React.createClass({displayName: "OutgoingChat",
 })
 
 var ChatWindow = React.createClass({displayName: "ChatWindow",
+    componentWillUpdate: function() {
+        var node = this.getDOMNode();
+        this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
+    },
+
+    componentDidUpdate: function() {
+        if (this.shouldScrollBottom) {
+            var node = this.getDOMNode();
+            node.scrollTop = node.scrollHeight
+        }
+    },
     render: function(){
         var WindowStyle = {
-            height: '60vh',
+            height: '55vh',
             margin: '-1vh 5vw',
-            padding: '1vh'
+            padding: '1vh',
+            overflow: 'scroll'
         },
         self = this
         return (
@@ -1466,12 +1494,12 @@ var ChatInput = React.createClass({displayName: "ChatInput",
     render: function(){
         var Style = {
             position: 'absolute',
-            bottom: '-5vh',
+            bottom: '-10vh',
             left: '5vw'
         },
         SendStyle = {
             position: 'absolute',
-            bottom: '-5vh',
+            bottom: '-10vh',
             right: '0'
         }
         return (
@@ -1487,18 +1515,22 @@ var ChatInput = React.createClass({displayName: "ChatInput",
 
 var Chat = React.createClass({displayName: "Chat",
     mixins: [material],
-    getInitialState: function(){
-        return {
-            incoming: [],
-            outgoing: []
-        }
-    },
+
+
     handleSend: function(msg){
         var newMsg = this.state.outgoing
         newMsg.push(msg)
         this.setState({
             outgoing: newMsg
         })
+    },
+
+
+    getInitialState: function(){
+        return {
+            incoming: [],
+            outgoing: []
+        }
     },
     componentDidMount: function(){
         this.setState({
@@ -2617,7 +2649,7 @@ module.exports = (
     )
 )
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_577ff8d6.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_6e895325.js","/")
 },{"./App.js":1,"./Available.js":2,"./Chat.js":3,"./Contents.js":4,"./Course.js":5,"./Dash.js":6,"./Downloads.js":7,"./Favourites.js":8,"./Forums.js":9,"./Lecture.js":10,"./Login.js":11,"./Material.js":12,"./Resources.js":13,"./Settings.js":14,"./Subscribed.js":15,"./routes.js":17,"buffer":18,"material-ui":55,"oMfpAn":21,"react":365,"react-router":167,"react-tap-event-plugin":185,"react-youtube":186,"reqwest":366}],17:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
