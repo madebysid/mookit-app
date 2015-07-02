@@ -11,7 +11,8 @@ var React = require('react'),
     Favourites = require('./Favourites.js'),
     Downloads = require('./Downloads.js'),
 
-    Course = require('./Course.js')
+    Course = require('./Course.js'),
+    Lecture = require('./Lecture.js')
 
 module.exports = (
     <Route name="app" path="/" handler={App}>
@@ -24,6 +25,7 @@ module.exports = (
         <Route path="/downloads" name="downloads" handler={Downloads} />
 
         <Route path="/course/:courseId" name="course" handler={Course} />
+        <Route path="/course/:courseId/lecture/:lectureId" name="lecture" handler={Lecture} />
 
         <Redirect from="/" to="/login" />
     </Route>

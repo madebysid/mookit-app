@@ -121,24 +121,24 @@ var Course = React.createClass({
                 <div style={TitleStyle}>
                     MOOC on MOOCs
                 </div>
-                <Tabs tabItemContainerStyle={TabStyle}>
-                    <Tab label="CONTENT" style={{fontFamily: 'RobotoLight'}}>
+                <Tabs tabItemContainerStyle={TabStyle} initialSelectedIndex={0}>
+                    <Tab label="CONTENT" style={{fontSize: '0.8em', fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
                         <CourseContents expanded={expanded} repeatEntity={self.state.data}></CourseContents>
                     </Tab>
-                    <Tab label="FORUM" style={{fontFamily: 'RobotoLight'}}>
+                    <Tab label="FORUMS" style={{fontSize: '0.8em', fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
                         <div>
                             <CourseForums />
                         </div>
                     </Tab>
-                    <Tab label="RESOURCES" style={{fontFamily: 'RobotoLight'}}>
+                    <Tab label="RESOURCES" style={{fontSize: '0.8em', fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
                         <div>
                             <CourseResources />
                         </div>
                     </Tab>
-                    <Tab label="CHAT" style={{fontFamily: 'RobotoLight'}}>
+                    <Tab label="CHAT" style={{fontSize: '0.8em', fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
                         <div>
                             <CourseChat />

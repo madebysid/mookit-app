@@ -1,10 +1,10 @@
 var React = require('react'),
-    Link = require('react-router').Link,
+    Router = require('react-router'),
+    Link = Router.Link,
     mui = require('material-ui'),
     material = require('./Material.js'),
     Settings = require('./Settings.js'),
     Lecture = require('./Lecture.js'),
-    reqwest = require('reqwest'),
 
     AppBar = mui.AppBar,
     Card = mui.Card,
@@ -65,6 +65,11 @@ var CardList = React.createClass({
     handleClick: function(){
         this.props.onTouchStart()
     },
+    goToLecture: function(){
+        this.props.goToLecture(this.props.id)
+        console.log('Go')
+    },
+
     render: function() {
         var self = this,
             ListItemStyle = {
@@ -102,7 +107,7 @@ var CardList = React.createClass({
                         this.props.text.map(function(element, index){
                             return (
                                 <div>
-                                    <ListItem style={ListItemStyle} key={index}>
+                                    <ListItem style={ListItemStyle} key={index} onTouchStart={this.goToLecture}>
                                         {self.props.text[index].title}
                                         <Icon className="mdi mdi-play" style={{marginTop: '-1vh', color: '#838384', float: 'right'}} />
                                     </ListItem>
@@ -119,9 +124,15 @@ var CardList = React.createClass({
 
 
 var ExpandableListItem = React.createClass({
+    mixins: [Router.Navigation],
+
     toggle: function(){
         this.props.handleToggle(this.props.id)
     },
+    goToLecture: function(id){
+        this.transitionTo("lecture", { lectureId: id });
+    },
+
     render: function(){
         var Styles = {
             backgroundColor: 'white',
@@ -134,7 +145,7 @@ var ExpandableListItem = React.createClass({
             <div>
                 <Card zDepth={(this.props.isExpanded) ? 2 : 1} rounded={false} style={Styles}>
                     <CardText style={{padding: '0vh 3vw'}}>
-                        <ToRender onTouchStart={this.toggle} id={this.props.id} text={this.props.data}/>
+                        <ToRender goToLecture={this.goToLecture} onTouchStart={this.toggle} id={this.props.id} text={this.props.data}/>
                     </CardText>
                 </Card>
             </div>

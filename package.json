@@ -1,29 +1,35 @@
 {
-  "name": "react-material",
-  "version": "0.0.1",
-  "description": "A simple test for material-ui",
-  "main": "index.js",
+  "name": "mookit-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "gulpfile.js",
+  "dependencies": {
+    "browser-sync": "^2.7.12",
+    "browserify": "^10.2.4",
+    "gulp-batch": "^1.0.5",
+    "gulp-concat": "^2.6.0",
+    "gulp-browserify": "^0.5.1",
+    "gulp-watch": "^4.2.4",
+    "material-ui": "^0.9.2",
+    "react": "^0.13.3",
+    "react-router": "^0.13.3",
+    "react-youtube": "^4.0.0",
+    "react-tap-event-plugin": "^0.1.7",
+    "reactify": "^1.1.1",
+    "reqwest": "^1.1.5"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/madebysid/mookit-app.git"
+  },
   "author": "Siddhant Sinha",
   "license": "MIT",
-  "devDependencies": {
-    "browserify": "^10.2.4",
-    "browser-sync": "^2.7.12",
-    "gulp-browserify": "^0.5.1",
-    "gulp-batch": "^1.0.5",
-    "gulp-concat": "^2.6.0",
-    "gulp-watch": "^4.2.4",
-    "react": "^0.13.3",
-    "reactify": "^1.1.1"
+  "bugs": {
+    "url": "https://github.com/madebysid/mookit-app/issues"
   },
-  "browserify": {
-    "transform": [
-      "reactify"
-    ]
-  },
-  "dependencies": {
-    "react-router": "^0.13.3"
-  }
+  "homepage": "https://github.com/madebysid/mookit-app#readme"
 }

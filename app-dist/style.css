@@ -21,7 +21,7 @@
 body{
     padding: 0;
     margin: 0;
-    font-family: 'RobotoThin';
+    font-family: 'RobotoLight';
     overflow-x: hidden;
 }
 
@@ -101,4 +101,13 @@ img{
         -webkit-transform: translateY(15rem);
         opacity:0;
     }
+}
+
+
+.chatBubble{
+
+}
+
+.chatBubble ::after{
+    content: "ds";
 }
