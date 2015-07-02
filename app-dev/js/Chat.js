@@ -72,10 +72,12 @@ var ChatWindow = React.createClass({
 
 var ChatInput = React.createClass({
     sendMessage: function() {
-        this.props.onSend(this.state.message)
-        this.setState({
-            message: ""
-        })
+        if(this.state.message != ""){
+            this.props.onSend(this.state.message)
+            this.setState({
+                message: ""
+            })
+        }
     },
     handleTextFieldChange: function(e) {
         this.setState({

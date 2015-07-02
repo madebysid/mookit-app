@@ -136,10 +136,12 @@ var ChatWindow = React.createClass({displayName: "ChatWindow",
 
 var ChatInput = React.createClass({displayName: "ChatInput",
     sendMessage: function() {
-        this.props.onSend(this.state.message)
-        this.setState({
-            message: ""
-        })
+        if(this.state.message != ""){
+            this.props.onSend(this.state.message)
+            this.setState({
+                message: ""
+            })
+        }
     },
     handleTextFieldChange: function(e) {
         this.setState({
@@ -1474,10 +1476,12 @@ var ChatWindow = React.createClass({displayName: "ChatWindow",
 
 var ChatInput = React.createClass({displayName: "ChatInput",
     sendMessage: function() {
-        this.props.onSend(this.state.message)
-        this.setState({
-            message: ""
-        })
+        if(this.state.message != ""){
+            this.props.onSend(this.state.message)
+            this.setState({
+                message: ""
+            })
+        }
     },
     handleTextFieldChange: function(e) {
         this.setState({
@@ -2649,7 +2653,7 @@ module.exports = (
     )
 )
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_6e895325.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_e86d10e4.js","/")
 },{"./App.js":1,"./Available.js":2,"./Chat.js":3,"./Contents.js":4,"./Course.js":5,"./Dash.js":6,"./Downloads.js":7,"./Favourites.js":8,"./Forums.js":9,"./Lecture.js":10,"./Login.js":11,"./Material.js":12,"./Resources.js":13,"./Settings.js":14,"./Subscribed.js":15,"./routes.js":17,"buffer":18,"material-ui":55,"oMfpAn":21,"react":365,"react-router":167,"react-tap-event-plugin":185,"react-youtube":186,"reqwest":366}],17:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),

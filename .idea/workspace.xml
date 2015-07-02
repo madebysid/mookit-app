@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="b325350b-91e4-4129-8520-ae9e653a2196" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app-dev/js/Chat.js" afterPath="$PROJECT_DIR$/app-dev/js/Chat.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app-dist/app.js" afterPath="$PROJECT_DIR$/app-dist/app.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="mookit-app.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -78,8 +76,8 @@
       <file leaf-file-name="Chat.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app-dev/js/Chat.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.59782606">
-              <caret line="41" column="9" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
+            <state vertical-scroll-proportion="0.625">
+              <caret line="79" column="9" selection-start-line="79" selection-start-column="9" selection-end-line="79" selection-end-column="9" />
               <folding />
             </state>
           </provider>
@@ -741,8 +739,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app-dev/js/Chat.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.59782606">
-          <caret line="41" column="9" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
+        <state vertical-scroll-proportion="0.625">
+          <caret line="79" column="9" selection-start-line="79" selection-start-column="9" selection-end-line="79" selection-end-column="9" />
           <folding />
         </state>
       </provider>
