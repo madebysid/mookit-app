@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b325350b-91e4-4129-8520-ae9e653a2196" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app-dev/js/Chat.js" afterPath="$PROJECT_DIR$/app-dev/js/Chat.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app-dist/app.js" afterPath="$PROJECT_DIR$/app-dist/app.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="mookit-app.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -76,8 +78,8 @@
       <file leaf-file-name="Chat.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app-dev/js/Chat.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.625">
-              <caret line="79" column="9" selection-start-line="79" selection-start-column="9" selection-end-line="79" selection-end-column="9" />
+            <state vertical-scroll-proportion="0.27173913">
+              <caret line="123" column="66" selection-start-line="123" selection-start-column="66" selection-end-line="123" selection-end-column="66" />
               <folding />
             </state>
           </provider>
@@ -603,8 +605,8 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="150" column="0" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
           <folding>
-            <marker date="1435840172000" expanded="true" signature="-1:-1" placeholder="{...}" />
-            <marker date="1435840172000" expanded="true" signature="-1:-1" placeholder="[...]" />
+            <marker date="1435847194000" expanded="true" signature="-1:-1" placeholder="{...}" />
+            <marker date="1435847194000" expanded="true" signature="-1:-1" placeholder="[...]" />
           </folding>
         </state>
       </provider>
@@ -739,8 +741,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app-dev/js/Chat.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.625">
-          <caret line="79" column="9" selection-start-line="79" selection-start-column="9" selection-end-line="79" selection-end-column="9" />
+        <state vertical-scroll-proportion="0.27173913">
+          <caret line="123" column="66" selection-start-line="123" selection-start-column="66" selection-end-line="123" selection-end-column="66" />
           <folding />
         </state>
       </provider>

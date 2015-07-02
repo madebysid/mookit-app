@@ -52,16 +52,9 @@ var ChatWindow = React.createClass({
         return (
             <div style={WindowStyle}>
                 {
-                    this.props.incoming.map(function(element, index){
+                    this.props.messages.map(function(element, index){
                         return (
-                            <IncomingChat text={element.text} author={element.author}></IncomingChat>
-                        )
-                    })
-                }
-                {
-                    this.props.outgoing.map(function(element, index){
-                        return (
-                            <OutgoingChat text={self.props.outgoing[index]}></OutgoingChat>
+                            (self.props.messages[index].author != 'jerry') ? (<IncomingChat text={self.props.messages[index].text} author={element.author} />) : (<OutgoingChat text={self.props.messages[index].text} />)
                         )
                     })
                 }
@@ -118,23 +111,32 @@ var Chat = React.createClass({
 
 
     handleSend: function(msg){
-        var newMsg = this.state.outgoing
-        newMsg.push(msg)
+        var newMsg = this.state.messages
+        newMsg.push({text: msg, author: "jerry"})
         this.setState({
-            outgoing: newMsg
+            messages: newMsg
+        })
+    },
+    RecieveMessage: function(){
+        var newMsg = [],
+            self = this
+        newMsg = self.state.messages
+        newMsg.push({text: "Hello de lo!", author: "Major Lazer"})
+        self.setState({
+            messages: newMsg
         })
     },
 
 
     getInitialState: function(){
         return {
-            incoming: [],
-            outgoing: []
+            messages: []
         }
     },
     componentDidMount: function(){
+        var self = this
         this.setState({
-            incoming: [{
+            messages: [{
                 text: "Welcome to the annual villains conference! :|",
                 author: "mojo jojo"
             },{
@@ -142,6 +144,12 @@ var Chat = React.createClass({
                 author: "professor evil"
             }]
         })
+        var iId = setInterval(function(){
+            self.RecieveMessage()
+        },4000)
+        setTimeout(function(){
+            clearInterval(iId)
+        },12000)
     },
 
     render: function(){
@@ -156,7 +164,7 @@ var Chat = React.createClass({
         return (
             <div>
                 <div style={spaceStyle}></div>
-                <ChatWindow incoming={this.state.incoming} outgoing={this.state.outgoing}></ChatWindow>
+                <ChatWindow messages={this.state.messages}></ChatWindow>
                 <ChatInput onSend={this.handleSend} style={InputStyle}></ChatInput>
             </div>
         )

@@ -116,16 +116,9 @@ var ChatWindow = React.createClass({displayName: "ChatWindow",
         return (
             React.createElement("div", {style: WindowStyle}, 
                 
-                    this.props.incoming.map(function(element, index){
+                    this.props.messages.map(function(element, index){
                         return (
-                            React.createElement(IncomingChat, {text: element.text, author: element.author})
-                        )
-                    }), 
-                
-                
-                    this.props.outgoing.map(function(element, index){
-                        return (
-                            React.createElement(OutgoingChat, {text: self.props.outgoing[index]})
+                            (self.props.messages[index].author != 'jerry') ? (React.createElement(IncomingChat, {text: self.props.messages[index].text, author: element.author})) : (React.createElement(OutgoingChat, {text: self.props.messages[index].text}))
                         )
                     })
                 
@@ -182,23 +175,32 @@ var Chat = React.createClass({displayName: "Chat",
 
 
     handleSend: function(msg){
-        var newMsg = this.state.outgoing
-        newMsg.push(msg)
+        var newMsg = this.state.messages
+        newMsg.push({text: msg, author: "jerry"})
         this.setState({
-            outgoing: newMsg
+            messages: newMsg
+        })
+    },
+    RecieveMessage: function(){
+        var newMsg = [],
+            self = this
+        newMsg = self.state.messages
+        newMsg.push({text: "Hello de lo!", author: "Major Lazer"})
+        self.setState({
+            messages: newMsg
         })
     },
 
 
     getInitialState: function(){
         return {
-            incoming: [],
-            outgoing: []
+            messages: []
         }
     },
     componentDidMount: function(){
+        var self = this
         this.setState({
-            incoming: [{
+            messages: [{
                 text: "Welcome to the annual villains conference! :|",
                 author: "mojo jojo"
             },{
@@ -206,6 +208,12 @@ var Chat = React.createClass({displayName: "Chat",
                 author: "professor evil"
             }]
         })
+        var iId = setInterval(function(){
+            self.RecieveMessage()
+        },4000)
+        setTimeout(function(){
+            clearInterval(iId)
+        },12000)
     },
 
     render: function(){
@@ -220,7 +228,7 @@ var Chat = React.createClass({displayName: "Chat",
         return (
             React.createElement("div", null, 
                 React.createElement("div", {style: spaceStyle}), 
-                React.createElement(ChatWindow, {incoming: this.state.incoming, outgoing: this.state.outgoing}), 
+                React.createElement(ChatWindow, {messages: this.state.messages}), 
                 React.createElement(ChatInput, {onSend: this.handleSend, style: InputStyle})
             )
         )
@@ -1456,16 +1464,9 @@ var ChatWindow = React.createClass({displayName: "ChatWindow",
         return (
             React.createElement("div", {style: WindowStyle}, 
                 
-                    this.props.incoming.map(function(element, index){
+                    this.props.messages.map(function(element, index){
                         return (
-                            React.createElement(IncomingChat, {text: element.text, author: element.author})
-                        )
-                    }), 
-                
-                
-                    this.props.outgoing.map(function(element, index){
-                        return (
-                            React.createElement(OutgoingChat, {text: self.props.outgoing[index]})
+                            (self.props.messages[index].author != 'jerry') ? (React.createElement(IncomingChat, {text: self.props.messages[index].text, author: element.author})) : (React.createElement(OutgoingChat, {text: self.props.messages[index].text}))
                         )
                     })
                 
@@ -1522,23 +1523,32 @@ var Chat = React.createClass({displayName: "Chat",
 
 
     handleSend: function(msg){
-        var newMsg = this.state.outgoing
-        newMsg.push(msg)
+        var newMsg = this.state.messages
+        newMsg.push({text: msg, author: "jerry"})
         this.setState({
-            outgoing: newMsg
+            messages: newMsg
+        })
+    },
+    RecieveMessage: function(){
+        var newMsg = [],
+            self = this
+        newMsg = self.state.messages
+        newMsg.push({text: "Hello de lo!", author: "Major Lazer"})
+        self.setState({
+            messages: newMsg
         })
     },
 
 
     getInitialState: function(){
         return {
-            incoming: [],
-            outgoing: []
+            messages: []
         }
     },
     componentDidMount: function(){
+        var self = this
         this.setState({
-            incoming: [{
+            messages: [{
                 text: "Welcome to the annual villains conference! :|",
                 author: "mojo jojo"
             },{
@@ -1546,6 +1556,12 @@ var Chat = React.createClass({displayName: "Chat",
                 author: "professor evil"
             }]
         })
+        var iId = setInterval(function(){
+            self.RecieveMessage()
+        },4000)
+        setTimeout(function(){
+            clearInterval(iId)
+        },12000)
     },
 
     render: function(){
@@ -1560,7 +1576,7 @@ var Chat = React.createClass({displayName: "Chat",
         return (
             React.createElement("div", null, 
                 React.createElement("div", {style: spaceStyle}), 
-                React.createElement(ChatWindow, {incoming: this.state.incoming, outgoing: this.state.outgoing}), 
+                React.createElement(ChatWindow, {messages: this.state.messages}), 
                 React.createElement(ChatInput, {onSend: this.handleSend, style: InputStyle})
             )
         )
@@ -2653,7 +2669,7 @@ module.exports = (
     )
 )
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_e86d10e4.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_7d49209d.js","/")
 },{"./App.js":1,"./Available.js":2,"./Chat.js":3,"./Contents.js":4,"./Course.js":5,"./Dash.js":6,"./Downloads.js":7,"./Favourites.js":8,"./Forums.js":9,"./Lecture.js":10,"./Login.js":11,"./Material.js":12,"./Resources.js":13,"./Settings.js":14,"./Subscribed.js":15,"./routes.js":17,"buffer":18,"material-ui":55,"oMfpAn":21,"react":365,"react-router":167,"react-tap-event-plugin":185,"react-youtube":186,"reqwest":366}],17:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
