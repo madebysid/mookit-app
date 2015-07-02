@@ -18,7 +18,7 @@ module.exports = (
         <Route path="/login" name="login" handler={Login} />
         <Route path="/dash" name="dash" handler={Dash} />
 
-        <Route path="/available" name="available" handler={Available} />
+        <Route path="/available" name="available" handler={Course} /> /*TODO: Change this later*/
         <Route path="/subscribed" name="subscribed" handler={Subscribed} />
         <Route path="/favourites" name="favourites" handler={Favourites} />
         <Route path="/downloads" name="downloads" handler={Downloads} />

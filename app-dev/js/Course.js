@@ -2,120 +2,21 @@ var React = require('react'),
     Link = require('react-router').Link,
     mui = require('material-ui'),
     material = require('./Material.js'),
+    CourseContents = require('./Contents.js'),
+    Lecture = require('./Lecture.js'),
+    CourseForums = require('./Forums.js'),
+    CourseResources = require('./Resources.js'),
+    CourseChat = require('./Chat.js'),
+    Settings = require('./Settings.js'),
     reqwest = require('reqwest'),
+
     AppBar = mui.AppBar,
-    Card = mui.Card,
-    CardText = mui.CardText,
     Tabs = mui.Tabs,
     Tab = mui.Tab,
     IconButton = mui.IconButton,
-    List = mui.List,
-    ListItem = mui.ListItem,
-    ListDivider = mui.ListDivider
-
-React.initializeTouchEvents(true)
+    Menu = mui.Menu
 
 var expanded = []
-
-var NormalText = React.createClass({
-    handleClick: function(){
-        this.props.onTouchStart()
-    },
-    render: function(){
-        return (
-            <div onTouchStart={this.handleClick} style={{width: '100%'}}>
-                {this.props.text[0].week}
-            </div>
-        )
-    }
-})
-
-var CardList = React.createClass({
-    handleClick: function(){
-        this.props.onTouchStart()
-    },
-    render: function() {
-        var self = this
-        return (
-            <div>
-                <h3 onTouchStart={self.handleClick}>
-                    {self.props.text[0].week}
-                </h3>
-                <ListDivider />
-                <List>
-                    {
-                        this.props.text.map(function(element, index){
-                            return (
-                                <div>
-                                    <ListItem>{self.props.text[index].title}</ListItem>
-                                </div>
-                            )
-                        })
-                    }
-                </List>
-            </div>
-        )
-    }
-});
-
-
-var ExpandableListItem = React.createClass({
-    toggle: function(){
-        this.props.handleToggle(this.props.id)
-    },
-    render: function(){
-        var Styles = {
-            backgroundColor: 'white',
-            margin: (this.props.isExpanded) ? '5vh 0vw' : '0vh 5vw',
-            transitionDuration: '0.3s'
-        }
-
-        var ToRender = expanded[this.props.id] ? CardList : NormalText
-        return (
-            <div>
-                <Card zDepth={1} rounded={false} style={Styles}>
-                    <CardText>
-                        <ToRender onTouchStart={this.toggle} id={this.props.id} text={this.props.data}/>
-                    </CardText>
-                </Card>
-            </div>
-        )
-    }
-})
-
-var ExpandableCourseList = React.createClass({
-    toggleCard: function(cardId){
-        this.state.expanded.forEach(function(element, index){
-            expanded[index] = (index == cardId) ? !expanded[index] : false
-        })
-        this.setState({
-            expanded: expanded
-        })
-    },
-
-    getInitialState: function(){
-        return {
-            expanded: expanded
-        }
-    },
-    render: function(){
-        var self = this
-        var spaceStyle = {
-            width: '100%',
-            height: '15px'
-        }
-        return (
-            <div>
-                <div style={spaceStyle}></div>
-                {this.props.repeatEntity.map(function(element, index) {
-                        return (
-                            <ExpandableListItem isExpanded={self.state.expanded[index]} handleToggle={self.toggleCard} key={index} id={index} data={element} />
-                        )}
-                )}
-            </div>
-        )
-    }
-})
 
 var Course = React.createClass({
 
@@ -141,10 +42,21 @@ var Course = React.createClass({
 
         return newData
     },
+    menuTapHandler: function(){
+        this.setState({
+            isMenuVisible: true
+        })
+    },
+    menuItemTapHandler: function(e, index, menuItem){
+        this.setState({
+            isMenuVisible: false
+        })
+    },
 
     getInitialState: function(){
         return {
-            data: []
+            data: [],
+            isMenuVisible: false
         }
     },
 
@@ -177,7 +89,7 @@ var Course = React.createClass({
             fontSize: '1.3em',
             fontFamily: 'RobotoLight',
             color: 'white',
-            paddingLeft: '2.5em',
+            paddingLeft: '2.8em',
             paddingTop: '0.5em',
             paddingBottom: '0.75em'
         },
@@ -185,36 +97,51 @@ var Course = React.createClass({
             backgroundColor: "#238743",
             height: '7px',
             width: '100%'
+        },
+        MenuStyle = {
+            position: 'absolute',
+            right: '0',
+            fontSize: '1em'
         }
+
+        var numberMenuItems = [
+            { payload: '1', text: 'About'},
+            { payload: '2', text: 'Settings'}
+        ];
+
         return (
             <div>
                 <AppBar style={AppBarStyle} onLeftIconButtonTouchTap={this.leftTouch} zDepth={0} iconClassNameLeft="mdi mdi-arrow-left" iconClassNameRight="mdi mdi-bell">
-                    <IconButton iconClassName="mdi mdi-dots-vertical" style={{marginTop: '7px', marginLeft: '13px', marginRight: '-3px'}} iconStyle={{color: 'white'}}/>
+                    <IconButton iconClassName="mdi mdi-dots-vertical" style={{marginTop: '8px', marginLeft: '13px', marginRight: '-3px'}} iconStyle={{color: 'white'}} onTouchStart={self.menuTapHandler}>
+
+                    </IconButton>
+                    <Menu style={MenuStyle} hideable={true} visible={this.state.isMenuVisible} menuItems={numberMenuItems} onItemTap={this.menuItemTapHandler}/>
                 </AppBar>
+
                 <div style={TitleStyle}>
                     MOOC on MOOCs
                 </div>
                 <Tabs tabItemContainerStyle={TabStyle}>
                     <Tab label="CONTENT" style={{fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
-                        <ExpandableCourseList repeatEntity={self.state.data}></ExpandableCourseList>
+                        <CourseContents expanded={expanded} repeatEntity={self.state.data}></CourseContents>
                     </Tab>
                     <Tab label="FORUM" style={{fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
                         <div>
-                            Tab 2
+                            <CourseForums />
                         </div>
                     </Tab>
                     <Tab label="RESOURCES" style={{fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
                         <div>
-                            Tab 3
+                            <CourseResources />
                         </div>
                     </Tab>
                     <Tab label="CHAT" style={{fontFamily: 'RobotoLight'}}>
                         <div style={SpaceStyle} />
                         <div>
-                            Tab 4
+                            <CourseChat />
                         </div>
                     </Tab>
                 </Tabs>
