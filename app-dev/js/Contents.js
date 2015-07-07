@@ -53,7 +53,7 @@ var NormalText = React.createClass({
         return (
             <div onTouchStart={this.handleClick} style={{width: '100%'}}>
                 <img style={ImgStyle} src={'img/' + this.props.text[0].week.slice(5) + '.png'}/>
-                <p style={WeekTitleStyle}>Introduction</p>
+                <p style={WeekTitleStyle}>{this.props.text[0].topic}</p>
                 <p style={WeekNumberStyle}>{this.props.text[0].week}</p>
                 <p style={WeekLengthStyle}>({this.props.text.length} Lectures)</p>
             </div>
@@ -65,9 +65,9 @@ var CardList = React.createClass({
     handleClick: function(){
         this.props.onTouchStart()
     },
-    goToLecture: function(){
-        this.props.goToLecture(this.props.id)
-        console.log('Go')
+    goToLecture: function(lid){
+        console.log(this.props.text[lid])
+        //this.props.goToLecture(this.props.text[lid])
     },
 
     render: function() {
@@ -99,15 +99,15 @@ var CardList = React.createClass({
             <div>
                 <img style={ImgStyle} src={'img/' + this.props.text[0].week.slice(5) + '.png'}/>
                 <p style={WeekTitleStyle} onTouchStart={self.handleClick}>
-                    Introduction
+                    {this.props.text[0].topic}
                 </p>
                 <p style={WeekNumberStyle}>{this.props.text[0].week}</p>
-                <List>
+                <List onTouchStart={this.goToLecture}>
                     {
                         this.props.text.map(function(element, index){
                             return (
                                 <div>
-                                    <ListItem style={ListItemStyle} key={index} onTouchStart={this.goToLecture}>
+                                    <ListItem style={ListItemStyle} key={index} onTouchStart={self.goToLecture.bind(this,index)}>
                                         {self.props.text[index].title}
                                         <Icon className="mdi mdi-play" style={{marginTop: '-1vh', color: '#838384', float: 'right'}} />
                                     </ListItem>
@@ -129,8 +129,9 @@ var ExpandableListItem = React.createClass({
     toggle: function(){
         this.props.handleToggle(this.props.id)
     },
-    goToLecture: function(id){
-        this.transitionTo("lecture", { lectureId: id });
+    goToLecture: function(lectureObj){
+        console.log(lectureObj)
+        //Go to lecture page with id
     },
 
     render: function(){
@@ -168,6 +169,7 @@ var CourseContents = React.createClass({
             expanded: this.props.expanded
         }
     },
+
     render: function(){
         var self = this
         var spaceStyle = {

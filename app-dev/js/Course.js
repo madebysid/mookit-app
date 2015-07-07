@@ -1,14 +1,18 @@
 var React = require('react'),
-    Link = require('react-router').Link,
+    Router = require('react-router'),
+    Link = Router.Link,
     mui = require('material-ui'),
     material = require('./Material.js'),
+
     CourseContents = require('./Contents.js'),
     Lecture = require('./Lecture.js'),
     CourseForums = require('./Forums.js'),
     CourseResources = require('./Resources.js'),
     CourseChat = require('./Chat.js'),
     Settings = require('./Settings.js'),
-    reqwest = require('reqwest'),
+
+    request = require('superagent'),
+    links = require('./Links.js')
 
     AppBar = mui.AppBar,
     Tabs = mui.Tabs,
@@ -20,7 +24,7 @@ var expanded = []
 
 var Course = React.createClass({
 
-    mixins: [material],
+    mixins: [material, Router.Navigation],
 
     sortByWeeks: function(data){
         var newData = [],
@@ -52,6 +56,9 @@ var Course = React.createClass({
             isMenuVisible: false
         })
     },
+    leftTouch: function(){
+        this.transitionTo("/dash")
+    },
 
     getInitialState: function(){
         return {
@@ -62,15 +69,25 @@ var Course = React.createClass({
 
     componentWillMount: function(){
         var self = this;
-        reqwest({
-            url: 'courseContents.json',
-            method: 'GET',
-            success: function(data){
+        request
+            .get(links.courseJSON)
+            .set('token', links.token)
+            .set('uid', '4088')
+            .end(function(err, res){
+                console.log('D')
                 self.setState({
-                    data: self.sortByWeeks(data)
+                    data: self.sortByWeeks(res.body)
                 })
-            }
-        })
+            })
+        //reqwest({
+        //    url: 'courseContents.json',
+        //    method: 'GET',
+        //    success: function(data){
+        //        self.setState({
+        //            data: self.sortByWeeks(data)
+        //        })
+        //    }
+        //})
     },
 
     render: function(){

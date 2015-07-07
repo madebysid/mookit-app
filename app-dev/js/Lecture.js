@@ -2,8 +2,10 @@ var React = require('react'),
     Router = require('react-router'),
     mui = require('material-ui'),
     material = require('./Material.js'),
-    reqwest = require('reqwest'),
     Video = require('react-youtube'),
+
+    request = require('superagent'),
+    links = require('./Links.js'),
 
     AppBar = mui.AppBar,
     IconButton = mui.IconButton,
@@ -101,7 +103,6 @@ var CommentsList = React.createClass({
         this.setState({
             expanded : expanded
         })
-        console.log(this.state.expanded)
     },
 
     getInitialState: function(){
@@ -113,18 +114,19 @@ var CommentsList = React.createClass({
 
     componentWillMount: function(){
         var self = this
-        reqwest({
-            url: './comments.json',
-            method: 'GET',
-            success: function(data){
+        request
+            .get(links.commentsJSON)
+            .set('token', links.token)
+            .set('uid', '4088')
+            .end(function(err, res){
                 self.setState({
-                    comments: data
+                    comments: res.body
                 })
-                data.forEach(function(element, index){
+                res.body.forEach(function(element, index){
                     expanded[index] = false
                 })
-            }
-        })
+                //self.props.loader(false)
+            })
     },
 
     render: function(){
@@ -174,6 +176,7 @@ var Lecture = React.createClass({
     getInitialState: function(){
         return {
             isMenuVisible: false,
+            lecture: {},
             comments: []
         }
     },

@@ -1,6 +1,7 @@
 var React = require('react'),
     Router = require('react-router')
     routes = require('./routes.js'),
+    Progress = require('./Progress.js'),
     RouteHandler = Router.RouteHandler
 
 var App = React.createClass({

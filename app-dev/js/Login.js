@@ -1,7 +1,12 @@
 var React = require('react'),
     mui = require('material-ui'),
-    Link = require('react-router').Link,
+    Router = require('react-router'),
     material = require('./Material.js'),
+
+    links = require('./Links.js'),
+    Progress = require('./Progress.js'),
+    request = require('superagent'),
+
     TextField= mui.TextField,
     FlatButton = mui.FlatButton,
     Tabs = mui.Tabs,
@@ -15,10 +20,34 @@ var React = require('react'),
 *
 * */
 
+
+
+var SignUpForm = React.createClass({
+    render: function(){
+        return (
+            <div>
+                Sign Up Form
+            </div>
+        )
+    }
+})
+
 var LoginForm = React.createClass({
 
+    mixins: [Router.Navigation, Progress.Toggle],
+
     loginDude: function(){
-        window.location.hash = "/Dash"
+        var self = this
+        this.props.loader(true)
+
+        request
+            .get(links.login)
+            .set('token', links.token)
+            .set('uid', '4088')
+            .end(function(err, res){
+                window.location.hash = "/Dash"
+                self.props.loader(false)
+            })
     },
 
     render: function(){
@@ -44,19 +73,7 @@ var LoginForm = React.createClass({
                 <TextField style={textStyle} floatingLabelText="Password">
                     <input type="password"/>
                 </TextField>
-                <Link to="/dash">
-                    <FlatButton style={buttonStyle} label="Login" />
-                </Link>
-            </div>
-        )
-    }
-})
-
-var SignUpForm = React.createClass({
-    render: function(){
-        return (
-            <div>
-                Sign Up Form
+                <FlatButton style={buttonStyle} onTouchStart={this.loginDude} label="Login" />
             </div>
         )
     }
@@ -64,6 +81,18 @@ var SignUpForm = React.createClass({
 
 var Login = React.createClass({
     mixins: [material],
+
+    toggleLoader: function(value){
+        this.setState({
+            showLoader: value
+        })
+    },
+
+    getInitialState: function(){
+        return {
+            showLoader: false
+        }
+    },
 
     render: function(){
         var CardStyle = {
@@ -80,13 +109,15 @@ var Login = React.createClass({
             opacity: '1',
             overflow: 'hidden'
         }
+
         return (
             <div>
+                <Progress show={this.state.showLoader}/>
                 <Card style={CardStyle}>
                     <CardText>
                         <Tabs>
                             <Tab label="Login" style={tabStyle}>
-                                <LoginForm></LoginForm>
+                                <LoginForm loader={this.toggleLoader}></LoginForm>
                             </Tab>
                             <Tab label="Sign Up" style={tabStyle}>
                                 <SignUpForm></SignUpForm>
