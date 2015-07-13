@@ -10,35 +10,17 @@ var paths = {
     html: 'app-dev/index.html',
     js: 'app-dev/js/**/*.js',
     css: 'app-dev/css/*.css',
-    img: ['app-dev/img/*.png', 'app-dev/img/*.jpg', 'app-dev/img/*.svg'],
     all: ['app-dev/index.html' , 'app-dev/js/**/*.js' , 'app-dev/css/*.css'],
-    dist: 'app-dist',
-    distImg: 'app-dist/img'
+    dist: 'app-dist'
 }
 
-gulp.task('refreshServer', function() {
-    browserSync.reload()
-});
-
-gulp.task('startServer', function(){
-    browserSync.init({
-        server: {
-            baseDir: "app-dist"
-        }
-    });
-})
-
 gulp.task('main', function(){
-
     //Copy HTML
     gulp.src(paths.html)
         .pipe(gulp.dest(paths.dist))
     //Copy CSS
     gulp.src(paths.css)
         .pipe(gulp.dest(paths.dist))
-    //Copy Assets
-    gulp.src(paths.img)
-        .pipe(gulp.dest(paths.distImg))
 
     //Concatenate and browserify all files
     gulp.src(paths.js)
@@ -48,10 +30,17 @@ gulp.task('main', function(){
             transform: reactify
         }))
         .pipe(gulp.dest(paths.dist))
+        .on('end', function(){
+            browserSync.reload()
+        })
 
 })
 
 gulp.task('default', function(){
-    //gulp.run('startServer')
-    gulp.watch(paths.all, ['main'])
+    browserSync.init({
+        server: {
+            baseDir: "app-dist"
+        }
+    });
+    gulp.watch(paths.all, ['main']);
 })

@@ -1,9 +1,4 @@
 @font-face{
-    font-family: 'RobotoThin';
-    src: url('fonts/Roboto-Thin.ttf')
-}
-
-@font-face{
     font-family: 'RobotoBold';
     src: url('fonts/Roboto-Bold.ttf')
 }
@@ -18,96 +13,52 @@
     src: url('fonts/Roboto-Regular.ttf')
 }
 
-body{
+body {
     padding: 0;
     margin: 0;
     font-family: 'RobotoLight';
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
-.headerBar > h1{
-    font-size: 0.5em;
+.chatContainer:after{
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    right: 115px;
+    top: 44px;
+    border: 8px solid;
+    border-color: transparent transparent #fff transparent;
 }
 
-
-
-
-
-
-
-
-a{
-    text-decoration: none;
+.notificationContainer:after{
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    right: 65px;
+    top: 44px;
+    border: 8px solid;
+    border-color: transparent transparent #fff transparent;
 }
 
-img{
-    max-width: 100%;
+.incomingMsg:before{
+    content: ' ';
+    position: absolute;
+    left: 64px;
+    margin-top: 0px;
+    width: 0;
+    height: 0;
+    border: 8px solid;
+    border-color: transparent #EDECEC transparent transparent;
 }
 
-.cardImg{
-    right: 0;
-    max-width: 20%;
-    min-width: 20%;
-    margin: auto;
-}
-
-.cardAvailable{
-    margin-top: 10vh;
-    max-width: 40%;
-    min-width: 40%;
-    height: 15vh;
-}
-
-.cardFavourites{
-    margin-top: 2vh;
-    height: 6vh;
-}
-
-.cardSubscribed{
-    margin-top: 3vh;
-    height: 6vh;
-}
-
-.cardDownloads{
-    margin-top: 2vh;
-    height: 10vh;
-    max-width: 15vw;
-    min-width: 15vw;
-}
-
-@keyframes fly-in-from-left {
-    from {
-        transform: translateY(15rem) rotate(15deg);
-        opacity:0;
-    }
-}
-
-@-webkit-keyframes fly-in-from-left {
-    from {
-        -webkit-transform: translateY(15rem) rotate(15deg);
-        opacity:0;
-    }
-}
-
-@keyframes fly-in-from-bottom {
-    from {
-        transform: translateY(15rem);
-        opacity:0;
-    }
-}
-
-@-webkit-keyframes fly-in-from-bottom {
-    from {
-        -webkit-transform: translateY(15rem);
-        opacity:0;
-    }
-}
-
-
-.chatBubble{
-
-}
-
-.chatBubble ::after{
-    content: "ds";
+.outgoingMsg:before{
+    content: ' ';
+    position: absolute;
+    right: 64px;
+    width: 0;
+    height: 0;
+    border: 8px solid;
+    border-color: transparent transparent transparent #378E43;
 }

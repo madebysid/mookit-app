@@ -3,30 +3,29 @@ var React = require('react'),
     Route = Router.Route,
     Redirect = Router.Redirect,
 
-    App = require('./App.js'),
-    Dash = require('./Dash.js'),
-    Login = require('./Login.js'),
-    Available = require('./Available.js'),
-    Subscribed = require('./Subscribed.js'),
-    Favourites = require('./Favourites.js'),
-    Downloads = require('./Downloads.js'),
+    App = require('./app.js'),
+    Login = require('./login.js'),
+    Course = require('./course.js'),
+    Dash = require('./dash.js'),
+    Lecture = require('./lecture.js'),
+    Tutorial = require('./tutorial.js')
 
-    Course = require('./Course.js'),
-    Lecture = require('./Lecture.js')
+var routes = (
 
-module.exports = (
-    <Route name="app" path="/" handler={App}>
-        <Route path="/login" name="login" handler={Login} />
-        <Route path="/dash" name="dash" handler={Dash} />
+    <Route handler={App}>
+        <Route path="/tutorial" handler={Tutorial}></Route>
 
-        <Route path="/available" name="available" handler={Course} /> /*TODO: Change this later*/
-        <Route path="/subscribed" name="subscribed" handler={Subscribed} />
-        <Route path="/favourites" name="favourites" handler={Favourites} />
-        <Route path="/downloads" name="downloads" handler={Downloads} />
-
-        <Route path="/course/:courseId" name="course" handler={Course} />
-        <Route path="/course/:courseId/lecture/:lectureId" name="lecture" handler={Lecture} />
+        <Route path="/course" handler={Course} />
+        <Route path="/login" handler={Login}/>
+        <Route path="/dash" handler={Dash}/>
 
         <Redirect from="/" to="/login" />
     </Route>
 )
+
+Router.run(routes, Router.HashLocation, function(Root){
+    React.render(
+        <Root />,
+        document.body
+    )
+})
