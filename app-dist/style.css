@@ -1,0 +1,64 @@
+@font-face{
+    font-family: 'RobotoBold';
+    src: url('fonts/Roboto-Bold.ttf')
+}
+
+@font-face{
+    font-family: 'RobotoLight';
+    src: url('fonts/Roboto-Light.ttf')
+}
+
+@font-face{
+    font-family: 'RobotoRegular';
+    src: url('fonts/Roboto-Regular.ttf')
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: 'RobotoLight';
+    overflow: hidden;
+}
+
+.chatContainer:after{
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    right: 115px;
+    top: 44px;
+    border: 8px solid;
+    border-color: transparent transparent #fff transparent;
+}
+
+.notificationContainer:after{
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    right: 65px;
+    top: 44px;
+    border: 8px solid;
+    border-color: transparent transparent #fff transparent;
+}
+
+.incomingMsg:before{
+    content: ' ';
+    position: absolute;
+    left: 64px;
+    margin-top: 0px;
+    width: 0;
+    height: 0;
+    border: 8px solid;
+    border-color: transparent #EDECEC transparent transparent;
+}
+
+.outgoingMsg:before{
+    content: ' ';
+    position: absolute;
+    right: 64px;
+    width: 0;
+    height: 0;
+    border: 8px solid;
+    border-color: transparent transparent transparent #378E43;
+}
