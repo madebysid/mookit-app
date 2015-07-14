@@ -1,5 +1,5 @@
 # MooKIT
-### Making teaching as easy as learning
+Making teaching as easy as learning
 
 ![MooKIT](./heroImg.png)
 
