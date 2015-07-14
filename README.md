@@ -4,5 +4,4 @@
 
 ### Previewing:
 1. Install Gulp CLI
-2. Run gulp with the default task
-`gulp`
+2. Run gulp with the default task: `gulp`
