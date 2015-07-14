@@ -1,35 +1,52 @@
 var React = require('react'),
     mui = require('material-ui'),
     material = require('./material.js'),
-    links = require('./links.js'),
     superagent = require('superagent'),
     Router = require('react-router'),
+    Offline = require('./offline.js'),
 
     Card = mui.Card,
     CardText = mui.CardText,
     FlatButton = mui.FlatButton,
     RaisedButton = mui.RaisedButton,
-    TextField = mui.TextField
+    TextField = mui.TextField,
+    LinearProgress = mui.LinearProgress,
+    Dialog = mui.Dialog
 
 module.exports = React.createClass({
-    mixins: [material, Router.Navigation],
+    mixins: [material, Router.Navigation, React.addons.LinkedStateMixin],
 
     login: function(){
         //var username = this.refs.username.getValue()
-        //var password = this.refs.password.getValue()
-        var url = links.loginMain + "/api/user/login.json";
-        var self = this
+        var url = localStorage.getItem('loginUrl') + "/api/user/login.json";
+        var self = this,
+            username = this.state.username,
+            password = this.state.password
+        self.setState({
+            loading: true
+        })
         superagent
             .post(url)
             .type('form')
             .send({
-                username: 'user',
-                password: '1'
+                username: username,
+                password: password
             })
+            .timeout(10000)
             .end(function(err, res){
-                console.log(res)
-                if(err)
-                    console.log('Wrong')
+                self.setState({
+                    loading: false
+                })
+                if(err){
+                    if(err.timeout == 10000 || err.status == 106 || err.status == 0) {
+                        self.setState({
+                            offline: true
+                        })
+                    }
+                    else if(err.status == 403 || err.status == 401){
+                        self.refs.ErrorDialog.show()
+                    }
+                }
                 else {
                     localStorage.setItem('token', res.body.token);
                     localStorage.setItem('uid', res.body.uid);
@@ -37,6 +54,20 @@ module.exports = React.createClass({
                 }
 
             })
+    },
+    passUpdate: function(e){
+        this.setState({
+            password: e.target.value
+        })
+    },
+
+    getInitialState: function(){
+        return {
+            username: '',
+            password: '',
+            loading: false,
+            offline: false
+        }
     },
 
     render: function(){
@@ -100,19 +131,38 @@ module.exports = React.createClass({
             float: 'right',
             marginRight: '60px',
             marginTop: '20px'
-        }
+        },
+        standardActions = [
+            { text: 'Okay' },
+        ];
         return (
             <div>
+                {
+                    this.state.offline ? <Offline /> : null
+                }
                 <div style={{backgroundColor: '#EDECEC'}}>
                     <Card style={CardStyle}>
                         <CardText>
                             <img src="img/logo.svg" style={LogoStyle}/>
 
-                            <TextField ref="username" style={TextFieldStyle} floatingLabelText="Username"></TextField>
-                            <TextField ref="password" style={TextFieldStyle} floatingLabelText="Password">
-                                <input type="password" />
+                            <TextField
+                                style={TextFieldStyle}
+                                floatingLabelText="Username"
+                                valueLink={this.linkState('username')}/>
+                            <TextField
+                                style={TextFieldStyle}
+                                hintText="Password"
+                                floatingLabelText="Password"
+                                onChange={this.passUpdate}>
+                                <input type="password"/>
                             </TextField>
-                            <FlatButton onTouchEnd={this.login} style={LoginStyle} label="Login"></FlatButton>
+                            <FlatButton onTouchEnd={this.login} style={LoginStyle}>
+                                {
+                                    this.state.loading
+                                    ? <LinearProgress mode="indeterminate"  />
+                                    : "Login"
+                                }
+                            </FlatButton>
 
                             <div style={MoreTextStyle}>
                                 or sign in using
@@ -124,6 +174,13 @@ module.exports = React.createClass({
                         </CardText>
                     </Card>
                 </div>
+
+                <Dialog
+                    title="Error"
+                    actions={standardActions}
+                    ref="ErrorDialog">
+                    Please check username and/or password
+                </Dialog>
 
                 <div style={SignUpContainer}>
                     Don't have an account yet? <br />

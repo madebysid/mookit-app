@@ -62,3 +62,86 @@ body {
     border: 8px solid;
     border-color: transparent transparent transparent #378E43;
 }
+
+
+
+/*
+    ANIMATIONS
+*/
+
+
+.cardAnim-appear{
+    animation: cardAnim 0.3s;
+}
+
+@keyframes cardAnim {
+    from {
+        opacity: 0;
+        transform: translateY(100px);
+    }
+}
+
+.cardOpen-appear{
+    -webkit-animation-name: cardOpen;
+    -moz-animation-name: cardOpen;
+    -o-animation-name: cardOpen;
+    animation-name: cardOpen;
+    -webkit-animation-duration: 0.3s;
+    -moz-animation-duration: 0.3s;
+    -o-animation-duration: 0.3s;
+    animation-duration: 0.3s;
+}
+
+@keyframes cardOpen {
+    from {
+        opacity: 0;
+        transform: translateY(100vh);
+    }
+}
+
+.topics-appear{
+    -webkit-animation-name: cardAnim;
+    -moz-animation-name: cardAnim;
+    -o-animation-name: cardAnim;
+    animation-name: cardAnim;
+    -webkit-animation-duration: 0.3s;
+    -moz-animation-duration: 0.3s;
+    -o-animation-duration: 0.3s;
+    animation-duration: 0.3s;
+}
+
+.topicsOpen-appear{
+    -webkit-animation-name: topicOpenAnim;
+    -moz-animation-name: topicOpenAnim;
+    -o-animation-name: topicOpenAnim;
+    animation-name: topicOpenAnim;
+    -webkit-animation-duration: 0.3s;
+    -moz-animation-duration: 0.3s;
+    -o-animation-duration: 0.3s;
+    animation-duration: 0.3s;
+}
+
+@keyframes topicOpenAnim {
+    from {
+        transform: translateY(100vh);
+    }
+}
+
+@keyframes flyInFromBottom {
+    0%{
+        opacity: 0;
+        transform: translateY(100vh);
+    }
+    100%{
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    0%{
+        opacity: 0;
+    }
+    100%{
+        opacity: 1;
+    }
+}

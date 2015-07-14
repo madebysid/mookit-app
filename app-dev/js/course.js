@@ -2,7 +2,6 @@ var React = require('react'),
     mui = require('material-ui'),
     material = require('./material.js'),
     Router = require('react-router'),
-    links = require('./links.js'),
     superagent = require('superagent'),
 
     Forums = require('./forums.js'),
@@ -10,6 +9,7 @@ var React = require('react'),
     Resources = require('./resources.js'),
     Notifications = require('./notifications.js'),
     Chat = require('./chat.js'),
+    Offline = require('./offline.js'),
 
     AppBar = mui.AppBar,
     Tabs = mui.Tabs,
@@ -17,7 +17,8 @@ var React = require('react'),
     IconButton = mui.IconButton,
     IconMenu = mui.IconMenu,
     MenuItem = require('material-ui/lib/menus/menu-item'),
-    CircularProgress = mui.CircularProgress
+    CircularProgress = mui.CircularProgress,
+    Dialog = mui.Dialog
 
 var expanded = []
 
@@ -60,8 +61,11 @@ module.exports = React.createClass({
             self.setState({
                 lecture: false
             })
-        else
-            this.transitionTo('/dash')
+        else{
+            this.transitionTo('/courses')
+            localStorage.setItem('token', '')
+            localStorage.setItem('uid', '')
+        }
     },
 
 
@@ -69,21 +73,35 @@ module.exports = React.createClass({
         return {
             lecture: false,
             data: [],
-            loading: true
+            loading: true,
+            error: false,
+            offline: false
         }
     },
     componentWillMount: function(){
         var self = this
         superagent
-            .get(links.main + '/lectures/summary')
+            .get(localStorage.getItem('mainUrl') + '/lectures/summary')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .unset('Content-Type')
+            .timeout(10000)
             .end(function(err, res){
-                self.setState({
-                    data: self.sortByWeeks(res.body),
-                    loading: false
-                })
+                if(err){
+                    if(err.timeout==10000){
+                        self.setState({
+                            offline: true
+                        })
+                    }
+                    self.setState({
+                        error: true
+                    })
+                }
+                else
+                    self.setState({
+                        data: self.sortByWeeks(res.body),
+                        loading: false
+                    })
             })
     },
     render: function(){
@@ -116,15 +134,18 @@ module.exports = React.createClass({
             right: '0',
             margin: '0 auto',
             top: '30vh',
-            display: this.state.loading ? 'block' : 'none'
+            display: (this.state.loading) ? 'block' : 'none',
         }
         return (
             <div>
+                {
+                    this.state.offline ? <Offline /> : null
+                }
                 <AppBar
                     iconElementRight={
                         <IconMenu iconButtonElement={
                             <IconButton iconStyle={{color: 'white'}} iconClassName="mdi mdi-dots-vertical"></IconButton>
-                            }>
+                        }>
                           <MenuItem primaryText="Settings" index={0}/>
                           <MenuItem primaryText="About" index={1}/>
                         </IconMenu>
@@ -137,7 +158,7 @@ module.exports = React.createClass({
                 <Chat />
 
                 <div style= {TitleStyle}>
-                    MOOC on MOOCs
+                    {localStorage.getItem('courseTitle')}
                 </div>
 
                 <Tabs onChange={this.tabChange} tabItemContainerStyle={TabStyle} initialSelectedIndex={1}>

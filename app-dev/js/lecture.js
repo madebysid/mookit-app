@@ -1,9 +1,10 @@
 var React = require('react'),
+    Animate = React.addons.CSSTransitionGroup,
     mui = require('material-ui'),
     material = require('./material.js'),
     YouTube = require('react-youtube'),
     superagent = require('superagent'),
-    links = require('./links.js'),
+    Offline = require('./offline.js'),
 
     Card = mui.Card,
     CardMedia = mui.CardMedia,
@@ -13,7 +14,9 @@ var React = require('react'),
     ListItem = mui.ListItem,
     FontIcon = mui.FontIcon,
     IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress
+    CircularProgress = mui.CircularProgress,
+    Dialog = mui.Dialog,
+    Avatar = mui.Avatar
 
 var TopicNormal = React.createClass({
     render: function(){
@@ -24,9 +27,11 @@ var TopicNormal = React.createClass({
             color: '#378E43'
         }
         return (
-            <ListItem onTouchTap={this.props.toggle} secondaryText={this.props.text} secondaryTextLines={1}>
-                <p style={styles}>{this.props.replies}</p>
-            </ListItem>
+            <Animate transitionName="topics" transitionAppear={true}>
+                <ListItem onTouchTap={this.props.toggle} secondaryText={this.props.text} secondaryTextLines={1}>
+                    <p style={styles}>{this.props.replies}</p>
+                </ListItem>
+            </Animate>
         )
     }
 })
@@ -43,19 +48,32 @@ var TopicExpanded = React.createClass({
     componentWillMount: function(){
         var self = this
         superagent
-            .get(links.main + '/forums/comments/' + this.props.tid)
+            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.props.tid)
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .unset('Content-Type')
+            .timeout(10000)
             .end(function(err, res){
-                self.setState({
-                    lectureTopicComments: res.body
-                })
+                if(err){
+                    if(err.timeout==10000){
+                        self.setState({
+                            offline: true
+                        })
+                    }
+                }
+                else{
+                    self.setState({
+                        lectureTopicComments: res.body,
+                        loading: false
+                    })
+                }
             })
     },
     getInitialState: function(){
         return {
-            lectureTopicComments: []
+            lectureTopicComments: [],
+            loading: true,
+            offline: false
         }
     },
     render: function(){
@@ -63,40 +81,69 @@ var TopicExpanded = React.createClass({
             position: 'absolute',
             backgroundColor: 'white',
             width: '100vw',
-            top: '0',
             left: '0',
             bottom: '0',
+            top: '0',
             paddingLeft: '10px',
             zIndex: '1000',
             transitionDuration: '3s',
-                padding: '10px'
+            padding: '10px',
+            overflowY: 'scroll',
+            height: '70vh'
         },
         closeStyle = {
-            position: 'absolute',
-            top: '0',
-            right: '10px'
+            position: 'fixed',
+            top: '30vh',
+            right: '10px',
+            zIndex: '2000'
         },
         descStyle = {
             padding: '10px',
-            paddingTop: '0px'
+            paddingTop: '0px',
+            color: '#727272'
+        },
+        FABStyle = {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            backgroundColor: '#F0592A',
+            borderRadius: '50%',
+            boxShadow: '0px 0px 5px #727272'
+        },
+        loaderStyle = {
+            position: 'absolute',
+            left: '0',
+            right: '0',
+            margin: '0 auto',
+            top: '30vh',
+            zIndex: '5000',
+            display: (this.state.loading) ? 'block' : 'none',
         }
         return (
             <div style={expandedStyle}>
-                <p>{this.props.text}</p>
-                <IconButton style={closeStyle} onTouchTap={this.close} iconClassName="mdi mdi-close"></IconButton>
-
-                <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}></div>
                 {
-                    this.state.lectureTopicComments.map(function(element){
-                        return (
-                            <div>
-                                <FontIcon style={{float: 'left'}} className="mdi mdi-menu-right"></FontIcon>
-                                <div>{element.username}</div>
-                                <div style={descStyle} dangerouslySetInnerHTML={{__html: element.text}}></div>
-                            </div>
-                        )
-                    })
+                    this.state.offline ? <Offline /> : null
                 }
+                <Animate transitionName="topicsOpen" transitionAppear={true}>
+                    <p style={{color: '#378E43'}}>{this.props.text}</p>
+                    <IconButton style={closeStyle} onTouchTap={this.close} iconClassName="mdi mdi-close"></IconButton>
+
+                    <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}></div>
+                    {
+                        this.state.lectureTopicComments.map(function(element){
+                            return (
+                                <div>
+                                    <ListItem disabled={true} leftAvatar={<Avatar src={localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)}></Avatar>}>
+                                        <div style={{color: '#F0592A', fontSize: '0.75em', lineHeight: '0em'}}>{element.username}</div>
+                                        <div style={{color: '#727272'}} dangerouslySetInnerHTML={{__html: element.text}}></div>
+                                    </ListItem>
+                                </div>
+                            )
+                        })
+                    }
+                    <IconButton iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-reply" />
+                </Animate>
+                <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
             </div>
         )
     }
@@ -133,11 +180,19 @@ module.exports = React.createClass({
     componentWillMount: function(){
         var self = this
         superagent
-            .get(links.main + '/forums/' + self.props.data.forumsectionId)
+            .get(localStorage.getItem('mainUrl') + '/forums/' + self.props.data.forumsectionId)
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .end(function(err, res){
-                if(res.body[0].data != "null")
+                if(err){
+                    if(err.timeout==10000)
+                        this.setState({
+                            offline: true
+                        })
+                    console.log('Some Error')
+                    this.refs.lectureLoadError.show()
+                }
+                else if(res.body[0].data != "null")
                     self.setState({
                         lectureTopics: res.body,
                         loading: false
@@ -153,7 +208,8 @@ module.exports = React.createClass({
     getInitialState: function(){
         return {
             lectureTopics: [],
-            loading: true
+            loading: true,
+            offline: false
         }
     },
     render: function(){
@@ -182,15 +238,30 @@ module.exports = React.createClass({
             margin: '0 auto',
             top: '50vh',
             display: (this.state.loading) ? 'block' : 'none',
+        },
+        standardActions = [
+            { text: 'Okay', onTouchTap: this._onDialogSubmit, ref: 'submit' }
+        ],
+        FABStyle = {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            backgroundColor: '#F0592A',
+            borderRadius: '50%',
+            boxShadow: '0px 0px 5px #727272'
         }
         return (
             <div>
+                {
+                    this.state.offline ? <Offline /> : null
+                }
+                <Animate transitionName="cardOpen" transitionAppear={true}>
                 <Card style={{zIndex: '1000'}}>
                     <CardMedia>
                         <YouTube opts={VidOpts} url={self.props.data.vurl}></YouTube>
                     </CardMedia>
                     <CardText subtitle="Instructor" style={CardTitleStyle}>
-                        <p style={{lineHeight: '0em'}}>{self.props.data.title}</p>
+                        <p style={{lineHeight: '1em'}}>{self.props.data.title}</p>
                         <p style={{lineHeight: '0em', fontSize: '0.75em', color: '#B6B6B6'}}>Instructor</p>
                     </CardText>
                 </Card>
@@ -204,6 +275,15 @@ module.exports = React.createClass({
                         })
                     }
                 </List>
+                <Dialog
+                    ref="lectureLoadError"
+                    title="Looks like you're offline"
+                    actions={standardActions}>
+                    Please connect to the internet to continue
+                </Dialog>
+
+                <IconButton iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-border-color" />
+                </Animate>
             </div>
         )
     }

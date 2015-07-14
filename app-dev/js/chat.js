@@ -2,12 +2,13 @@ var React = require('react/addons'),
     mui = require('material-ui'),
     material = require('./material.js'),
     superagent = require('superagent'),
-    links = require('./links.js'),
+    Offline = require('./offline.js'),
 
     IconButton = mui.IconButton,
     FlatButton = mui.FlatButton,
     Avatar = mui.Avatar,
-    TextField = mui.TextField
+    TextField = mui.TextField,
+    CircularProgress = mui.CircularProgress
 
 var Incoming = React.createClass({
     render: function(){
@@ -88,17 +89,31 @@ var Outgoing = React.createClass({
 var ChatContainer = React.createClass({
     loadPrevious: function(){
         var self = this
+        self.setState({
+            loading: true
+        })
         superagent
-            .get(links.main + '/getChat/' + self.state.oldest)
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + self.state.oldest)
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
             .end(function(err,res){
                 newChat = res.body.reverse().concat(self.state.chat)
-                self.setState({
-                    previousLoaded: true,
-                    chat: newChat,
-                    oldest: res.body[0].timestamp
-                })
+                if(err){
+                    if(err.timeout==10000)
+                        self.setState({
+                            offline: true,
+                            loading: false
+                        })
+                }
+                else{
+                    self.setState({
+                        previousLoaded: true,
+                        chat: newChat,
+                        oldest: res.body[0].timestamp,
+                        loading: false
+                    })
+                }
             })
     },
 
@@ -117,15 +132,27 @@ var ChatContainer = React.createClass({
         var self = this
         localStorage.setItem('lastSeen', Date.now())
         superagent
-            .get(links.main + '/getChat/' + localStorage.getItem('lastSeen'))
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + localStorage.getItem('lastSeen'))
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
             .end(function(err,res){
-                self.setState({
-                    chat: res.body.reverse(),
-                    oldest: res.body[res.body.length-1].timestamp,
-                    newest: res.body[0].timestamp
-                })
+                if(err){
+                    if(err.timeout==10000){
+                        self.setState({
+                            offline: true,
+                            loading: false
+                        })
+                    }
+                }
+                else{
+                    self.setState({
+                        chat: res.body.reverse(),
+                        oldest: res.body[res.body.length-1].timestamp,
+                        newest: res.body[0].timestamp,
+                        loading: false
+                    })
+                }
             })
     },
     getInitialState: function(){
@@ -133,7 +160,9 @@ var ChatContainer = React.createClass({
             chat: [],
             oldest: 0,
             newest: 0,
-            previousLoaded: false
+            previousLoaded: false,
+            offline: false,
+            loading: true
         }
     },
     render: function(){
@@ -144,17 +173,16 @@ var ChatContainer = React.createClass({
             width: '100vw',
             boxSizing: 'border-box',
             left: '0',
-            zIndex: '1000',
+            zIndex: '8000',
             backgroundColor: 'white',
             padding: '20px',
             paddingTop: '40px',
-            overflow: 'scroll',
-            overflowX: 'hidden'
+            overflowY: 'scroll'
         },
         EmptyStyle = {
             position: 'absolute',
             top: '60px',
-            zIndex: '2000',
+            zIndex: '9000',
             height: '20px',
             width: '100vw',
             backgroundColor: 'white'
@@ -162,15 +190,15 @@ var ChatContainer = React.createClass({
         FadeStyle = {
             position: 'absolute',
             top: '80px',
-            zIndex: '2000',
+            zIndex: '9000',
             height: '50px',
             width: '100vw',
             background: 'linear-gradient(white, transparent)'
         },
         Empty2Style = {
             position: 'fixed',
-            bottom: '0px',
-            zIndex: '2000',
+            bottom: '0',
+            zIndex: '9000',
             height: '50px',
             width: '100vw',
             backgroundColor: 'white'
@@ -185,13 +213,14 @@ var ChatContainer = React.createClass({
         InputStyle = {
             position: 'fixed',
             bottom: '0',
-            zIndex: '3000'
+            zIndex: '9001'
         },
         SendStyle = {
             position: 'fixed',
             bottom: '0',
-            zIndex: '3000',
-            right: '0'
+            zIndex: '9001',
+            right: '0',
+            color: '#378E43'
         },
         previousStyle = {
             display: 'block',
@@ -201,15 +230,24 @@ var ChatContainer = React.createClass({
             fontSize: '0.8em',
             color: '#378E43',
             marginTop: '15px'
+        },
+        loaderStyle = {
+            left: '0',
+            right: '0',
+            margin: '0 auto',
+            display: this.state.loading ? 'block' : 'none'
         }
         return (
             <div className="chatContainer">
+                {
+                    this.state.offline ? <Offline /> : null
+                }
                 <div style={EmptyStyle} />
                 <div style={FadeStyle} />
                 <div style={ContainerStyle} ref="chatContainer">
                     <FlatButton style={previousStyle} onClick={this.loadPrevious}>Load Previous</FlatButton>
+                    <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
                     <div style={Empty3Style} />
-
                     {
                         this.state.chat.map(function(element){
                             return (
@@ -221,7 +259,6 @@ var ChatContainer = React.createClass({
                     }
 
                     <div style={Empty3Style} />
-
 
                     <div style={Empty2Style} />
                     <TextField style={InputStyle} hintText="Message" />
@@ -246,7 +283,7 @@ module.exports = React.createClass({
         var self = this
         setInterval(function(){
             superagent
-                .get(links.main + '/getChat/' + Date.now())
+                .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
                 .set('token', localStorage.getItem('token'))
                 .set('uid', localStorage.getItem('uid'))
                 .end(function(err,res){
