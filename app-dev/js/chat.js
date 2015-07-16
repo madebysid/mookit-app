@@ -272,7 +272,6 @@ var ChatContainer = React.createClass({
 module.exports = React.createClass({
     toggleChat: function(){
         var self = this
-        localStorage.setItem('lastSeen', Date.now())
         this.setState({
             unread: false,
             opened: !self.state.opened
@@ -327,7 +326,7 @@ module.exports = React.createClass({
                     <IconButton
                         iconStyle={{color: 'white', fontSize: '20px'}}
                         iconClassName="mdi mdi-message"
-                        onTouchEnd={this.toggleChat} />
+                        onTouchTap={this.toggleChat} />
                     <div style={UnreadStyle}></div>
                 </div>
                 {

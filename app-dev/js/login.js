@@ -5,6 +5,7 @@ var React = require('react'),
     Router = require('react-router'),
     Offline = require('./offline.js'),
 
+    AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
     FlatButton = mui.FlatButton,
@@ -17,8 +18,6 @@ module.exports = React.createClass({
     mixins: [material, Router.Navigation, React.addons.LinkedStateMixin],
 
     login: function(){
-        //var username = this.refs.username.getValue()
-        var url = localStorage.getItem('loginUrl') + "/api/user/login.json";
         var self = this,
             username = this.state.username,
             password = this.state.password
@@ -26,7 +25,7 @@ module.exports = React.createClass({
             loading: true
         })
         superagent
-            .post(url)
+            .post(localStorage.getItem('loginUrl') + "/api/user/login.json")
             .type('form')
             .send({
                 username: username,
@@ -60,6 +59,9 @@ module.exports = React.createClass({
             password: e.target.value
         })
     },
+    goBackDude: function(){
+        this.transitionTo('/courses')
+    },
 
     getInitialState: function(){
         return {
@@ -69,7 +71,6 @@ module.exports = React.createClass({
             offline: false
         }
     },
-
     render: function(){
         var CardStyle = {
             width: '80%',
@@ -77,7 +78,7 @@ module.exports = React.createClass({
             margin: '0 auto',
             left: '0',
             right: '0',
-            top: '50px'
+            top: '80px'
         },
         LogoStyle = {
             display: 'block',
@@ -101,6 +102,12 @@ module.exports = React.createClass({
             fontSize: '0.8em',
             fontFamily: 'RobotoLight'
         },
+        ProgressStyle = {
+            marginTop: '20px',
+            display: 'block',
+            width: '30%',
+            margin: '0 auto'
+        },
         MoreTextStyle = {
             fontSize: '0.8em',
             color: '#727272',
@@ -113,7 +120,7 @@ module.exports = React.createClass({
             margin: '0 auto',
             left: '0',
             right: '0',
-            bottom: '50px',
+            bottom: '20px',
             textAlign: 'center',
             color: '#727272',
             fontSize: '0.8em'
@@ -132,14 +139,23 @@ module.exports = React.createClass({
             marginRight: '60px',
             marginTop: '20px'
         },
+        AppBarStyle = {
+            backgroundColor: '#378E43'
+        },
         standardActions = [
-            { text: 'Okay' },
+            { text: 'Okay' }
         ];
         return (
             <div>
                 {
                     this.state.offline ? <Offline /> : null
                 }
+
+                <AppBar
+                    iconClassNameLeft="mdi mdi-arrow-left" onLeftIconButtonTouchTap={this.goBackDude}
+                    zDepth={0}
+                    style={AppBarStyle} />
+
                 <div style={{backgroundColor: '#EDECEC'}}>
                     <Card style={CardStyle}>
                         <CardText>
@@ -156,13 +172,12 @@ module.exports = React.createClass({
                                 onChange={this.passUpdate}>
                                 <input type="password"/>
                             </TextField>
-                            <FlatButton onTouchEnd={this.login} style={LoginStyle}>
-                                {
-                                    this.state.loading
-                                    ? <LinearProgress mode="indeterminate"  />
-                                    : "Login"
-                                }
-                            </FlatButton>
+
+                            {
+                                this.state.loading
+                                    ? <LinearProgress mode="indeterminate" style={ProgressStyle} />
+                                    : <FlatButton onTouchTap={this.login} style={LoginStyle}>Login</FlatButton>
+                            }
 
                             <div style={MoreTextStyle}>
                                 or sign in using

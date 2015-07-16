@@ -177,6 +177,11 @@ var ExpandableListItem = React.createClass({
 })
 
 module.exports = React.createClass({
+
+    newForum: function(){
+        console.log('Create new topic forum')
+    },
+
     componentWillMount: function(){
         var self = this
         superagent
@@ -239,9 +244,6 @@ module.exports = React.createClass({
             top: '50vh',
             display: (this.state.loading) ? 'block' : 'none',
         },
-        standardActions = [
-            { text: 'Okay', onTouchTap: this._onDialogSubmit, ref: 'submit' }
-        ],
         FABStyle = {
             position: 'fixed',
             bottom: '20px',
@@ -275,14 +277,8 @@ module.exports = React.createClass({
                         })
                     }
                 </List>
-                <Dialog
-                    ref="lectureLoadError"
-                    title="Looks like you're offline"
-                    actions={standardActions}>
-                    Please connect to the internet to continue
-                </Dialog>
 
-                <IconButton iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-border-color" />
+                <IconButton onTouchTap={this.newForum} iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-border-color" />
                 </Animate>
             </div>
         )

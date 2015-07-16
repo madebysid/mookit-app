@@ -291,7 +291,6 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
 module.exports = React.createClass({displayName: "exports",
     toggleChat: function(){
         var self = this
-        localStorage.setItem('lastSeen', Date.now())
         this.setState({
             unread: false,
             opened: !self.state.opened
@@ -346,7 +345,7 @@ module.exports = React.createClass({displayName: "exports",
                     React.createElement(IconButton, {
                         iconStyle: {color: 'white', fontSize: '20px'}, 
                         iconClassName: "mdi mdi-message", 
-                        onTouchEnd: this.toggleChat}), 
+                        onTouchTap: this.toggleChat}), 
                     React.createElement("div", {style: UnreadStyle})
                 ), 
                 
@@ -570,6 +569,11 @@ var React = require('react/addons'),
 
 var courses = [
     {
+        title: "Staging Course",
+        loginMain: "http://staging.mookit.co",
+        main: "http://node.mookit.co"
+    },
+    {
         title: "MOOC on MOOCs",
         loginMain: "http://mooconmooc.org",
         main: "http://node.mooconmooc.org"
@@ -585,8 +589,8 @@ var courses = [
         main: "http://node.mooconmooc.org"
     },
     {
-        title: "Test Course",
-        loginMain: "http://staging.mookit.co",
+        title: "Local Server",
+        loginMain: "http://202.3.77.96:3000",
         main: "http://node.staging.mookit.co"
     }
 ]
@@ -604,12 +608,12 @@ module.exports = React.createClass({displayName: "exports",
     render: function(){
         var self = this,
             TitleStyle = {
-            backgroundColor: '#378E43',
-            color: 'white',
-            height: '10vh',
-            paddingLeft: '20vw',
-            fontSize: '1.5em'
-        }
+                backgroundColor: '#378E43',
+                color: 'white',
+                height: '10vh',
+                paddingLeft: '20vw',
+                fontSize: '1.5em'
+            }
         return (
             React.createElement("div", null, 
                React.createElement(AppBar, {style: {backgroundColor: '#378E43'}, zDepth: 0, iconElementRight: 
@@ -621,32 +625,35 @@ module.exports = React.createClass({displayName: "exports",
                 React.createElement("div", {style: TitleStyle}, 
                     "Available Courses"
                 ), 
-                
-                    courses.map(function(element, index){
-                        return (
-                            React.createElement(Card, {style: {
-                                animation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
-                                float: 'left',
-                                width: 'calc(50% - 4px)',
-                                margin: '2px',
-                                opacity: '0',
-                                animationFillMode: 'forwards'
-                            }, 
-                                key: index, onTouchTap: self.goToCourse.bind(this,index)}, 
-                                React.createElement(CardMedia, null, 
-                                    React.createElement("img", {src: "img/courses/" + index + ".png"})
-                                ), 
-                                React.createElement(CardText, null, 
-                                
-                                    (element.title.length > 15)
-                                        ? element.title.slice(0,15) + "..."
-                                        : element.title
-                                
+                React.createElement("div", {style: {overflowY: 'scroll', height: '80vh'}}, 
+                    
+                        courses.map(function(element, index){
+                            return (
+                                React.createElement(Card, {style: {
+                                    animation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
+                                    WebkitAnimation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
+                                    float: 'left',
+                                    width: 'calc(50% - 4px)',
+                                    margin: '2px',
+                                    opacity: '0',
+                                    animationFillMode: 'forwards'
+                                }, 
+                                    key: index, onTouchTap: self.goToCourse.bind(this,index)}, 
+                                    React.createElement(CardMedia, null, 
+                                        React.createElement("img", {src: "img/courses/" + index + ".png"})
+                                    ), 
+                                    React.createElement(CardText, null, 
+                                    
+                                        (element.title.length > 15)
+                                            ? element.title.slice(0,15) + "..."
+                                            : element.title
+                                    
+                                    )
                                 )
                             )
-                        )
-                    })
-                
+                        })
+                    
+                )
             )
         )
     }
@@ -1042,7 +1049,6 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
 module.exports = React.createClass({displayName: "exports",
     toggleChat: function(){
         var self = this
-        localStorage.setItem('lastSeen', Date.now())
         this.setState({
             unread: false,
             opened: !self.state.opened
@@ -1097,7 +1103,7 @@ module.exports = React.createClass({displayName: "exports",
                     React.createElement(IconButton, {
                         iconStyle: {color: 'white', fontSize: '20px'}, 
                         iconClassName: "mdi mdi-message", 
-                        onTouchEnd: this.toggleChat}), 
+                        onTouchTap: this.toggleChat}), 
                     React.createElement("div", {style: UnreadStyle})
                 ), 
                 
@@ -1313,6 +1319,11 @@ var React = require('react/addons'),
 
 var courses = [
     {
+        title: "Staging Course",
+        loginMain: "http://staging.mookit.co",
+        main: "http://node.mookit.co"
+    },
+    {
         title: "MOOC on MOOCs",
         loginMain: "http://mooconmooc.org",
         main: "http://node.mooconmooc.org"
@@ -1328,8 +1339,8 @@ var courses = [
         main: "http://node.mooconmooc.org"
     },
     {
-        title: "Test Course",
-        loginMain: "http://staging.mookit.co",
+        title: "Local Server",
+        loginMain: "http://202.3.77.96:3000",
         main: "http://node.staging.mookit.co"
     }
 ]
@@ -1347,12 +1358,12 @@ module.exports = React.createClass({displayName: "exports",
     render: function(){
         var self = this,
             TitleStyle = {
-            backgroundColor: '#378E43',
-            color: 'white',
-            height: '10vh',
-            paddingLeft: '20vw',
-            fontSize: '1.5em'
-        }
+                backgroundColor: '#378E43',
+                color: 'white',
+                height: '10vh',
+                paddingLeft: '20vw',
+                fontSize: '1.5em'
+            }
         return (
             React.createElement("div", null, 
                React.createElement(AppBar, {style: {backgroundColor: '#378E43'}, zDepth: 0, iconElementRight: 
@@ -1364,32 +1375,35 @@ module.exports = React.createClass({displayName: "exports",
                 React.createElement("div", {style: TitleStyle}, 
                     "Available Courses"
                 ), 
-                
-                    courses.map(function(element, index){
-                        return (
-                            React.createElement(Card, {style: {
-                                animation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
-                                float: 'left',
-                                width: 'calc(50% - 4px)',
-                                margin: '2px',
-                                opacity: '0',
-                                animationFillMode: 'forwards'
-                            }, 
-                                key: index, onTouchTap: self.goToCourse.bind(this,index)}, 
-                                React.createElement(CardMedia, null, 
-                                    React.createElement("img", {src: "img/courses/" + index + ".png"})
-                                ), 
-                                React.createElement(CardText, null, 
-                                
-                                    (element.title.length > 15)
-                                        ? element.title.slice(0,15) + "..."
-                                        : element.title
-                                
+                React.createElement("div", {style: {overflowY: 'scroll', height: '80vh'}}, 
+                    
+                        courses.map(function(element, index){
+                            return (
+                                React.createElement(Card, {style: {
+                                    animation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
+                                    WebkitAnimation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
+                                    float: 'left',
+                                    width: 'calc(50% - 4px)',
+                                    margin: '2px',
+                                    opacity: '0',
+                                    animationFillMode: 'forwards'
+                                }, 
+                                    key: index, onTouchTap: self.goToCourse.bind(this,index)}, 
+                                    React.createElement(CardMedia, null, 
+                                        React.createElement("img", {src: "img/courses/" + index + ".png"})
+                                    ), 
+                                    React.createElement(CardText, null, 
+                                    
+                                        (element.title.length > 15)
+                                            ? element.title.slice(0,15) + "..."
+                                            : element.title
+                                    
+                                    )
                                 )
                             )
-                        )
-                    })
-                
+                        })
+                    
+                )
             )
         )
     }
@@ -1492,13 +1506,266 @@ module.exports = React.createClass({displayName: "exports",
 })
 var React = require('react'),
     mui = require('material-ui'),
-    material = require('./material.js')
+    material = require('./material.js'),
+    Animate = React.addons.CSSTransitionGroup,
+    superagent = require('superagent'),
+    Offline = require('./offline.js'),
 
-module.exports = React.createClass({displayName: "exports",
+    Card = mui.Card,
+    CardMedia = mui.CardMedia,
+    CardText = mui.CardText,
+    CardTitle = mui.CardTitle,
+    List = mui.List,
+    ListItem = mui.ListItem,
+    FontIcon = mui.FontIcon,
+    IconButton = mui.IconButton,
+    CircularProgress = mui.CircularProgress,
+    Dialog = mui.Dialog,
+    Avatar = mui.Avatar
+
+var TopicNormal = React.createClass({displayName: "TopicNormal",
     render: function(){
+        var styles = {
+            position: 'absolute',
+            top: 'calc(50% - 1.25em)',
+            right: '10px',
+            color: '#378E43'
+        }
+        return (
+            React.createElement(Animate, {transitionName: "topics", transitionAppear: true}, 
+                React.createElement(ListItem, {onTouchTap: this.props.toggle, secondaryText: this.props.text, secondaryTextLines: 1}, 
+                    React.createElement("p", {style: styles}, this.props.replies)
+                )
+            )
+        )
+    }
+})
+
+var TopicExpanded = React.createClass({displayName: "TopicExpanded",
+    close: function(){
+        var self = this
+        setTimeout(function(){
+            self.props.toggle()
+        },300)
+
+    },
+
+    componentDidMount: function(){
+        var self = this
+        this.setState({
+            loading: true
+        })
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.props.tid)
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .unset('Content-Type')
+            .timeout(10000)
+            .end(function(err, res){
+                if(err){
+                    if(err.timeout==10000){
+                        self.setState({
+                            offline: true
+                        })
+                    }
+                }
+                else{
+                    self.setState({
+                        topicComments: res.body,
+                        loading: false
+                    })
+                }
+            })
+    },
+    getInitialState: function(){
+        return {
+            topicComments: [],
+            loading: false,
+            offline: false
+        }
+    },
+    render: function(){
+        var expandedStyle = {
+                position: 'absolute',
+                backgroundColor: 'white',
+                width: '100vw',
+                left: '0',
+                bottom: '0',
+                top: '0',
+                paddingLeft: '10px',
+                zIndex: '1000',
+                transitionDuration: '3s',
+                padding: '10px',
+                overflowY: 'scroll',
+                height: '70vh'
+            },
+            closeStyle = {
+                position: 'fixed',
+                top: '30vh',
+                right: '10px',
+                zIndex: '2000'
+            },
+            descStyle = {
+                padding: '10px',
+                paddingTop: '0px',
+                color: '#727272'
+            },
+            FABStyle = {
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                backgroundColor: '#F0592A',
+                borderRadius: '50%',
+                boxShadow: '0px 0px 5px #727272'
+            },
+            loaderStyle = {
+                position: 'absolute',
+                left: '0',
+                right: '0',
+                margin: '0 auto',
+                top: '30vh',
+                zIndex: '5000',
+                display: (this.state.loading) ? 'block' : 'none',
+            }
+        return (
+            React.createElement("div", {style: expandedStyle}, 
+                
+                    this.state.offline ? React.createElement(Offline, null) : null, 
+                
+                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true}, 
+                    React.createElement("p", {style: {color: '#378E43'}}, this.props.text), 
+                    React.createElement(IconButton, {style: closeStyle, onTouchTap: this.close, iconClassName: "mdi mdi-close"}), 
+
+                    React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: this.props.description}}), 
+                    
+                        this.state.topicComments.map(function(element){
+                            return (
+                                React.createElement("div", null, 
+                                    React.createElement(ListItem, {disabled: true, leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})}, 
+                                        React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em', lineHeight: '0em'}}, element.username), 
+                                        React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
+                                    )
+                                )
+                            )
+                        }), 
+                    
+                    React.createElement(IconButton, {iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-reply"})
+                ), 
+                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
+            )
+        )
+    }
+})
+
+var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
+    toggle: function(){
+        var self = this
+        this.setState({
+            opened: !self.state.opened
+        })
+    },
+    getInitialState: function(){
+        return {
+            opened: false
+        }
+    },
+    render: function(){
+        var ListStyle = {
+                position: this.state.opened ? 'absolute' : 'inherit',
+                margin: this.state.opened ? '0' : '10px',
+                transitionDuration: '3s'
+            },
+            ToRender = this.state.opened ? TopicExpanded : TopicNormal
         return (
             React.createElement("div", null, 
-                "Forums Page"
+                React.createElement(ToRender, {style: ListStyle, toggle: this.toggle, text: this.props.data.topic, replies: this.props.data.numPosts, description: this.props.data.description, tid: this.props.data.tid})
+            )
+        )
+    }
+})
+
+module.exports = React.createClass({displayName: "exports",
+
+    newForum: function(){
+        console.log('Create new general forum')
+    },
+
+    componentWillMount: function(){
+        var self = this
+        this.setState({
+            laoding: true
+        })
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/getdiscussions/general')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .end(function(err, res){
+                if(err){
+                    if(err.timeout==10000)
+                        this.setState({
+                            offline: true
+                        })
+                    console.log('Some Error')
+                }
+                else if(res.body[0].data != "null")
+                    self.setState({
+                        topics: res.body,
+                        loading: false
+                    })
+                else
+                    self.setState({
+                        topics: 'Nothing to show',
+                        loading: false
+                    })
+            })
+    },
+
+    getInitialState: function(){
+        return {
+            topics: [],
+            loading: false,
+            offline: false
+        }
+    },
+    render: function(){
+        var self = this
+        var DisTitleStyle = {
+                paddingLeft: '20px',
+                paddingTop: '20px',
+                fontFamily: 'RobotoRegular'
+            },
+            loaderStyle = {
+                position: 'absolute',
+                left: '0',
+                right: '0',
+                margin: '0 auto',
+                top: '50vh',
+                display: (this.state.loading) ? 'block' : 'none',
+            },
+            FABStyle = {
+                position: 'absolute',
+                bottom: '20px',
+                right: '20px',
+                backgroundColor: '#F0592A',
+                borderRadius: '50%',
+                boxShadow: '0px 0px 5px #727272'
+            }
+        return (
+            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
+                
+                    this.state.offline ? React.createElement(Offline, null) : null, 
+                
+                    React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
+                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
+                    React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
+                        
+                            self.state.topics.map(function(element, index){
+                                return React.createElement(ExpandableListItem, {key: index, data: element})
+                            })
+                        
+                    ), 
+
+                    React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
             )
         )
     }
@@ -1682,6 +1949,11 @@ var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
 })
 
 module.exports = React.createClass({displayName: "exports",
+
+    newForum: function(){
+        console.log('Create new topic forum')
+    },
+
     componentWillMount: function(){
         var self = this
         superagent
@@ -1744,9 +2016,6 @@ module.exports = React.createClass({displayName: "exports",
             top: '50vh',
             display: (this.state.loading) ? 'block' : 'none',
         },
-        standardActions = [
-            { text: 'Okay', onTouchTap: this._onDialogSubmit, ref: 'submit' }
-        ],
         FABStyle = {
             position: 'fixed',
             bottom: '20px',
@@ -1780,14 +2049,8 @@ module.exports = React.createClass({displayName: "exports",
                         })
                     
                 ), 
-                React.createElement(Dialog, {
-                    ref: "lectureLoadError", 
-                    title: "Looks like you're offline", 
-                    actions: standardActions}, 
-                    "Please connect to the internet to continue"
-                ), 
 
-                React.createElement(IconButton, {iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
+                React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
                 )
             )
         )
@@ -2011,6 +2274,7 @@ var React = require('react'),
     Router = require('react-router'),
     Offline = require('./offline.js'),
 
+    AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
     FlatButton = mui.FlatButton,
@@ -2023,8 +2287,6 @@ module.exports = React.createClass({displayName: "exports",
     mixins: [material, Router.Navigation, React.addons.LinkedStateMixin],
 
     login: function(){
-        //var username = this.refs.username.getValue()
-        var url = localStorage.getItem('loginUrl') + "/api/user/login.json";
         var self = this,
             username = this.state.username,
             password = this.state.password
@@ -2032,7 +2294,7 @@ module.exports = React.createClass({displayName: "exports",
             loading: true
         })
         superagent
-            .post(url)
+            .post(localStorage.getItem('loginUrl') + "/api/user/login.json")
             .type('form')
             .send({
                 username: username,
@@ -2066,6 +2328,9 @@ module.exports = React.createClass({displayName: "exports",
             password: e.target.value
         })
     },
+    goBackDude: function(){
+        this.transitionTo('/courses')
+    },
 
     getInitialState: function(){
         return {
@@ -2075,7 +2340,6 @@ module.exports = React.createClass({displayName: "exports",
             offline: false
         }
     },
-
     render: function(){
         var CardStyle = {
             width: '80%',
@@ -2083,7 +2347,7 @@ module.exports = React.createClass({displayName: "exports",
             margin: '0 auto',
             left: '0',
             right: '0',
-            top: '50px'
+            top: '80px'
         },
         LogoStyle = {
             display: 'block',
@@ -2107,6 +2371,12 @@ module.exports = React.createClass({displayName: "exports",
             fontSize: '0.8em',
             fontFamily: 'RobotoLight'
         },
+        ProgressStyle = {
+            marginTop: '20px',
+            display: 'block',
+            width: '30%',
+            margin: '0 auto'
+        },
         MoreTextStyle = {
             fontSize: '0.8em',
             color: '#727272',
@@ -2119,7 +2389,7 @@ module.exports = React.createClass({displayName: "exports",
             margin: '0 auto',
             left: '0',
             right: '0',
-            bottom: '50px',
+            bottom: '20px',
             textAlign: 'center',
             color: '#727272',
             fontSize: '0.8em'
@@ -2138,14 +2408,23 @@ module.exports = React.createClass({displayName: "exports",
             marginRight: '60px',
             marginTop: '20px'
         },
+        AppBarStyle = {
+            backgroundColor: '#378E43'
+        },
         standardActions = [
-            { text: 'Okay' },
+            { text: 'Okay' }
         ];
         return (
             React.createElement("div", null, 
                 
                     this.state.offline ? React.createElement(Offline, null) : null, 
                 
+
+                React.createElement(AppBar, {
+                    iconClassNameLeft: "mdi mdi-arrow-left", onLeftIconButtonTouchTap: this.goBackDude, 
+                    zDepth: 0, 
+                    style: AppBarStyle}), 
+
                 React.createElement("div", {style: {backgroundColor: '#EDECEC'}}, 
                     React.createElement(Card, {style: CardStyle}, 
                         React.createElement(CardText, null, 
@@ -2162,13 +2441,12 @@ module.exports = React.createClass({displayName: "exports",
                                 onChange: this.passUpdate}, 
                                 React.createElement("input", {type: "password"})
                             ), 
-                            React.createElement(FlatButton, {onTouchEnd: this.login, style: LoginStyle}, 
-                                
-                                    this.state.loading
-                                    ? React.createElement(LinearProgress, {mode: "indeterminate"})
-                                    : "Login"
-                                
-                            ), 
+
+                            
+                                this.state.loading
+                                    ? React.createElement(LinearProgress, {mode: "indeterminate", style: ProgressStyle})
+                                    : React.createElement(FlatButton, {onTouchTap: this.login, style: LoginStyle}, "Login"), 
+                            
 
                             React.createElement("div", {style: MoreTextStyle}, 
                                 "or sign in using"
@@ -2355,7 +2633,7 @@ module.exports = React.createClass({displayName: "exports",
                     React.createElement(IconButton, {
                         iconStyle: {color: 'white', fontSize: '20px'}, 
                         iconClassName: "mdi mdi-bell", 
-                        onTouchEnd: this.toggleNotification}), 
+                        onTouchTap: this.toggleNotification}), 
                     React.createElement("div", {style: UnreadStyle})
                 ), 
                 
@@ -2428,15 +2706,85 @@ module.exports = React.createClass({displayName: "exports",
         )
     }
 })
-var React = require('react'),
+var React = require('react/addons'),
     mui = require('material-ui'),
-    material = require('./material.js')
+    material = require('./material.js'),
+    superagent = require('superagent'),
+    Offline = require('./offline.js'),
+
+    IconButton = mui.IconButton,
+    CircularProgress = mui.CircularProgress,
+    List = mui.List,
+    ListItem = mui.ListItem,
+    ListDivider = mui.ListDivider,
+    Avatar = mui.Avatar
 
 module.exports = React.createClass({displayName: "exports",
+
+    getInitialState: function(){
+        return {
+            notifs: [],
+            loading: true,
+            offline: false
+        }
+    },
+    componentDidMount: function(){
+        var self = this
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/announcement/summary')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                if(err){
+                    if(err.timeout==10000)
+                        self.setState({
+                            offline: true,
+                            loading: false
+                        })
+                }
+                else{
+                    self.setState({
+                        notifs: res.body,
+                        loading: false
+                    })
+                    console.log(res.body[0])
+                }
+            })
+    },
+
     render: function(){
+        var loaderStyle = {
+                position: 'absolute',
+                left: '0',
+                right: '0',
+                top: '30vh',
+                margin: '0 auto',
+                display: this.state.loading ? 'block' : 'none'
+            }
         return (
-            React.createElement("div", null, 
-                "Resources Page"
+            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
+                
+                    this.state.offline ? React.createElement(Offline, null) : null, 
+                
+                
+                    this.state.notifs.map(function(element, index){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(ListItem, {
+                                    leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.uri.slice(8)}), 
+                                    disabled: true, 
+                                    secondaryText: 
+                                        React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
+                                     }, 
+                                    element.name
+                                ), 
+                                React.createElement(ListDivider, null)
+                            )
+                        )
+                    }), 
+                
+                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
             )
         )
     }
@@ -2561,25 +2909,278 @@ module.exports = React.createClass({displayName: "exports",
     }
 })
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_f24f7214.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_b2f49003.js","/")
 },{"./app.js":1,"./chat.js":2,"./course.js":3,"./courses.js":4,"./dash.js":5,"./forums.js":7,"./lecture.js":8,"./lectures.js":9,"./login.js":10,"./material.js":11,"./notifications.js":12,"./offline.js":13,"./resources.js":14,"./tutorial.js":15,"buffer":16,"material-ui":52,"material-ui/lib/menus/menu-item":65,"oMfpAn":19,"react":375,"react-router":175,"react-swipe":191,"react-tap-event-plugin":195,"react-youtube":196,"react/addons":203,"superagent":376}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     mui = require('material-ui'),
-    material = require('./material.js')
+    material = require('./material.js'),
+    Animate = React.addons.CSSTransitionGroup,
+    superagent = require('superagent'),
+    Offline = require('./offline.js'),
 
-module.exports = React.createClass({displayName: "exports",
+    Card = mui.Card,
+    CardMedia = mui.CardMedia,
+    CardText = mui.CardText,
+    CardTitle = mui.CardTitle,
+    List = mui.List,
+    ListItem = mui.ListItem,
+    FontIcon = mui.FontIcon,
+    IconButton = mui.IconButton,
+    CircularProgress = mui.CircularProgress,
+    Dialog = mui.Dialog,
+    Avatar = mui.Avatar
+
+var TopicNormal = React.createClass({displayName: "TopicNormal",
     render: function(){
+        var styles = {
+            position: 'absolute',
+            top: 'calc(50% - 1.25em)',
+            right: '10px',
+            color: '#378E43'
+        }
+        return (
+            React.createElement(Animate, {transitionName: "topics", transitionAppear: true}, 
+                React.createElement(ListItem, {onTouchTap: this.props.toggle, secondaryText: this.props.text, secondaryTextLines: 1}, 
+                    React.createElement("p", {style: styles}, this.props.replies)
+                )
+            )
+        )
+    }
+})
+
+var TopicExpanded = React.createClass({displayName: "TopicExpanded",
+    close: function(){
+        var self = this
+        setTimeout(function(){
+            self.props.toggle()
+        },300)
+
+    },
+
+    componentDidMount: function(){
+        var self = this
+        this.setState({
+            loading: true
+        })
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.props.tid)
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .unset('Content-Type')
+            .timeout(10000)
+            .end(function(err, res){
+                if(err){
+                    if(err.timeout==10000){
+                        self.setState({
+                            offline: true
+                        })
+                    }
+                }
+                else{
+                    self.setState({
+                        topicComments: res.body,
+                        loading: false
+                    })
+                }
+            })
+    },
+    getInitialState: function(){
+        return {
+            topicComments: [],
+            loading: false,
+            offline: false
+        }
+    },
+    render: function(){
+        var expandedStyle = {
+                position: 'absolute',
+                backgroundColor: 'white',
+                width: '100vw',
+                left: '0',
+                bottom: '0',
+                top: '0',
+                paddingLeft: '10px',
+                zIndex: '1000',
+                transitionDuration: '3s',
+                padding: '10px',
+                overflowY: 'scroll',
+                height: '70vh'
+            },
+            closeStyle = {
+                position: 'fixed',
+                top: '30vh',
+                right: '10px',
+                zIndex: '2000'
+            },
+            descStyle = {
+                padding: '10px',
+                paddingTop: '0px',
+                color: '#727272'
+            },
+            FABStyle = {
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                backgroundColor: '#F0592A',
+                borderRadius: '50%',
+                boxShadow: '0px 0px 5px #727272'
+            },
+            loaderStyle = {
+                position: 'absolute',
+                left: '0',
+                right: '0',
+                margin: '0 auto',
+                top: '30vh',
+                zIndex: '5000',
+                display: (this.state.loading) ? 'block' : 'none',
+            }
+        return (
+            React.createElement("div", {style: expandedStyle}, 
+                
+                    this.state.offline ? React.createElement(Offline, null) : null, 
+                
+                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true}, 
+                    React.createElement("p", {style: {color: '#378E43'}}, this.props.text), 
+                    React.createElement(IconButton, {style: closeStyle, onTouchTap: this.close, iconClassName: "mdi mdi-close"}), 
+
+                    React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: this.props.description}}), 
+                    
+                        this.state.topicComments.map(function(element){
+                            return (
+                                React.createElement("div", null, 
+                                    React.createElement(ListItem, {disabled: true, leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})}, 
+                                        React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em', lineHeight: '0em'}}, element.username), 
+                                        React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
+                                    )
+                                )
+                            )
+                        }), 
+                    
+                    React.createElement(IconButton, {iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-reply"})
+                ), 
+                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
+            )
+        )
+    }
+})
+
+var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
+    toggle: function(){
+        var self = this
+        this.setState({
+            opened: !self.state.opened
+        })
+    },
+    getInitialState: function(){
+        return {
+            opened: false
+        }
+    },
+    render: function(){
+        var ListStyle = {
+                position: this.state.opened ? 'absolute' : 'inherit',
+                margin: this.state.opened ? '0' : '10px',
+                transitionDuration: '3s'
+            },
+            ToRender = this.state.opened ? TopicExpanded : TopicNormal
         return (
             React.createElement("div", null, 
-                "Forums Page"
+                React.createElement(ToRender, {style: ListStyle, toggle: this.toggle, text: this.props.data.topic, replies: this.props.data.numPosts, description: this.props.data.description, tid: this.props.data.tid})
+            )
+        )
+    }
+})
+
+module.exports = React.createClass({displayName: "exports",
+
+    newForum: function(){
+        console.log('Create new general forum')
+    },
+
+    componentWillMount: function(){
+        var self = this
+        this.setState({
+            laoding: true
+        })
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/getdiscussions/general')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .end(function(err, res){
+                if(err){
+                    if(err.timeout==10000)
+                        this.setState({
+                            offline: true
+                        })
+                    console.log('Some Error')
+                }
+                else if(res.body[0].data != "null")
+                    self.setState({
+                        topics: res.body,
+                        loading: false
+                    })
+                else
+                    self.setState({
+                        topics: 'Nothing to show',
+                        loading: false
+                    })
+            })
+    },
+
+    getInitialState: function(){
+        return {
+            topics: [],
+            loading: false,
+            offline: false
+        }
+    },
+    render: function(){
+        var self = this
+        var DisTitleStyle = {
+                paddingLeft: '20px',
+                paddingTop: '20px',
+                fontFamily: 'RobotoRegular'
+            },
+            loaderStyle = {
+                position: 'absolute',
+                left: '0',
+                right: '0',
+                margin: '0 auto',
+                top: '50vh',
+                display: (this.state.loading) ? 'block' : 'none',
+            },
+            FABStyle = {
+                position: 'absolute',
+                bottom: '20px',
+                right: '20px',
+                backgroundColor: '#F0592A',
+                borderRadius: '50%',
+                boxShadow: '0px 0px 5px #727272'
+            }
+        return (
+            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
+                
+                    this.state.offline ? React.createElement(Offline, null) : null, 
+                
+                    React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
+                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
+                    React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
+                        
+                            self.state.topics.map(function(element, index){
+                                return React.createElement(ExpandableListItem, {key: index, data: element})
+                            })
+                        
+                    ), 
+
+                    React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
             )
         )
     }
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/forums.js","/")
-},{"./material.js":11,"buffer":16,"material-ui":52,"oMfpAn":19,"react":375}],8:[function(require,module,exports){
+},{"./material.js":11,"./offline.js":13,"buffer":16,"material-ui":52,"oMfpAn":19,"react":375,"superagent":376}],8:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     Animate = React.addons.CSSTransitionGroup,
@@ -2760,6 +3361,11 @@ var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
 })
 
 module.exports = React.createClass({displayName: "exports",
+
+    newForum: function(){
+        console.log('Create new topic forum')
+    },
+
     componentWillMount: function(){
         var self = this
         superagent
@@ -2822,9 +3428,6 @@ module.exports = React.createClass({displayName: "exports",
             top: '50vh',
             display: (this.state.loading) ? 'block' : 'none',
         },
-        standardActions = [
-            { text: 'Okay', onTouchTap: this._onDialogSubmit, ref: 'submit' }
-        ],
         FABStyle = {
             position: 'fixed',
             bottom: '20px',
@@ -2858,14 +3461,8 @@ module.exports = React.createClass({displayName: "exports",
                         })
                     
                 ), 
-                React.createElement(Dialog, {
-                    ref: "lectureLoadError", 
-                    title: "Looks like you're offline", 
-                    actions: standardActions}, 
-                    "Please connect to the internet to continue"
-                ), 
 
-                React.createElement(IconButton, {iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
+                React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
                 )
             )
         )
@@ -3097,6 +3694,7 @@ var React = require('react'),
     Router = require('react-router'),
     Offline = require('./offline.js'),
 
+    AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
     FlatButton = mui.FlatButton,
@@ -3109,8 +3707,6 @@ module.exports = React.createClass({displayName: "exports",
     mixins: [material, Router.Navigation, React.addons.LinkedStateMixin],
 
     login: function(){
-        //var username = this.refs.username.getValue()
-        var url = localStorage.getItem('loginUrl') + "/api/user/login.json";
         var self = this,
             username = this.state.username,
             password = this.state.password
@@ -3118,7 +3714,7 @@ module.exports = React.createClass({displayName: "exports",
             loading: true
         })
         superagent
-            .post(url)
+            .post(localStorage.getItem('loginUrl') + "/api/user/login.json")
             .type('form')
             .send({
                 username: username,
@@ -3152,6 +3748,9 @@ module.exports = React.createClass({displayName: "exports",
             password: e.target.value
         })
     },
+    goBackDude: function(){
+        this.transitionTo('/courses')
+    },
 
     getInitialState: function(){
         return {
@@ -3161,7 +3760,6 @@ module.exports = React.createClass({displayName: "exports",
             offline: false
         }
     },
-
     render: function(){
         var CardStyle = {
             width: '80%',
@@ -3169,7 +3767,7 @@ module.exports = React.createClass({displayName: "exports",
             margin: '0 auto',
             left: '0',
             right: '0',
-            top: '50px'
+            top: '80px'
         },
         LogoStyle = {
             display: 'block',
@@ -3193,6 +3791,12 @@ module.exports = React.createClass({displayName: "exports",
             fontSize: '0.8em',
             fontFamily: 'RobotoLight'
         },
+        ProgressStyle = {
+            marginTop: '20px',
+            display: 'block',
+            width: '30%',
+            margin: '0 auto'
+        },
         MoreTextStyle = {
             fontSize: '0.8em',
             color: '#727272',
@@ -3205,7 +3809,7 @@ module.exports = React.createClass({displayName: "exports",
             margin: '0 auto',
             left: '0',
             right: '0',
-            bottom: '50px',
+            bottom: '20px',
             textAlign: 'center',
             color: '#727272',
             fontSize: '0.8em'
@@ -3224,14 +3828,23 @@ module.exports = React.createClass({displayName: "exports",
             marginRight: '60px',
             marginTop: '20px'
         },
+        AppBarStyle = {
+            backgroundColor: '#378E43'
+        },
         standardActions = [
-            { text: 'Okay' },
+            { text: 'Okay' }
         ];
         return (
             React.createElement("div", null, 
                 
                     this.state.offline ? React.createElement(Offline, null) : null, 
                 
+
+                React.createElement(AppBar, {
+                    iconClassNameLeft: "mdi mdi-arrow-left", onLeftIconButtonTouchTap: this.goBackDude, 
+                    zDepth: 0, 
+                    style: AppBarStyle}), 
+
                 React.createElement("div", {style: {backgroundColor: '#EDECEC'}}, 
                     React.createElement(Card, {style: CardStyle}, 
                         React.createElement(CardText, null, 
@@ -3248,13 +3861,12 @@ module.exports = React.createClass({displayName: "exports",
                                 onChange: this.passUpdate}, 
                                 React.createElement("input", {type: "password"})
                             ), 
-                            React.createElement(FlatButton, {onTouchEnd: this.login, style: LoginStyle}, 
-                                
-                                    this.state.loading
-                                    ? React.createElement(LinearProgress, {mode: "indeterminate"})
-                                    : "Login"
-                                
-                            ), 
+
+                            
+                                this.state.loading
+                                    ? React.createElement(LinearProgress, {mode: "indeterminate", style: ProgressStyle})
+                                    : React.createElement(FlatButton, {onTouchTap: this.login, style: LoginStyle}, "Login"), 
+                            
 
                             React.createElement("div", {style: MoreTextStyle}, 
                                 "or sign in using"
@@ -3449,7 +4061,7 @@ module.exports = React.createClass({displayName: "exports",
                     React.createElement(IconButton, {
                         iconStyle: {color: 'white', fontSize: '20px'}, 
                         iconClassName: "mdi mdi-bell", 
-                        onTouchEnd: this.toggleNotification}), 
+                        onTouchTap: this.toggleNotification}), 
                     React.createElement("div", {style: UnreadStyle})
                 ), 
                 
@@ -3530,22 +4142,92 @@ module.exports = React.createClass({displayName: "exports",
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/offline.js","/")
 },{"./material.js":11,"buffer":16,"material-ui":52,"oMfpAn":19,"react":375,"react-router":175}],14:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react'),
+var React = require('react/addons'),
     mui = require('material-ui'),
-    material = require('./material.js')
+    material = require('./material.js'),
+    superagent = require('superagent'),
+    Offline = require('./offline.js'),
+
+    IconButton = mui.IconButton,
+    CircularProgress = mui.CircularProgress,
+    List = mui.List,
+    ListItem = mui.ListItem,
+    ListDivider = mui.ListDivider,
+    Avatar = mui.Avatar
 
 module.exports = React.createClass({displayName: "exports",
+
+    getInitialState: function(){
+        return {
+            notifs: [],
+            loading: true,
+            offline: false
+        }
+    },
+    componentDidMount: function(){
+        var self = this
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/announcement/summary')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                if(err){
+                    if(err.timeout==10000)
+                        self.setState({
+                            offline: true,
+                            loading: false
+                        })
+                }
+                else{
+                    self.setState({
+                        notifs: res.body,
+                        loading: false
+                    })
+                    console.log(res.body[0])
+                }
+            })
+    },
+
     render: function(){
+        var loaderStyle = {
+                position: 'absolute',
+                left: '0',
+                right: '0',
+                top: '30vh',
+                margin: '0 auto',
+                display: this.state.loading ? 'block' : 'none'
+            }
         return (
-            React.createElement("div", null, 
-                "Resources Page"
+            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
+                
+                    this.state.offline ? React.createElement(Offline, null) : null, 
+                
+                
+                    this.state.notifs.map(function(element, index){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(ListItem, {
+                                    leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.uri.slice(8)}), 
+                                    disabled: true, 
+                                    secondaryText: 
+                                        React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
+                                     }, 
+                                    element.name
+                                ), 
+                                React.createElement(ListDivider, null)
+                            )
+                        )
+                    }), 
+                
+                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
             )
         )
     }
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/resources.js","/")
-},{"./material.js":11,"buffer":16,"material-ui":52,"oMfpAn":19,"react":375}],15:[function(require,module,exports){
+},{"./material.js":11,"./offline.js":13,"buffer":16,"material-ui":52,"oMfpAn":19,"react/addons":203,"superagent":376}],15:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     material = require('./material.js'),

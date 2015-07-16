@@ -138,7 +138,7 @@ module.exports = React.createClass({
                     <IconButton
                         iconStyle={{color: 'white', fontSize: '20px'}}
                         iconClassName="mdi mdi-bell"
-                        onTouchEnd={this.toggleNotification} />
+                        onTouchTap={this.toggleNotification} />
                     <div style={UnreadStyle}></div>
                 </div>
                 {

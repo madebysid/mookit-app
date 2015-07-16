@@ -14,6 +14,11 @@ var React = require('react/addons'),
 
 var courses = [
     {
+        title: "Staging Course",
+        loginMain: "http://staging.mookit.co",
+        main: "http://node.mookit.co"
+    },
+    {
         title: "MOOC on MOOCs",
         loginMain: "http://mooconmooc.org",
         main: "http://node.mooconmooc.org"
@@ -29,8 +34,8 @@ var courses = [
         main: "http://node.mooconmooc.org"
     },
     {
-        title: "Test Course",
-        loginMain: "http://staging.mookit.co",
+        title: "Local Server",
+        loginMain: "http://202.3.77.96:3000",
         main: "http://node.staging.mookit.co"
     }
 ]
@@ -48,12 +53,12 @@ module.exports = React.createClass({
     render: function(){
         var self = this,
             TitleStyle = {
-            backgroundColor: '#378E43',
-            color: 'white',
-            height: '10vh',
-            paddingLeft: '20vw',
-            fontSize: '1.5em'
-        }
+                backgroundColor: '#378E43',
+                color: 'white',
+                height: '10vh',
+                paddingLeft: '20vw',
+                fontSize: '1.5em'
+            }
         return (
             <div>
                <AppBar style={{backgroundColor: '#378E43'}} zDepth={0} iconElementRight={
@@ -65,32 +70,35 @@ module.exports = React.createClass({
                 <div style= {TitleStyle}>
                     Available Courses
                 </div>
-                {
-                    courses.map(function(element, index){
-                        return (
-                            <Card style={{
-                                animation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
-                                float: 'left',
-                                width: 'calc(50% - 4px)',
-                                margin: '2px',
-                                opacity: '0',
-                                animationFillMode: 'forwards'
-                            }}
-                                key={index} onTouchTap={self.goToCourse.bind(this,index)}>
-                                <CardMedia>
-                                    <img src={"img/courses/" + index + ".png"} />
-                                </CardMedia>
-                                <CardText>
-                                {
-                                    (element.title.length > 15)
-                                        ? element.title.slice(0,15) + "..."
-                                        : element.title
-                                }
-                                </CardText>
-                            </Card>
-                        )
-                    })
-                }
+                <div style={{overflowY: 'scroll', height: '80vh'}}>
+                    {
+                        courses.map(function(element, index){
+                            return (
+                                <Card style={{
+                                    animation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
+                                    WebkitAnimation: 'flyInFromBottom 0.3s ease ' + (index+1)*0.1 + 's',
+                                    float: 'left',
+                                    width: 'calc(50% - 4px)',
+                                    margin: '2px',
+                                    opacity: '0',
+                                    animationFillMode: 'forwards'
+                                }}
+                                    key={index} onTouchTap={self.goToCourse.bind(this,index)}>
+                                    <CardMedia>
+                                        <img src={"img/courses/" + index + ".png"} />
+                                    </CardMedia>
+                                    <CardText>
+                                    {
+                                        (element.title.length > 15)
+                                            ? element.title.slice(0,15) + "..."
+                                            : element.title
+                                    }
+                                    </CardText>
+                                </Card>
+                            )
+                        })
+                    }
+                </div>
             </div>
         )
     }
