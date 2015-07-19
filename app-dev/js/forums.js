@@ -14,8 +14,11 @@ var React = require('react'),
     FontIcon = mui.FontIcon,
     IconButton = mui.IconButton,
     CircularProgress = mui.CircularProgress,
+    LinearProgress = mui.LinearProgress,
     Dialog = mui.Dialog,
-    Avatar = mui.Avatar
+    Avatar = mui.Avatar,
+    TextField = mui.TextField,
+    FlatButton = mui.FlatButton
 
 var TopicNormal = React.createClass({
     render: function(){
@@ -43,8 +46,7 @@ var TopicExpanded = React.createClass({
         },300)
 
     },
-
-    componentDidMount: function(){
+    fetch: function(){
         var self = this
         this.setState({
             loading: true
@@ -71,6 +73,40 @@ var TopicExpanded = React.createClass({
                 }
             })
     },
+    postReply: function(){
+        var self = this
+        if(self.refs.replyField.getValue() == ''){
+            self.refs.replyField.setErrorText('This field is compulsory')
+        }
+        else{
+            superagent
+                .post(localStorage.getItem('mainUrl') + '/comments/' + this.props.tid)
+                .type('form')
+                .send({
+                    "parentCommentId": 0,
+                    "text": self.refs.replyField.getValue(),
+                    "subject": self.refs.replyField.getValue()
+                })
+                .timeout(10000)
+                .set('token', localStorage.getItem('token'))
+                .set('uid', localStorage.getItem('uid'))
+                .end(function(err, res){
+                    if(err){
+                        if(err.timeout==10000)
+                            console.log('Unable to process request')
+                    }
+                    else{
+                        self.refs.replyField.clearValue()
+                        self.fetch()
+                        this.props.refresh()
+                    }
+                })
+        }
+    },
+
+    componentWillMount: function(){
+        this.fetch()
+    },
     getInitialState: function(){
         return {
             topicComments: [],
@@ -79,6 +115,7 @@ var TopicExpanded = React.createClass({
         }
     },
     render: function(){
+        var self = this
         var expandedStyle = {
                 position: 'absolute',
                 backgroundColor: 'white',
@@ -101,25 +138,37 @@ var TopicExpanded = React.createClass({
             },
             descStyle = {
                 padding: '10px',
-                paddingTop: '0px',
                 color: '#727272'
             },
             FABStyle = {
                 position: 'fixed',
-                bottom: '20px',
+                bottom: '40px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
                 boxShadow: '0px 0px 5px #727272'
             },
+            ReplyStyle = {
+                position: 'fixed',
+                bottom: '40px',
+                left: '20px',
+                animation: 'flyInFromBottom',
+                WebkitAnimation: 'flyInFromBottom',
+                animationFillMode: 'forwards',
+                backgroundColor: 'white'
+            },
             loaderStyle = {
                 position: 'absolute',
+                top: '0',
                 left: '0',
-                right: '0',
-                margin: '0 auto',
-                top: '30vh',
+                width: '100%',
                 zIndex: '5000',
                 display: (this.state.loading) ? 'block' : 'none',
+            },
+            TopicCommentsStyle = {
+                display: 'block',
+                height: 'calc(70vh - 150px)',
+                overflowY: 'scroll'
             }
         return (
             <div style={expandedStyle}>
@@ -130,22 +179,37 @@ var TopicExpanded = React.createClass({
                     <p style={{color: '#378E43'}}>{this.props.text}</p>
                     <IconButton style={closeStyle} onTouchTap={this.close} iconClassName="mdi mdi-close"></IconButton>
 
-                    <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}></div>
+                    <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}>
+                    </div>
+                    <div style={TopicCommentsStyle}>
                     {
-                        this.state.topicComments.map(function(element){
-                            return (
-                                <div>
-                                    <ListItem disabled={true} leftAvatar={<Avatar src={localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)}></Avatar>}>
-                                        <div style={{color: '#F0592A', fontSize: '0.75em', lineHeight: '0em'}}>{element.username}</div>
-                                        <div style={{color: '#727272'}} dangerouslySetInnerHTML={{__html: element.text}}></div>
-                                    </ListItem>
-                                </div>
-                            )
-                        })
+                        (self.state.topicComments == [])
+                            ? <div>There are no replies</div>
+                            : self.state.topicComments.map(function(element){
+                                    return (
+                                        <div>
+                                            <ListItem disabled={true} leftAvatar={
+                                        <Avatar src={localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)} />
+                                    }>
+                                                <div style={{color: '#F0592A', fontSize: '0.75em', lineHeight: '1.5em'}}>{element.username}</div>
+                                                <div style={{color: '#727272'}} dangerouslySetInnerHTML={{__html: element.text}}></div>
+                                            </ListItem>
+                                        </div>
+                                    )
+                                })
                     }
-                    <IconButton iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-reply" />
+                    </div>
+                    <TextField
+                        ref="replyField"
+                        style={ReplyStyle}
+                        floatingLabelText="Reply"/>
+                    <IconButton
+                        iconStyle={{color: 'white'}}
+                        style={FABStyle}
+                        iconClassName="mdi mdi-reply"
+                        onTouchTap={this.postReply}/>
                 </Animate>
-                <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
+                <LinearProgress mode="indeterminate" style={loaderStyle}/>
             </div>
         )
     }
@@ -172,34 +236,138 @@ var ExpandableListItem = React.createClass({
             ToRender = this.state.opened ? TopicExpanded : TopicNormal
         return (
             <div>
-                <ToRender style={ListStyle} toggle={this.toggle} text={this.props.data.topic} replies={this.props.data.numPosts} description={this.props.data.description} tid={this.props.data.tid} />
+                <ToRender refresh={this.props.refresh} style={ListStyle} toggle={this.toggle} text={this.props.data.topic} replies={this.props.data.numPosts} description={this.props.data.description} tid={this.props.data.tid} />
             </div>
         )
     }
 })
 
-module.exports = React.createClass({
-
-    newForum: function(){
-        console.log('Create new general forum')
+var ForumCreate = React.createClass({
+    create: function(){
+        var self = this
+        if(self.refs.forumTitle.getValue() == ''){
+            self.refs.forumTitle.setErrorText('This field is compulsory')
+        }
+        if(self.refs.forumDesc.getValue() == ''){
+            self.refs.forumDesc.setErrorText('This field is compulsory')
+        }
+        else{
+            superagent
+                .post(localStorage.getItem('mainUrl') + '/addForum')
+                .type('form')
+                .send({
+                    subject: self.refs.forumTitle.getValue(),
+                    description: self.refs.forumDesc.getValue(),
+                    tid: 1,
+                    topicId: 1})
+                .timeout(10000)
+                .set('token', localStorage.getItem('token'))
+                .set('uid', localStorage.getItem('uid'))
+                .end(function(err, res){
+                    if(err){
+                        if(err.timeout==10000)
+                            console.log('Unable to process request')
+                    }
+                    else{
+                        self.props.cancel()
+                    }
+                })
+        }
     },
-
-    componentWillMount: function(){
+    cancel: function(){
         var self = this
         this.setState({
-            laoding: true
+            reload: !self.state.reload
+        })
+        this.props.cancel();
+    },
+    clearErrors: function(){
+        this.refs.forumTitle.setErrorText('')
+        this.refs.forumDesc.setErrorText('')
+    },
+
+    getInitialState: function(){
+        return {
+            reload: false
+        }
+    },
+    render: function(){
+        var containerStyle = {
+            zIndex: '6000',
+            backgroundColor: 'white',
+            height: '70vh',
+            width: '100%'
+        },
+        TextFieldStyle = {
+            display: 'block',
+            width: '80vw',
+            margin: '0 auto'
+        },
+        PostStyle = {
+            position: 'absolute',
+            right: '20px',
+            bottom: '20px',
+            fontFamily: 'RobotoLight',
+            backgroundColor: '#378E43',
+            color: 'white',
+        },
+        CancelStyle = {
+            position: 'absolute',
+            left: '20px',
+            bottom: '20px',
+            color: 'red'
+        }
+        return (
+            <div style={containerStyle}>
+                <Animate transitionName="topicsOpen" transitionAppear={true}>
+                    <div>
+                        <p style={{fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}>New Topic</p>
+                        <TextField
+                            ref="forumTitle"
+                            style={TextFieldStyle}
+                            floatingLabelText="Title"
+                            onFocus={this.clearErrors} />
+
+                        <TextField
+                            ref="forumDesc"
+                            style={TextFieldStyle}
+                            floatingLabelText="Description"
+                            multiLine={true}
+                            onFocus={this.clearErrors}/>
+
+                        <FlatButton
+                            style={PostStyle}
+                            onTouchTap={this.create}>
+                            POST
+                        </FlatButton>
+                        <FlatButton onTouchTap={this.cancel} style={CancelStyle}>Cancel</FlatButton>
+                    </div>
+                </Animate>
+            </div>
+        )
+    }
+})
+
+var ForumShow = React.createClass({
+    newForum: function(){
+        this.props.newForum()
+    },
+    fetch: function(){
+        var self = this
+        this.setState({
+            loading: true
         })
         superagent
             .get(localStorage.getItem('mainUrl') + '/forums/getdiscussions/general')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
             .end(function(err, res){
                 if(err){
                     if(err.timeout==10000)
-                        this.setState({
+                        self.setState({
                             offline: true
                         })
-                    console.log('Some Error')
                 }
                 else if(res.body[0].data != "null")
                     self.setState({
@@ -218,8 +386,12 @@ module.exports = React.createClass({
         return {
             topics: [],
             loading: false,
-            offline: false
+            offline: false,
+            newForum: this.props.newForum
         }
+    },
+    componentWillMount: function(){
+        this.fetch()
     },
     render: function(){
         var self = this
@@ -245,21 +417,65 @@ module.exports = React.createClass({
                 boxShadow: '0px 0px 5px #727272'
             }
         return (
-            <div style={{height: '70vh', overflowY: 'scroll'}}>
+            <div>
                 {
                     this.state.offline ? <Offline /> : null
                 }
-                    <div style={DisTitleStyle}>Discussions</div>
-                    <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
-                    <List style={{paddingLeft: '20px', paddingBottom: '0'}}>
-                        {
-                            self.state.topics.map(function(element, index){
-                                return <ExpandableListItem key={index} data={element} />
-                            })
-                        }
-                    </List>
+                <div style={DisTitleStyle}>Discussions</div>
+                <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
+                <List style={{paddingLeft: '20px', paddingBottom: '0'}}>
+                    {
+                        self.state.topics.map(function(element, index){
+                            return <ExpandableListItem refresh={self.fetch} key={index} data={element} />
+                        })
+                    }
+                </List>
 
-                    <IconButton onTouchTap={this.newForum} iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-border-color" />
+                <IconButton onTouchTap={this.newForum} iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-border-color" />
+            </div>
+        )
+    }
+})
+
+module.exports = React.createClass({
+
+    newForum: function(){
+        this.setState({
+            newForum: true
+        })
+        this.props.createForum()
+    },
+    cancelNewForum: function(){
+        this.setState({
+            newForum: false
+        })
+        this.props.cancelCreate();
+    },
+
+    componentWillReceiveProps: function(nextProps){
+        this.setState({
+            newForum: nextProps.forum
+        })
+    },
+
+
+    getInitialState: function(){
+        return {
+            topics: [],
+            loading: false,
+            offline: false,
+            newForum: this.props.newForum
+        }
+    },
+    render: function(){
+        var self = this
+        return (
+            <div style={{height: '70vh', overflowY: 'scroll'}}>
+                {
+                    this.state.newForum
+                        ? <ForumCreate cancel={self.cancelNewForum}/>
+                        : <ForumShow newForum={self.newForum}/>
+                }
             </div>
         )
     }

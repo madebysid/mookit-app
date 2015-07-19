@@ -20,7 +20,7 @@ var NotificationContainer = React.createClass({
             offline: false
         }
     },
-    componentDidMount: function(){
+    componentWillMount: function(){
         var self = this
         superagent
             .get(localStorage.getItem('mainUrl') + '/announcement/summary')
@@ -40,7 +40,6 @@ var NotificationContainer = React.createClass({
                         notifs: res.body,
                         loading: false
                     })
-                    console.log(res.body[0])
                 }
             })
     },

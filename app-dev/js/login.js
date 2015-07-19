@@ -5,7 +5,6 @@ var React = require('react'),
     Router = require('react-router'),
     Offline = require('./offline.js'),
 
-    AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
     FlatButton = mui.FlatButton,
@@ -47,11 +46,11 @@ module.exports = React.createClass({
                     }
                 }
                 else {
+                    console.log(res)
                     localStorage.setItem('token', res.body.token);
                     localStorage.setItem('uid', res.body.uid);
                     self.transitionTo('/course')
                 }
-
             })
     },
     passUpdate: function(e){
@@ -78,7 +77,7 @@ module.exports = React.createClass({
             margin: '0 auto',
             left: '0',
             right: '0',
-            top: '80px'
+            top: '20px'
         },
         LogoStyle = {
             display: 'block',
@@ -120,7 +119,7 @@ module.exports = React.createClass({
             margin: '0 auto',
             left: '0',
             right: '0',
-            bottom: '20px',
+            bottom: '80px',
             textAlign: 'center',
             color: '#727272',
             fontSize: '0.8em'
@@ -139,9 +138,6 @@ module.exports = React.createClass({
             marginRight: '60px',
             marginTop: '20px'
         },
-        AppBarStyle = {
-            backgroundColor: '#378E43'
-        },
         standardActions = [
             { text: 'Okay' }
         ];
@@ -150,11 +146,6 @@ module.exports = React.createClass({
                 {
                     this.state.offline ? <Offline /> : null
                 }
-
-                <AppBar
-                    iconClassNameLeft="mdi mdi-arrow-left" onLeftIconButtonTouchTap={this.goBackDude}
-                    zDepth={0}
-                    style={AppBarStyle} />
 
                 <div style={{backgroundColor: '#EDECEC'}}>
                     <Card style={CardStyle}>
@@ -169,7 +160,8 @@ module.exports = React.createClass({
                                 style={TextFieldStyle}
                                 hintText="Password"
                                 floatingLabelText="Password"
-                                onChange={this.passUpdate}>
+                                onChange={this.passUpdate}
+                                onEnterKeyDown={this.login}>
                                 <input type="password"/>
                             </TextField>
 

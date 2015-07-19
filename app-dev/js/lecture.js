@@ -15,8 +15,11 @@ var React = require('react'),
     FontIcon = mui.FontIcon,
     IconButton = mui.IconButton,
     CircularProgress = mui.CircularProgress,
+    LinearProgress = mui.LinearProgress,
     Dialog = mui.Dialog,
-    Avatar = mui.Avatar
+    Avatar = mui.Avatar,
+    TextField = mui.TextField,
+    FlatButton = mui.FlatButton
 
 var TopicNormal = React.createClass({
     render: function(){
@@ -77,6 +80,7 @@ var TopicExpanded = React.createClass({
         }
     },
     render: function(){
+        var self = this
         var expandedStyle = {
             position: 'absolute',
             backgroundColor: 'white',
@@ -112,10 +116,9 @@ var TopicExpanded = React.createClass({
         },
         loaderStyle = {
             position: 'absolute',
+            top: '0',
             left: '0',
-            right: '0',
-            margin: '0 auto',
-            top: '30vh',
+            width: '100%',
             zIndex: '5000',
             display: (this.state.loading) ? 'block' : 'none',
         }
@@ -130,7 +133,7 @@ var TopicExpanded = React.createClass({
 
                     <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}></div>
                     {
-                        this.state.lectureTopicComments.map(function(element){
+                        self.state.lectureTopicComments.map(function(element){
                             return (
                                 <div>
                                     <ListItem disabled={true} leftAvatar={<Avatar src={localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)}></Avatar>}>
@@ -143,7 +146,7 @@ var TopicExpanded = React.createClass({
                     }
                     <IconButton iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-reply" />
                 </Animate>
-                <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
+                <LinearProgress mode="indeterminate" style={loaderStyle}/>
             </div>
         )
     }
@@ -176,14 +179,122 @@ var ExpandableListItem = React.createClass({
 }
 })
 
-module.exports = React.createClass({
-
-    newForum: function(){
-        console.log('Create new topic forum')
+var LectureForumCreate = React.createClass({
+    create: function(){
+        var self = this
+        if(self.refs.forumTitle.getValue() == ''){
+            self.refs.forumTitle.setErrorText('This field is compulsory')
+        }
+        if(self.refs.forumDesc.getValue() == ''){
+            self.refs.forumDesc.setErrorText('This field is compulsory')
+        }
+        else{
+            alert('POST Request here')
+            //superagent
+            //    .post(localStorage.getItem('mainUrl') + '/addForum')
+            //    .type('form')
+            //    .send({
+            //        subject: self.refs.forumTitle.getValue(),
+            //        description: self.refs.forumDesc.getValue(),
+            //        tid: 1,
+            //        topicId: 1})
+            //    .timeout(10000)
+            //    .set('token', localStorage.getItem('token'))
+            //    .set('uid', localStorage.getItem('uid'))
+            //    .end(function(err, res){
+            //        if(err){
+            //            if(err.timeout==10000)
+            //                console.log('Unable to process request')
+            //        }
+            //        else{
+            //            self.props.cancel()
+            //        }
+            //    })
+        }
+    },
+    cancel: function(){
+        var self = this
+        this.setState({
+            reload: !self.state.reload
+        })
+        this.props.cancel();
+    },
+    clearErrors: function(){
+        this.refs.forumTitle.setErrorText('')
+        this.refs.forumDesc.setErrorText('')
     },
 
-    componentWillMount: function(){
+    getInitialState: function(){
+        return {
+            reload: false
+        }
+    },
+    render: function(){
+        var containerStyle = {
+                zIndex: '6000',
+                backgroundColor: 'white',
+                height: '70vh',
+                width: '100%'
+            },
+            TextFieldStyle = {
+                display: 'block',
+                width: '80vw',
+                margin: '0 auto'
+            },
+            PostStyle = {
+                position: 'absolute',
+                right: '20px',
+                bottom: '20px',
+                fontFamily: 'RobotoLight',
+                backgroundColor: '#378E43',
+                color: 'white',
+            },
+            CancelStyle = {
+                position: 'absolute',
+                left: '20px',
+                bottom: '20px',
+                color: 'red'
+            }
+        return (
+            <div style={containerStyle}>
+                <Animate transitionName="topicsOpen" transitionAppear={true}>
+                    <div>
+                        <p style={{fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}>New Topic</p>
+                        <TextField
+                            ref="forumTitle"
+                            style={TextFieldStyle}
+                            floatingLabelText="Title"
+                            onFocus={this.clearErrors} />
+
+                        <TextField
+                            ref="forumDesc"
+                            style={TextFieldStyle}
+                            floatingLabelText="Description"
+                            multiLine={true}
+                            onFocus={this.clearErrors}/>
+
+                        <FlatButton
+                            style={PostStyle}
+                            onTouchTap={this.create}>
+                            POST
+                        </FlatButton>
+                        <FlatButton onTouchTap={this.cancel} style={CancelStyle}>Cancel</FlatButton>
+                    </div>
+                </Animate>
+            </div>
+        )
+    }
+})
+
+var LectureForumShow = React.createClass({
+    newForum: function(){
+        this.props.newForum()
+    },
+    fetch: function(){
         var self = this
+        this.setState({
+            loading: true
+        })
         superagent
             .get(localStorage.getItem('mainUrl') + '/forums/' + self.props.data.forumsectionId)
             .set('token', localStorage.getItem('token'))
@@ -194,7 +305,6 @@ module.exports = React.createClass({
                         this.setState({
                             offline: true
                         })
-                    console.log('Some Error')
                     this.refs.lectureLoadError.show()
                 }
                 else if(res.body[0].data != "null")
@@ -204,7 +314,7 @@ module.exports = React.createClass({
                     })
                 else
                     self.setState({
-                        lectureTopics: 'Nothing to show',
+                        lectureTopics: ['Nothing to show'],
                         loading: false
                     })
             })
@@ -213,9 +323,13 @@ module.exports = React.createClass({
     getInitialState: function(){
         return {
             lectureTopics: [],
-            loading: true,
-            offline: false
+            loading: false,
+            offline: false,
+            newForum: this.props.newForum
         }
+    },
+    componentWillMount: function(){
+        this.fetch()
     },
     render: function(){
         var self = this
@@ -258,28 +372,64 @@ module.exports = React.createClass({
                     this.state.offline ? <Offline /> : null
                 }
                 <Animate transitionName="cardOpen" transitionAppear={true}>
-                <Card style={{zIndex: '1000'}}>
-                    <CardMedia>
-                        <YouTube opts={VidOpts} url={self.props.data.vurl}></YouTube>
-                    </CardMedia>
-                    <CardText subtitle="Instructor" style={CardTitleStyle}>
-                        <p style={{lineHeight: '1em'}}>{self.props.data.title}</p>
-                        <p style={{lineHeight: '0em', fontSize: '0.75em', color: '#B6B6B6'}}>Instructor</p>
-                    </CardText>
-                </Card>
+                    <Card style={{zIndex: '1000'}}>
+                        <CardMedia>
+                            <YouTube opts={VidOpts} url={self.props.data.vurl}></YouTube>
+                        </CardMedia>
+                        <CardText subtitle="Instructor" style={CardTitleStyle}>
+                            <p style={{lineHeight: '1em'}}>{self.props.data.title}</p>
+                            <p style={{lineHeight: '0em', fontSize: '0.75em', color: '#B6B6B6'}}>Instructor</p>
+                        </CardText>
+                    </Card>
 
-                <div style={DisTitleStyle}>Discussions</div>
-                <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
-                <List style={{paddingLeft: '20px', paddingBottom: '0'}}>
-                    {
-                        this.state.lectureTopics.map(function(element, index){
-                            return <ExpandableListItem key={index} data={element} />
-                        })
-                    }
-                </List>
+                    <div style={DisTitleStyle}>Discussions</div>
+                    <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
+                    <List style={{paddingLeft: '20px', paddingBottom: '0'}}>
+                        {
+                            self.state.lectureTopics.map(function(element, index){
+                                return <ExpandableListItem key={index} data={element} />
+                            })
+                        }
+                    </List>
 
                 <IconButton onTouchTap={this.newForum} iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-border-color" />
                 </Animate>
+            </div>
+        )
+    }
+})
+
+module.exports = React.createClass({
+
+    newForum: function(){
+        this.setState({
+            newForum: true
+        })
+    },
+    cancelNewForum: function(){
+        this.setState({
+            newForum: false
+        })
+    },
+
+
+    getInitialState: function(){
+        return {
+            lectureTopics: [],
+            loading: true,
+            offline: false,
+            newForum: false
+        }
+    },
+    render: function(){
+        var self = this
+        return (
+            <div>
+                {
+                    this.state.newForum
+                        ? <LectureForumCreate cancel={self.cancelNewForum}/>
+                        : <LectureForumShow data={self.props.data} newForum={self.newForum}/>
+                }
             </div>
         )
     }

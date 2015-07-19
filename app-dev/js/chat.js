@@ -280,24 +280,32 @@ module.exports = React.createClass({
 
     getInitialState: function(){
         var self = this
-        setInterval(function(){
-            superagent
-                .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
-                .set('token', localStorage.getItem('token'))
-                .set('uid', localStorage.getItem('uid'))
-                .end(function(err,res){
-                    if (res.body[0].timestamp > parseInt(localStorage.getItem('lastSeen').slice(0,10)))
-                    {
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res) {
+                if (err) {
+                    if(err.timeout==10000)
+                        self.setState({
+                            offline: true
+                        })
+                }
+                else
+                {
+                    if (res.body[0].timestamp > parseInt(localStorage.getItem('lastSeen').slice(0, 10))) {
                         self.setState({
                             unread: true
                         })
                     }
-                })
-        }, 2000)
+                }
+            })
         return {
             unread: (Date.now() > localStorage.getItem('lastSeen') && localStorage.getItem('newMsg')),
             opened: false,
-            new: false
+            new: false,
+            offline: false
         }
     },
     render: function(){
@@ -322,6 +330,9 @@ module.exports = React.createClass({
 
         return (
             <div>
+                {
+                    this.state.offline ? <Offline /> : null
+                }
                 <div style={IconStyle}>
                     <IconButton
                         iconStyle={{color: 'white', fontSize: '20px'}}

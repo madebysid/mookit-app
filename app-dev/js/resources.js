@@ -20,10 +20,10 @@ module.exports = React.createClass({
             offline: false
         }
     },
-    componentDidMount: function(){
+    componentWillMount: function(){
         var self = this
         superagent
-            .get(localStorage.getItem('mainUrl') + '/announcement/summary')
+            .get(localStorage.getItem('mainUrl') + '/resources')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
@@ -40,7 +40,6 @@ module.exports = React.createClass({
                         notifs: res.body,
                         loading: false
                     })
-                    console.log(res.body[0])
                 }
             })
     },
@@ -55,7 +54,7 @@ module.exports = React.createClass({
                 display: this.state.loading ? 'block' : 'none'
             }
         return (
-            <div style={{height: '70vh', overflowY: 'scroll'}}>
+            <div style={{height: '70vh', overflowY: 'scroll', overflowX: 'hidden'}}>
                 {
                     this.state.offline ? <Offline /> : null
                 }
@@ -64,7 +63,6 @@ module.exports = React.createClass({
                         return (
                             <div>
                                 <ListItem
-                                    leftAvatar={<Avatar src={localStorage.getItem('loginUrl') + "/sites/default/files" + element.uri.slice(8)}/>}
                                     disabled={true}
                                     secondaryText={
                                         <p dangerouslySetInnerHTML={{__html: element.body_value}} />

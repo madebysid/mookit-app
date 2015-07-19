@@ -18,7 +18,8 @@ var React = require('react'),
     IconMenu = mui.IconMenu,
     MenuItem = require('material-ui/lib/menus/menu-item'),
     CircularProgress = mui.CircularProgress,
-    Dialog = mui.Dialog
+    Dialog = mui.Dialog,
+    Snackbar = mui.Snackbar
 
 var expanded = []
 
@@ -55,23 +56,52 @@ module.exports = React.createClass({
             lecture: true
         })
     },
+    createForum: function(){
+        this.setState({
+            newForum: true
+        })
+    },
+    cancelCreate: function(){
+        this.setState({
+            newForum: false
+        })
+    },
     goBackDude: function(){
         var self = this
-        if(this.state.lecture == true)
+        if(self.state.lecture == true)
             self.setState({
                 lecture: false
             })
+        else if(self.state.newForum == true){
+            self.setState({
+                newForum: false
+            })
+        }
         else{
-            this.transitionTo('/courses')
+            this.transitionTo('/login')
             localStorage.setItem('token', '')
             localStorage.setItem('uid', '')
         }
+    },
+    openSettings: function(){
+        this.refs.settingsDialog.show();
+    },
+    saveSettings: function(){
+        this.refs.settingsDialog.dismiss();
+        this.refs.settingsSnackbar.show();
+    },
+    openAbout: function(){
+        this.refs.aboutDialog.show();
+    },
+    menuOpen: function(e, item){
+        item.props.index==0 ? this.openSettings() : this.openAbout();
     },
 
 
     getInitialState: function(){
         return {
             lecture: false,
+            newForum: false,
             data: [],
             loading: true,
             error: false,
@@ -84,7 +114,6 @@ module.exports = React.createClass({
             .get(localStorage.getItem('mainUrl') + '/lectures/summary')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
-            .unset('Content-Type')
             .timeout(10000)
             .end(function(err, res){
                 if(err){
@@ -105,7 +134,8 @@ module.exports = React.createClass({
             })
     },
     render: function(){
-        var AppBarStyle = {
+        var self = this,
+        AppBarStyle = {
             backgroundColor: '#378E43'
         },
         TitleStyle = {
@@ -135,7 +165,14 @@ module.exports = React.createClass({
             margin: '0 auto',
             top: '30vh',
             display: (this.state.loading) ? 'block' : 'none',
-        }
+        },
+        settingsDialog = [
+            { text: 'Cancel' },
+            { text: 'Save', onTouchTap: self.saveSettings }
+        ],
+        aboutDialog = [
+            { text: 'Okay' }
+        ]
         return (
             <div>
                 {
@@ -143,11 +180,11 @@ module.exports = React.createClass({
                 }
                 <AppBar
                     iconElementRight={
-                        <IconMenu iconButtonElement={
+                        <IconMenu onItemTouchTap={this.menuOpen} iconButtonElement={
                             <IconButton iconStyle={{color: 'white'}} iconClassName="mdi mdi-dots-vertical"></IconButton>
                         }>
-                          <MenuItem primaryText="Settings" index={0}/>
-                          <MenuItem primaryText="About" index={1}/>
+                          <MenuItem index={0} primaryText="Settings" index={0}/>
+                          <MenuItem index={1} primaryText="About" index={1}/>
                         </IconMenu>
                     }
                     iconClassNameLeft="mdi mdi-arrow-left" onLeftIconButtonTouchTap={this.goBackDude}
@@ -165,8 +202,8 @@ module.exports = React.createClass({
                     <Tab style={TabInsideStyle} label="FORUMS" >
                         <div>
                             <div style={ExtraDivStyle}></div>
-                            <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
-                            <Forums />
+                            <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle} />
+                            <Forums createForum={this.createForum} cancelCreate={this.cancelCreate} forum={this.state.newForum}/>
                         </div>
                     </Tab>
                     <Tab style={TabInsideStyle} label="LECTURES" >
@@ -184,6 +221,30 @@ module.exports = React.createClass({
                         </div>
                     </Tab>
                 </Tabs>
+
+
+
+                <Dialog
+                    ref="settingsDialog"
+                    title="Settings"
+                    actions={settingsDialog}
+                    modal={true}>
+                    Settings dialog. Put settings in here
+                </Dialog>
+
+                <Dialog
+                    ref="aboutDialog"
+                    title="About"
+                    actions={aboutDialog}
+                    modal={true}>
+                    Something about the app, or the project, maybe
+                </Dialog>
+                <Snackbar
+                    ref="settingsSnackbar"
+                    message="Settings saved"
+                    action="Okay"
+                    autoHideDuration={2000}
+                    style={{position: 'absolute', left: '-30px'}}/>
             </div>
         )
     }

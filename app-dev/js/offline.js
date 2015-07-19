@@ -9,7 +9,7 @@ module.exports = React.createClass({
     mixins: [material, Router.Navigation],
 
     retry: function(){
-        this.transitionTo('/courses')
+        this.transitionTo('/login')
     },
 
 
