@@ -3065,17 +3065,21 @@ var React = require('react'),
     mui = require('material-ui'),
     Router = require('react-router'),
 
-    FlatButton = mui.FlatButton
+    FlatButton = mui.FlatButton,
+    Dialog = mui.Dialog
 
 module.exports = React.createClass({displayName: "exports",
     mixins: [material, Router.Navigation],
 
-    retry: function(){
-        this.transitionTo('/login')
+    componentWillMount: function(){
+        this.refs.offlineDialog.show()
     },
 
 
     render: function(){
+        var standardActions = [
+            { text: 'Okay' }
+        ]
         var offlineStyle = {
             position: 'fixed',
             top: '0',
@@ -3113,12 +3117,11 @@ module.exports = React.createClass({displayName: "exports",
             textAlign: 'center'
         }
         return (
-            React.createElement("div", {style: offlineStyle}, 
-                React.createElement("img", {src: "img/offline.svg", style: imgStyle}), 
-                React.createElement("p", {style: textStyle}, "Looks like you're offline."), 
-                React.createElement(FlatButton, {style: btnStyle, onTouchTap: this.retry}, 
-                    "Retry"
-                )
+            React.createElement(Dialog, {
+                title: "Error", 
+                actions: standardActions, 
+                ref: "offlineDialog"}, 
+                "We're having trouble connecting to our servers. Please check your internet connection or try again later."
             )
         )
     }
@@ -3324,7 +3327,7 @@ module.exports = React.createClass({displayName: "exports",
     }
 })
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_5700ad6a.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_d40005c.js","/")
 },{"./app.js":1,"./chat.js":2,"./course.js":3,"./courses.js":4,"./dash.js":5,"./forums.js":7,"./lecture.js":8,"./lectures.js":9,"./login.js":10,"./material.js":11,"./notifications.js":12,"./offline.js":13,"./resources.js":14,"./tutorial.js":15,"buffer":16,"material-ui":52,"material-ui/lib/menus/menu-item":65,"oMfpAn":19,"react":375,"react-router":175,"react-swipe":191,"react-tap-event-plugin":195,"react-youtube":196,"react/addons":203,"superagent":376}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
@@ -4852,17 +4855,21 @@ var React = require('react'),
     mui = require('material-ui'),
     Router = require('react-router'),
 
-    FlatButton = mui.FlatButton
+    FlatButton = mui.FlatButton,
+    Dialog = mui.Dialog
 
 module.exports = React.createClass({displayName: "exports",
     mixins: [material, Router.Navigation],
 
-    retry: function(){
-        this.transitionTo('/login')
+    componentWillMount: function(){
+        this.refs.offlineDialog.show()
     },
 
 
     render: function(){
+        var standardActions = [
+            { text: 'Okay' }
+        ]
         var offlineStyle = {
             position: 'fixed',
             top: '0',
@@ -4900,12 +4907,11 @@ module.exports = React.createClass({displayName: "exports",
             textAlign: 'center'
         }
         return (
-            React.createElement("div", {style: offlineStyle}, 
-                React.createElement("img", {src: "img/offline.svg", style: imgStyle}), 
-                React.createElement("p", {style: textStyle}, "Looks like you're offline."), 
-                React.createElement(FlatButton, {style: btnStyle, onTouchTap: this.retry}, 
-                    "Retry"
-                )
+            React.createElement(Dialog, {
+                title: "Error", 
+                actions: standardActions, 
+                ref: "offlineDialog"}, 
+                "We're having trouble connecting to our servers. Please check your internet connection or try again later."
             )
         )
     }

@@ -3,17 +3,21 @@ var React = require('react'),
     mui = require('material-ui'),
     Router = require('react-router'),
 
-    FlatButton = mui.FlatButton
+    FlatButton = mui.FlatButton,
+    Dialog = mui.Dialog
 
 module.exports = React.createClass({
     mixins: [material, Router.Navigation],
 
-    retry: function(){
-        this.transitionTo('/login')
+    componentWillMount: function(){
+        this.refs.offlineDialog.show()
     },
 
 
     render: function(){
+        var standardActions = [
+            { text: 'Okay' }
+        ]
         var offlineStyle = {
             position: 'fixed',
             top: '0',
@@ -51,13 +55,12 @@ module.exports = React.createClass({
             textAlign: 'center'
         }
         return (
-            <div style={offlineStyle}>
-                <img src="img/offline.svg" style={imgStyle}/>
-                <p style={textStyle}>Looks like you're offline.</p>
-                <FlatButton style={btnStyle} onTouchTap={this.retry}>
-                    Retry
-                </FlatButton>
-            </div>
+            <Dialog
+                title="Error"
+                actions={standardActions}
+                ref="offlineDialog">
+                We're having trouble connecting to our servers. Please check your internet connection or try again later.
+            </Dialog>
         )
     }
 })

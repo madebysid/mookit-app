@@ -65,11 +65,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="lecture.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="lecture.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app-dev/js/lecture.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.27209705">
-              <caret line="408" column="18" selection-start-line="408" selection-start-column="18" selection-end-line="408" selection-end-column="18" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="417" column="30" selection-start-line="417" selection-start-column="30" selection-end-line="417" selection-end-column="30" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="offline.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app-dev/js/offline.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.28596187">
+              <caret line="11" column="4" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="4" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="login.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app-dev/js/login.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0">
+              <caret line="140" column="8" selection-start-line="140" selection-start-column="8" selection-end-line="142" selection-end-column="10" />
               <folding />
             </state>
           </provider>
@@ -117,7 +137,6 @@
         <option value="$PROJECT_DIR$/app-dev/index.html" />
         <option value="$PROJECT_DIR$/app-dev/js/routes.js" />
         <option value="$PROJECT_DIR$/app-dev/js/notifications.js" />
-        <option value="$PROJECT_DIR$/app-dev/js/offline.js" />
         <option value="$PROJECT_DIR$/app-dev/js/resources.js" />
         <option value="$PROJECT_DIR$/app-dist/materialdesignicons.min.css" />
         <option value="$PROJECT_DIR$/app-dev/js/chat.js" />
@@ -134,6 +153,7 @@
         <option value="$PROJECT_DIR$/app-dev/js/forums.js" />
         <option value="$PROJECT_DIR$/app-dev/js/course.js" />
         <option value="$PROJECT_DIR$/app-dev/js/lecture.js" />
+        <option value="$PROJECT_DIR$/app-dev/js/offline.js" />
       </list>
     </option>
   </component>
@@ -633,14 +653,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app-dev/js/offline.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="11" column="33" selection-start-line="11" selection-start-column="33" selection-end-line="11" selection-end-column="33" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app-dev/js/resources.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.39087948">
@@ -729,14 +741,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app-dev/js/login.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="1.1039861">
-          <caret line="165" column="40" selection-start-line="165" selection-start-column="40" selection-end-line="165" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app-dist/style.css">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-2.2859619">
@@ -771,8 +775,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app-dev/js/lecture.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.27209705">
-          <caret line="408" column="18" selection-start-line="408" selection-start-column="18" selection-end-line="408" selection-end-column="18" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="417" column="30" selection-start-line="417" selection-start-column="30" selection-end-line="417" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app-dev/js/login.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="140" column="8" selection-start-line="140" selection-start-column="8" selection-end-line="142" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app-dev/js/offline.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.28596187">
+          <caret line="11" column="4" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="4" />
           <folding />
         </state>
       </provider>
