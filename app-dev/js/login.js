@@ -63,9 +63,9 @@ module.exports = React.createClass({
     },
 
     getInitialState: function(){
-        localStorage.setItem('courseTitle', courses[0].title)
-        localStorage.setItem('mainUrl', courses[0].main)
-        localStorage.setItem('loginUrl', courses[0].login)
+        localStorage.setItem('courseTitle', courses.title)
+        localStorage.setItem('mainUrl', courses.main)
+        localStorage.setItem('loginUrl', courses.login)
         localStorage.setItem('lastSeen', Date.now())
         return {
             username: '',

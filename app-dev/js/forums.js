@@ -13,7 +13,6 @@ var React = require('react'),
     ListItem = mui.ListItem,
     FontIcon = mui.FontIcon,
     IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
     LinearProgress = mui.LinearProgress,
     Dialog = mui.Dialog,
     Avatar = mui.Avatar,
@@ -147,7 +146,7 @@ var TopicExpanded = React.createClass({
             },
             FABStyle = {
                 position: 'fixed',
-                bottom: '40px',
+                bottom: '48px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
@@ -155,7 +154,7 @@ var TopicExpanded = React.createClass({
             },
             ReplyStyle = {
                 position: 'fixed',
-                bottom: '40px',
+                bottom: '48px',
                 left: '20px',
                 backgroundColor: 'white',
                 width: 'calc(80% - 50px)'
@@ -409,17 +408,9 @@ var ForumShow = React.createClass({
                 paddingTop: '20px',
                 fontFamily: 'RobotoRegular'
             },
-            loaderStyle = {
-                position: 'absolute',
-                left: '0',
-                right: '0',
-                margin: '0 auto',
-                top: '50vh',
-                display: (this.state.loading) ? 'block' : 'none',
-            },
             FABStyle = {
                 position: 'absolute',
-                bottom: '-8px',
+                bottom: '0px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
@@ -431,7 +422,6 @@ var ForumShow = React.createClass({
                     this.state.offline ? <Offline /> : null
                 }
                 <div style={DisTitleStyle}>Discussions</div>
-                <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
                 <List style={{paddingLeft: '20px', paddingBottom: '0'}}>
                     {
                         self.state.topics.map(function(element, index){

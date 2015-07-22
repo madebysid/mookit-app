@@ -1,0 +1,27 @@
+module.exports = [
+  {
+    "title": "Staging Course",
+    "login": "http://staging.mookit.co",
+    "main": "http://node.mookit.co"
+  },
+  {
+    "title": "MOOC on MOOCs",
+    "login": "http://mooconmooc.org",
+    "main": "http://node.mooconmooc.org"
+  },
+  {
+    "title": "Mobiles for Development",
+    "login": "http://m4d-mooc.org",
+    "main": "http://node.m4d-mooc.org"
+  },
+  {
+    "title": "ICT Basics",
+    "login": "http://mooconmooc.org",
+    "main": "http://node.mooconmooc.org"
+  },
+  {
+    "title": "Local Server",
+    "login": "http://202.3.77.96:3000",
+    "main": "http://node.staging.mookit.co"
+  }
+]

@@ -1,32 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-module.exports=module.exports = [
-  {
-    title: "Staging Course",
-    login: "http://staging.mookit.co",
-    main: "http://node.mookit.co"
-  },
-  {
-    title: "MOOC on MOOCs",
-    login: "http://mooconmooc.org",
-    main: "http://node.mooconmooc.org"
-  },
-  {
-    title: "Mobiles for Development",
-    login: "http://m4d-mooc.org",
-    main: "http://node.m4d-mooc.org"
-  },
-  {
-    title: "ICT Basics",
-    login: "http://mooconmooc.org",
-    main: "http://node.mooconmooc.org"
-  },
-  {
-    title: "Local Server",
-    login: "http://202.3.77.96:3000",
-    main: "http://node.staging.mookit.co"
-  }
-]
-},{}],2:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     Router = require('react-router'),
@@ -43,7 +15,7 @@ module.exports = React.createClass({displayName: "exports",
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/app.js","/")
-},{"buffer":14,"oMfpAn":17,"react":373,"react-router":173}],3:[function(require,module,exports){
+},{"buffer":14,"oMfpAn":17,"react":373,"react-router":173}],2:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react/addons'),
     mui = require('material-ui'),
@@ -396,7 +368,7 @@ module.exports = React.createClass({displayName: "exports",
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/chat.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],4:[function(require,module,exports){
+},{"./material.js":9,"./offline.js":11,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],3:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     mui = require('material-ui'),
@@ -491,6 +463,9 @@ module.exports = React.createClass({displayName: "exports",
     menuOpen: function(e, item){
         item.props.index==0 ? this.openSettings() : this.openAbout();
     },
+    logout: function(){
+        this.transitionTo('/login')
+    },
 
 
     getInitialState: function(){
@@ -519,7 +494,7 @@ module.exports = React.createClass({displayName: "exports",
                     }
                     else {
                         document.addEventListener("resume", function() {
-                            this.transitionTo('/login')
+                            self.refs.logoutDialog.show()
                         }, false);
                     }
                     self.setState({
@@ -572,6 +547,9 @@ module.exports = React.createClass({displayName: "exports",
         ],
         aboutDialog = [
             { text: 'Okay' }
+        ],
+        logoutDialog = [
+            {text: 'Okay', onTouchTap: self.logout}
         ]
         return (
             React.createElement("div", null, 
@@ -640,6 +618,15 @@ module.exports = React.createClass({displayName: "exports",
                     modal: true}, 
                     "Something about the app, or the project, maybe"
                 ), 
+
+                React.createElement(Dialog, {
+                    ref: "logoutDialog", 
+                    title: "About", 
+                    actions: logoutDialog, 
+                    modal: true}, 
+                    "You were logged out due to inactivity"
+                ), 
+
                 React.createElement(Snackbar, {
                     ref: "settingsSnackbar", 
                     message: "Settings saved", 
@@ -653,7 +640,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/course.js","/")
-},{"./chat.js":3,"./forums.js":6,"./lectures.js":8,"./material.js":10,"./notifications.js":11,"./offline.js":12,"./resources.js":13,"buffer":14,"material-ui":50,"material-ui/lib/menus/menu-item":63,"oMfpAn":17,"react":373,"react-router":173,"superagent":374}],5:[function(require,module,exports){
+},{"./chat.js":2,"./forums.js":5,"./lectures.js":7,"./material.js":9,"./notifications.js":10,"./offline.js":11,"./resources.js":12,"buffer":14,"material-ui":50,"material-ui/lib/menus/menu-item":63,"oMfpAn":17,"react":373,"react-router":173,"superagent":374}],4:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     Router = require('react-router'),
@@ -1110,6 +1097,9 @@ module.exports = React.createClass({displayName: "exports",
     menuOpen: function(e, item){
         item.props.index==0 ? this.openSettings() : this.openAbout();
     },
+    logout: function(){
+        this.transitionTo('/login')
+    },
 
 
     getInitialState: function(){
@@ -1138,7 +1128,7 @@ module.exports = React.createClass({displayName: "exports",
                     }
                     else {
                         document.addEventListener("resume", function() {
-                            this.transitionTo('/login')
+                            self.refs.logoutDialog.show()
                         }, false);
                     }
                     self.setState({
@@ -1191,6 +1181,9 @@ module.exports = React.createClass({displayName: "exports",
         ],
         aboutDialog = [
             { text: 'Okay' }
+        ],
+        logoutDialog = [
+            {text: 'Okay', onTouchTap: self.logout}
         ]
         return (
             React.createElement("div", null, 
@@ -1259,6 +1252,15 @@ module.exports = React.createClass({displayName: "exports",
                     modal: true}, 
                     "Something about the app, or the project, maybe"
                 ), 
+
+                React.createElement(Dialog, {
+                    ref: "logoutDialog", 
+                    title: "About", 
+                    actions: logoutDialog, 
+                    modal: true}, 
+                    "You were logged out due to inactivity"
+                ), 
+
                 React.createElement(Snackbar, {
                     ref: "settingsSnackbar", 
                     message: "Settings saved", 
@@ -1270,102 +1272,6 @@ module.exports = React.createClass({displayName: "exports",
     }
 })
 
-var React = require('react'),
-    mui = require('material-ui'),
-    material = require('./material.js'),
-
-    AppBar = mui.AppBar,
-    Card = mui.Card,
-    CardText = mui.CardText,
-    FlatButton = mui.FlatButton
-
-module.exports = React.createClass({displayName: "exports",
-    mixins: [material],
-
-    render: function(){
-        var AppBarStyle = {
-            backgroundColor: '#378E43',
-            opacity: '100'
-        },
-        Card1Style = {
-            width: '100%',
-            margin: '5px auto',
-            height: '20%'
-        },
-        Card2Style = {
-            position: 'absolute',
-            width: '42%',
-            margin: '5px',
-            marginLeft: '0',
-            height: '35%'
-        },
-        Card3Style = {
-            position: 'absolute',
-            right: '15px',
-            width: '42%',
-            margin: '5px',
-            marginLeft: '0',
-            height: '23%'
-        },
-        Card4Style = {
-            position: 'absolute',
-            width: '42%',
-            margin: '5px',
-            marginLeft: '0',
-            height: '23%',
-            bottom: '16px'
-        },
-        Card5Style = {
-            position: 'absolute',
-            width: '42%',
-            margin: '5px',
-            marginLeft: '0',
-            height: '35%',
-            right: '15px',
-            bottom: '15px'
-        }
-        return (
-            React.createElement("div", null, 
-                React.createElement(AppBar, {
-                    iconClassNameRight: "mdi mdi-dots-vertical", iconStyleRight: {opacity: '0.9'}, 
-                    zDepth: 0, 
-                    style: AppBarStyle}), 
-
-                React.createElement("div", {style: {padding: '20px'}}, 
-                    React.createElement(Card, {style: Card1Style}, 
-                        React.createElement(CardText, null, 
-                            "Card 1"
-                        )
-                    ), 
-
-                    React.createElement(Card, {style: Card2Style}, 
-                        React.createElement(CardText, null, 
-                            "Card 2"
-                        )
-                    ), 
-
-                    React.createElement(Card, {style: Card3Style}, 
-                        React.createElement(CardText, null, 
-                            "Card 3"
-                        )
-                    ), 
-
-                    React.createElement(Card, {style: Card4Style}, 
-                        React.createElement(CardText, null, 
-                            "Card 4"
-                        )
-                    ), 
-
-                    React.createElement(Card, {style: Card5Style}, 
-                        React.createElement(CardText, null, 
-                            "Card 5"
-                        )
-                    )
-                )
-            )
-        )
-    }
-})
 var React = require('react'),
     mui = require('material-ui'),
     material = require('./material.js'),
@@ -1381,7 +1287,6 @@ var React = require('react'),
     ListItem = mui.ListItem,
     FontIcon = mui.FontIcon,
     IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
     LinearProgress = mui.LinearProgress,
     Dialog = mui.Dialog,
     Avatar = mui.Avatar,
@@ -1515,7 +1420,7 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
             },
             FABStyle = {
                 position: 'fixed',
-                bottom: '40px',
+                bottom: '48px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
@@ -1523,7 +1428,7 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
             },
             ReplyStyle = {
                 position: 'fixed',
-                bottom: '40px',
+                bottom: '48px',
                 left: '20px',
                 backgroundColor: 'white',
                 width: 'calc(80% - 50px)'
@@ -1777,17 +1682,9 @@ var ForumShow = React.createClass({displayName: "ForumShow",
                 paddingTop: '20px',
                 fontFamily: 'RobotoRegular'
             },
-            loaderStyle = {
-                position: 'absolute',
-                left: '0',
-                right: '0',
-                margin: '0 auto',
-                top: '50vh',
-                display: (this.state.loading) ? 'block' : 'none',
-            },
             FABStyle = {
                 position: 'absolute',
-                bottom: '-8px',
+                bottom: '0px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
@@ -1799,7 +1696,6 @@ var ForumShow = React.createClass({displayName: "ForumShow",
                     this.state.offline ? React.createElement(Offline, null) : null, 
                 
                 React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
-                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
                 React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
                     
                         self.state.topics.map(function(element, index){
@@ -2511,13 +2407,14 @@ module.exports = React.createClass({displayName: "exports",
         )
     }
 })
+
 var React = require('react'),
     mui = require('material-ui'),
     material = require('./material.js'),
     superagent = require('superagent'),
     Router = require('react-router'),
     Offline = require('./offline.js'),
-    courses = require('../courseList.json'),
+    courses = require('../../courseList.json'), 
 
     Card = mui.Card,
     CardText = mui.CardText,
@@ -2576,9 +2473,9 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     getInitialState: function(){
-        localStorage.setItem('courseTitle', courses[0].title)
-        localStorage.setItem('mainUrl', courses[0].main)
-        localStorage.setItem('loginUrl', courses[0].login)
+        localStorage.setItem('courseTitle', courses.title)
+        localStorage.setItem('mainUrl', courses.main)
+        localStorage.setItem('loginUrl', courses.login)
         localStorage.setItem('lastSeen', Date.now())
         return {
             username: '',
@@ -2714,6 +2611,7 @@ module.exports = React.createClass({displayName: "exports",
         )
     }
 })
+
 var React = require('react'),
     mui = require('material-ui'),
     ThemeManager = new mui.Styles.ThemeManager(),
@@ -3109,8 +3007,8 @@ module.exports = React.createClass({displayName: "exports",
     }
 })
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_3346f703.js","/")
-},{"../courseList.json":1,"./app.js":2,"./chat.js":3,"./course.js":4,"./forums.js":6,"./lecture.js":7,"./lectures.js":8,"./login.js":9,"./material.js":10,"./notifications.js":11,"./offline.js":12,"./resources.js":13,"buffer":14,"material-ui":50,"material-ui/lib/menus/menu-item":63,"oMfpAn":17,"react":373,"react-router":173,"react-swipe":189,"react-tap-event-plugin":193,"react-youtube":194,"react/addons":201,"superagent":374}],6:[function(require,module,exports){
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_e6ed04bd.js","/")
+},{"../../courseList.json":13,"./app.js":1,"./chat.js":2,"./course.js":3,"./forums.js":5,"./lecture.js":6,"./lectures.js":7,"./login.js":8,"./material.js":9,"./notifications.js":10,"./offline.js":11,"./resources.js":12,"buffer":14,"material-ui":50,"material-ui/lib/menus/menu-item":63,"oMfpAn":17,"react":373,"react-router":173,"react-swipe":189,"react-tap-event-plugin":193,"react-youtube":194,"react/addons":201,"superagent":374}],5:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     mui = require('material-ui'),
@@ -3127,7 +3025,6 @@ var React = require('react'),
     ListItem = mui.ListItem,
     FontIcon = mui.FontIcon,
     IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
     LinearProgress = mui.LinearProgress,
     Dialog = mui.Dialog,
     Avatar = mui.Avatar,
@@ -3261,7 +3158,7 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
             },
             FABStyle = {
                 position: 'fixed',
-                bottom: '40px',
+                bottom: '48px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
@@ -3269,7 +3166,7 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
             },
             ReplyStyle = {
                 position: 'fixed',
-                bottom: '40px',
+                bottom: '48px',
                 left: '20px',
                 backgroundColor: 'white',
                 width: 'calc(80% - 50px)'
@@ -3523,17 +3420,9 @@ var ForumShow = React.createClass({displayName: "ForumShow",
                 paddingTop: '20px',
                 fontFamily: 'RobotoRegular'
             },
-            loaderStyle = {
-                position: 'absolute',
-                left: '0',
-                right: '0',
-                margin: '0 auto',
-                top: '50vh',
-                display: (this.state.loading) ? 'block' : 'none',
-            },
             FABStyle = {
                 position: 'absolute',
-                bottom: '-8px',
+                bottom: '0px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
@@ -3545,7 +3434,6 @@ var ForumShow = React.createClass({displayName: "ForumShow",
                     this.state.offline ? React.createElement(Offline, null) : null, 
                 
                 React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
-                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
                 React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
                     
                         self.state.topics.map(function(element, index){
@@ -3606,7 +3494,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/forums.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"superagent":374}],7:[function(require,module,exports){
+},{"./material.js":9,"./offline.js":11,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"superagent":374}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     Animate = React.addons.CSSTransitionGroup,
@@ -4051,7 +3939,7 @@ module.exports = React.createClass({displayName: "exports",
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/lecture.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-youtube":194,"superagent":374}],8:[function(require,module,exports){
+},{"./material.js":9,"./offline.js":11,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-youtube":194,"superagent":374}],7:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react/addons'),
     Router = require('react-router'),
@@ -4266,8 +4154,9 @@ module.exports = React.createClass({displayName: "exports",
     }
 })
 
+
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/lectures.js","/")
-},{"./lecture.js":7,"./material.js":10,"buffer":14,"material-ui":50,"oMfpAn":17,"react-router":173,"react/addons":201}],9:[function(require,module,exports){
+},{"./lecture.js":6,"./material.js":9,"buffer":14,"material-ui":50,"oMfpAn":17,"react-router":173,"react/addons":201}],8:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     mui = require('material-ui'),
@@ -4275,7 +4164,7 @@ var React = require('react'),
     superagent = require('superagent'),
     Router = require('react-router'),
     Offline = require('./offline.js'),
-    courses = require('../courseList.json'),
+    courses = require('../../courseList.json'), 
 
     Card = mui.Card,
     CardText = mui.CardText,
@@ -4334,9 +4223,9 @@ module.exports = React.createClass({displayName: "exports",
     },
 
     getInitialState: function(){
-        localStorage.setItem('courseTitle', courses[0].title)
-        localStorage.setItem('mainUrl', courses[0].main)
-        localStorage.setItem('loginUrl', courses[0].login)
+        localStorage.setItem('courseTitle', courses.title)
+        localStorage.setItem('mainUrl', courses.main)
+        localStorage.setItem('loginUrl', courses.login)
         localStorage.setItem('lastSeen', Date.now())
         return {
             username: '',
@@ -4473,8 +4362,9 @@ module.exports = React.createClass({displayName: "exports",
     }
 })
 
+
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/login.js","/")
-},{"../courseList.json":1,"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-router":173,"superagent":374}],10:[function(require,module,exports){
+},{"../../courseList.json":13,"./material.js":9,"./offline.js":11,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-router":173,"superagent":374}],9:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     mui = require('material-ui'),
@@ -4497,7 +4387,7 @@ module.exports = {
 }
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/material.js","/")
-},{"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-tap-event-plugin":193}],11:[function(require,module,exports){
+},{"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-tap-event-plugin":193}],10:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react/addons'),
     mui = require('material-ui'),
@@ -4650,7 +4540,7 @@ module.exports = React.createClass({displayName: "exports",
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/notifications.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],12:[function(require,module,exports){
+},{"./material.js":9,"./offline.js":11,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],11:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     material = require('./material.js'),
@@ -4686,7 +4576,7 @@ module.exports = React.createClass({displayName: "exports",
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/offline.js","/")
-},{"./material.js":10,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373}],13:[function(require,module,exports){
+},{"./material.js":9,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373}],12:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react/addons'),
     mui = require('material-ui'),
@@ -4771,7 +4661,12 @@ module.exports = React.createClass({displayName: "exports",
 })
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/resources.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],14:[function(require,module,exports){
+},{"./material.js":9,"./offline.js":11,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],13:[function(require,module,exports){
+module.exports={
+    
+}
+
+},{}],14:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /*!
  * The buffer module from node.js, for the browser.
@@ -51170,4 +51065,4 @@ module.exports = function(arr, fn, initial){
   return curr;
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/superagent/node_modules/reduce-component/index.js","/../../node_modules/superagent/node_modules/reduce-component")
-},{"buffer":14,"oMfpAn":17}]},{},[5])
+},{"buffer":14,"oMfpAn":17}]},{},[4])

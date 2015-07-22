@@ -1,0 +1,5 @@
+{
+    "appName": "Staging",
+    "login": "http://staging.mookit.co",
+    "main": "http://node.mookit.co"
+}

@@ -93,7 +93,7 @@ module.exports = React.createClass({
     },
     logout: function(){
         this.transitionTo('/login')
-    }
+    },
 
 
     getInitialState: function(){

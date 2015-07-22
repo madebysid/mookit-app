@@ -1,10 +1,15 @@
 var gulp = require('gulp'),
     watch = require('gulp-watch'),
     batch = require('gulp-batch'),
+    shell = require('gulp-shell'),
+    jeditor = require('gulp-json-editor'),
+    del = require('del'),
     browserSync = require('browser-sync').create(),
     browserify = require('gulp-browserify'),
     concat = require('gulp-concat'),
-    reactify = require('reactify');
+    reactify = require('reactify'),
+
+    config = require('./buildConfig.json')
 
 var paths = {
     html: 'app-dev/index.html',
@@ -33,7 +38,6 @@ gulp.task('main', function(){
         .on('end', function(){
             browserSync.reload()
         })
-
 })
 
 gulp.task('default', function(){
@@ -44,3 +48,56 @@ gulp.task('default', function(){
     });
     gulp.watch(paths.all, ['main']);
 })
+
+
+
+
+
+
+
+
+
+//Build tasks
+gulp.task('build-courses', function(){
+    return
+    gulp.src('courseList.json')
+        .pipe(jeditor({
+            "title": config.appName,
+            "main": config.main,
+            "login": config.login
+        }))
+        .pipe(gulp.dest('./'))
+
+})
+
+gulp.task('build-compile', ['build-courses'], function(){
+    return
+    gulp.src(paths.js)
+        .pipe(concat('app.js'))
+        .pipe(browserify({
+            insertGlobals : true,
+            transform: reactify
+        }))
+        .pipe(gulp.dest(paths.dist))
+})
+
+gulp.task('build-apk', ['build-compile'], function(){
+
+    gulp.src('./')
+        .pipe(shell('ionic start ' + config.appName + ' blank && ' +
+                    'cd ' + config.appName + ' && ' +
+                    'ionic platform add android && ' +
+                    'ionic browser add crosswalk && ' +
+                    'rm -r www && ' +
+                    'cp -r ../app-dist ./ && ' +
+                    'mv ./app-dist ./www && ' +
+                    'cp ../resources/*.* ./resources && ' +
+                    'ionic resources && ' +
+                    'ionic build && ' +
+                    'cp ./platforms/android/build/outputs/apk/android-armv7-debug.apk ../ && ' +
+                    'cd .. && ' +
+                    'mv ./android-armv7-debug.apk ./' + config.appName + '.apk && ' +
+                    'rm -r ./' + config.appName))
+})
+
+gulp.task('build', ['build-apk'])
