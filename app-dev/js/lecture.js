@@ -30,7 +30,9 @@ var TopicNormal = React.createClass({
             color: '#378E43'
         }
         return (
-            <Animate transitionName="topics" transitionAppear={true}>
+        (this.props.text == undefined)
+            ? <div>No topics</div>
+            : <Animate transitionName="topics" transitionAppear={true} transitionLeave={false}>
                 <ListItem onTouchTap={this.props.toggle} secondaryText={this.props.text} secondaryTextLines={1}>
                     <p style={styles}>{this.props.replies}</p>
                 </ListItem>
@@ -74,7 +76,7 @@ var TopicExpanded = React.createClass({
     },
     getInitialState: function(){
         return {
-            lectureTopicComments: [],
+            lectureTopicComments: [{avatar: null}],
             loading: true,
             offline: false
         }
@@ -97,7 +99,7 @@ var TopicExpanded = React.createClass({
         },
         closeStyle = {
             position: 'fixed',
-            top: '30vh',
+            top: '190px',
             right: '10px',
             zIndex: '2000'
         },
@@ -127,13 +129,15 @@ var TopicExpanded = React.createClass({
                 {
                     this.state.offline ? <Offline /> : null
                 }
-                <Animate transitionName="topicsOpen" transitionAppear={true}>
+                <Animate transitionName="topicsOpen" transitionAppear={true} transitionLeave={false}>
                     <p style={{color: '#378E43'}}>{this.props.text}</p>
                     <IconButton style={closeStyle} onTouchTap={this.close} iconClassName="mdi mdi-close"></IconButton>
 
                     <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}></div>
                     {
-                        self.state.lectureTopicComments.map(function(element){
+                        (self.state.lectureTopicComments[0].avatar == null)
+                            ? <div>There are no replies</div>
+                            : self.state.lectureTopicComments.map(function(element){
                             return (
                                 <div>
                                     <ListItem disabled={true} leftAvatar={<Avatar src={localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)}></Avatar>}>
@@ -231,7 +235,7 @@ var LectureForumCreate = React.createClass({
     },
     render: function(){
         var containerStyle = {
-                zIndex: '6000',
+                zIndex: '10000',
                 backgroundColor: 'white',
                 height: '70vh',
                 width: '100%'
@@ -257,7 +261,7 @@ var LectureForumCreate = React.createClass({
             }
         return (
             <div style={containerStyle}>
-                <Animate transitionName="topicsOpen" transitionAppear={true}>
+                <Animate transitionName="topicsOpen" transitionAppear={true} transitionLeave={false}>
                     <div>
                         <p style={{fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}>New Topic</p>
                         <TextField
@@ -360,6 +364,7 @@ var LectureForumShow = React.createClass({
         },
         FABStyle = {
             position: 'fixed',
+            zIndex: '9001',
             bottom: '20px',
             right: '20px',
             backgroundColor: '#F0592A',
@@ -371,7 +376,7 @@ var LectureForumShow = React.createClass({
                 {
                     this.state.offline ? <Offline /> : null
                 }
-                <Animate transitionName="cardOpen" transitionAppear={true}>
+                <Animate transitionName="cardOpen" transitionAppear={true} transitionLeave={false}>
                     <Card style={{zIndex: '1000'}}>
                         <CardMedia>
                             <YouTube opts={VidOpts} url={self.props.data.vurl}></YouTube>

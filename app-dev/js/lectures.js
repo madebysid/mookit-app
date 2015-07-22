@@ -1,5 +1,4 @@
 var React = require('react/addons'),
-    Animate = React.addons.CSSTransitionGroup,
     Router = require('react-router'),
     RouteHandler = Router.RouteHandler,
     Link = Router.Link,
@@ -198,7 +197,9 @@ module.exports = React.createClass({
                         return (
                             <div style={{
                                 animation: 'flyInFromBottom 0.3s ease ' + (index)*0.1 + 's',
+                                WebkitAnimation: 'flyInFromBottom 0.3s ease ' + (index)*0.1 + 's',
                                 animationFillMode: 'forwards',
+                                WebkitAnimationFillMode: 'forwards',
                                 opacity: '0'
                             }} key={index*4}>
                                 <ExpandableListItem data={element} goToLecture={self.goToLecture} isExpanded={self.state.expanded[index]} handleToggle={self.toggleCard} key={index} id={index}/>

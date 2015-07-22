@@ -40,7 +40,7 @@ module.exports = React.createClass({
             expanded[i] = false
         }
 
-        data.forEach(function (element, index) {
+        data.forEach(function (element) {
             newData[parseInt(element.week.slice(5))].push(element)
         })
 
@@ -77,11 +77,6 @@ module.exports = React.createClass({
                 newForum: false
             })
         }
-        else{
-            this.transitionTo('/login')
-            localStorage.setItem('token', '')
-            localStorage.setItem('uid', '')
-        }
     },
     openSettings: function(){
         this.refs.settingsDialog.show();
@@ -96,6 +91,9 @@ module.exports = React.createClass({
     menuOpen: function(e, item){
         item.props.index==0 ? this.openSettings() : this.openAbout();
     },
+    logout: function(){
+        this.transitionTo('/login')
+    }
 
 
     getInitialState: function(){
@@ -122,6 +120,11 @@ module.exports = React.createClass({
                             offline: true
                         })
                     }
+                    else {
+                        document.addEventListener("resume", function() {
+                            self.refs.logoutDialog.show()
+                        }, false);
+                    }
                     self.setState({
                         error: true
                     })
@@ -141,7 +144,7 @@ module.exports = React.createClass({
         TitleStyle = {
             backgroundColor: '#378E43',
             color: 'white',
-            height: '10vh',
+            height: '60px',
             paddingLeft: '20vw',
             fontSize: '1.5em'
         },
@@ -172,6 +175,9 @@ module.exports = React.createClass({
         ],
         aboutDialog = [
             { text: 'Okay' }
+        ],
+        logoutDialog = [
+            {text: 'Okay', onTouchTap: self.logout}
         ]
         return (
             <div>
@@ -187,7 +193,8 @@ module.exports = React.createClass({
                           <MenuItem index={1} primaryText="About" index={1}/>
                         </IconMenu>
                     }
-                    iconClassNameLeft="mdi mdi-arrow-left" onLeftIconButtonTouchTap={this.goBackDude}
+                    iconClassNameLeft={(!this.state.lecture && !this.state.newForum) ? "none" : "mdi mdi-arrow-left"}
+                    onLeftIconButtonTouchTap={this.goBackDude}
                     zDepth={0}
                     style={AppBarStyle} />
 
@@ -239,6 +246,15 @@ module.exports = React.createClass({
                     modal={true}>
                     Something about the app, or the project, maybe
                 </Dialog>
+
+                <Dialog
+                    ref="logoutDialog"
+                    title="About"
+                    actions={logoutDialog}
+                    modal={true}>
+                    You were logged out due to inactivity
+                </Dialog>
+
                 <Snackbar
                     ref="settingsSnackbar"
                     message="Settings saved"

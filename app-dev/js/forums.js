@@ -66,12 +66,18 @@ var TopicExpanded = React.createClass({
                     }
                 }
                 else{
+                    console.log(res.body)
                     self.setState({
                         topicComments: res.body,
                         loading: false
                     })
                 }
             })
+    },
+    reply: function(){
+        this.setState({
+            topicComments: []
+        })
     },
     postReply: function(){
         var self = this
@@ -98,7 +104,6 @@ var TopicExpanded = React.createClass({
                     else{
                         self.refs.replyField.clearValue()
                         self.fetch()
-                        this.props.refresh()
                     }
                 })
         }
@@ -109,7 +114,7 @@ var TopicExpanded = React.createClass({
     },
     getInitialState: function(){
         return {
-            topicComments: [],
+            topicComments: [{avatar: null}],
             loading: false,
             offline: false
         }
@@ -124,15 +129,15 @@ var TopicExpanded = React.createClass({
                 bottom: '0',
                 top: '0',
                 paddingLeft: '10px',
-                zIndex: '1000',
+                zIndex: '10000',
                 transitionDuration: '3s',
                 padding: '10px',
                 overflowY: 'scroll',
-                height: '70vh'
+                marginBottom: '150px'
             },
             closeStyle = {
                 position: 'fixed',
-                top: '30vh',
+                top: '190px',
                 right: '10px',
                 zIndex: '2000'
             },
@@ -152,10 +157,8 @@ var TopicExpanded = React.createClass({
                 position: 'fixed',
                 bottom: '40px',
                 left: '20px',
-                animation: 'flyInFromBottom',
-                WebkitAnimation: 'flyInFromBottom',
-                animationFillMode: 'forwards',
-                backgroundColor: 'white'
+                backgroundColor: 'white',
+                width: 'calc(80% - 50px)'
             },
             loaderStyle = {
                 position: 'absolute',
@@ -167,7 +170,7 @@ var TopicExpanded = React.createClass({
             },
             TopicCommentsStyle = {
                 display: 'block',
-                height: 'calc(70vh - 150px)',
+                height: 'calc(100%)',
                 overflowY: 'scroll'
             }
         return (
@@ -177,13 +180,18 @@ var TopicExpanded = React.createClass({
                 }
                 <Animate transitionName="topicsOpen" transitionAppear={true}>
                     <p style={{color: '#378E43'}}>{this.props.text}</p>
-                    <IconButton style={closeStyle} onTouchTap={this.close} iconClassName="mdi mdi-close"></IconButton>
+                    <IconButton
+                        style={closeStyle}
+                        onTouchTap={this.close}
+                        iconClassName="mdi mdi-close"
+                        iconStyle={{color: 'red'}}
+                    />
 
                     <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}>
                     </div>
                     <div style={TopicCommentsStyle}>
                     {
-                        (self.state.topicComments == [])
+                        (self.state.topicComments[0].avatar == null)
                             ? <div>There are no replies</div>
                             : self.state.topicComments.map(function(element){
                                     return (
@@ -202,7 +210,8 @@ var TopicExpanded = React.createClass({
                     <TextField
                         ref="replyField"
                         style={ReplyStyle}
-                        floatingLabelText="Reply"/>
+                        floatingLabelText="Reply"
+                        onFocus={self.reply}/>
                     <IconButton
                         iconStyle={{color: 'white'}}
                         style={FABStyle}
@@ -410,7 +419,7 @@ var ForumShow = React.createClass({
             },
             FABStyle = {
                 position: 'absolute',
-                bottom: '20px',
+                bottom: '-8px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',

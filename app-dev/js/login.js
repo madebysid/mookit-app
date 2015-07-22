@@ -4,6 +4,7 @@ var React = require('react'),
     superagent = require('superagent'),
     Router = require('react-router'),
     Offline = require('./offline.js'),
+    courses = require('../courseList.json'),
 
     Card = mui.Card,
     CardText = mui.CardText,
@@ -46,7 +47,6 @@ module.exports = React.createClass({
                     }
                 }
                 else {
-                    console.log(res)
                     localStorage.setItem('token', res.body.token);
                     localStorage.setItem('uid', res.body.uid);
                     self.transitionTo('/course')
@@ -63,6 +63,10 @@ module.exports = React.createClass({
     },
 
     getInitialState: function(){
+        localStorage.setItem('courseTitle', courses[0].title)
+        localStorage.setItem('mainUrl', courses[0].main)
+        localStorage.setItem('loginUrl', courses[0].login)
+        localStorage.setItem('lastSeen', Date.now())
         return {
             username: '',
             password: '',
