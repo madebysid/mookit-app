@@ -5,10 +5,9 @@ Making teaching as easy as learning
 
 ### Previewing:
 1. Install global dependencies: `npm install -g gulp ionic`
-
 2. Install local dependencies: `npm install`
-
 3a. To develop, run gulp with the default task: `gulp`
+
 3b. To build APK, run gulp with the 'build' task: `gulp build`
 
 #### General Instructions for building APKs:
