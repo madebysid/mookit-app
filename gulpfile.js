@@ -66,7 +66,7 @@ gulp.task('build-courses', function(){
             "main": config.main,
             "login": config.login
         }))
-        .pipe(gulp.dest('./'))
+        .pipe(gulp.dest('./app-dev'))
 
 })
 

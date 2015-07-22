@@ -127,6 +127,7 @@ var TopicExpanded = React.createClass({
                 left: '0',
                 bottom: '0',
                 top: '0',
+                height: '70vh',
                 paddingLeft: '10px',
                 zIndex: '10000',
                 transitionDuration: '3s',
