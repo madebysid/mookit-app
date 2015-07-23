@@ -78,6 +78,18 @@ module.exports = React.createClass({
             })
         }
     },
+    notifOpen: function(){
+        this.setState({
+            chat: false,
+            notif: true
+        })
+    },
+    chatOpen: function(){
+        this.setState({
+            chat: true,
+            notif: false
+        })
+    },
     openSettings: function(){
         this.refs.settingsDialog.show();
     },
@@ -103,7 +115,9 @@ module.exports = React.createClass({
             data: [],
             loading: true,
             error: false,
-            offline: false
+            offline: false,
+            chat: false,
+            notif: false
         }
     },
     componentWillMount: function(){
@@ -144,7 +158,7 @@ module.exports = React.createClass({
         TitleStyle = {
             backgroundColor: '#378E43',
             color: 'white',
-            height: '60px',
+            height: '40px',
             paddingLeft: '20vw',
             fontSize: '1.5em'
         },
@@ -185,27 +199,19 @@ module.exports = React.createClass({
                     this.state.offline ? <Offline /> : null
                 }
                 <AppBar
-                    iconElementRight={
-                        <IconMenu onItemTouchTap={this.menuOpen} iconButtonElement={
-                            <IconButton iconStyle={{color: 'white'}} iconClassName="mdi mdi-dots-vertical"></IconButton>
-                        }>
-                          <MenuItem index={0} primaryText="Settings" index={0}/>
-                          <MenuItem index={1} primaryText="About" index={1}/>
-                        </IconMenu>
-                    }
                     iconClassNameLeft={(!this.state.lecture && !this.state.newForum) ? "none" : "mdi mdi-arrow-left"}
                     onLeftIconButtonTouchTap={this.goBackDude}
                     zDepth={0}
                     style={AppBarStyle} />
 
-                <Notifications />
-                <Chat />
+                <Notifications opened={this.state.notif} onOpen={this.notifOpen} />
+                <Chat opened={this.state.chat} onOpen={this.chatOpen} />
 
                 <div style= {TitleStyle}>
                     {localStorage.getItem('courseTitle')}
                 </div>
 
-                <Tabs onChange={this.tabChange} tabItemContainerStyle={TabStyle} initialSelectedIndex={1}>
+                <Tabs onChange={this.tabChange} tabItemContainerStyle={TabStyle} initialSelectedIndex={0}>
                     <Tab style={TabInsideStyle} label="FORUMS" >
                         <div>
                             <div style={ExtraDivStyle}></div>

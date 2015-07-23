@@ -58,16 +58,24 @@ gulp.task('default', function(){
 
 
 //Build tasks
-gulp.task('build-courses', function(){
-    return
-    gulp.src('courseList.json')
-        .pipe(jeditor({
-            "title": config.appName,
-            "main": config.main,
-            "login": config.login
+gulp.task('build-config-check', function(){
+    gulp.src('./buildConfig.json')
+        .pipe(jeditor(function(json) {
+            json.title = config.appName.replace(/ /g,'').toLowerCase()
+            return json
+        }))
+        .pipe(gulp.dest('./'))
+})
+
+gulp.task('build-courses', ['build-config-check'], function(){
+    gulp.src('./app-dev/courseList.json')
+        .pipe(jeditor(function(json) {
+            json.title = config.appName
+            json.login = config.login
+            json.main = config.main
+            return json
         }))
         .pipe(gulp.dest('./app-dev'))
-
 })
 
 gulp.task('build-compile', ['build-courses'], function(){
@@ -82,22 +90,28 @@ gulp.task('build-compile', ['build-courses'], function(){
 })
 
 gulp.task('build-apk', ['build-compile'], function(){
-
     gulp.src('./')
-        .pipe(shell('ionic start ' + config.appName + ' blank && ' +
-                    'cd ' + config.appName + ' && ' +
-                    'ionic platform add android && ' +
-                    'ionic browser add crosswalk && ' +
+        .pipe(shell('cordova create ' + config.title + ' com.mookit.' + config.title + ' "' + config.appName + '" && ' +
+                    'cd "' + config.title + '" && ' +
+                    'cordova platform add android && ' +
                     'rm -r www && ' +
                     'cp -r ../app-dist ./ && ' +
                     'mv ./app-dist ./www && ' +
+                    'mkdir resources &&' +
                     'cp ../resources/*.* ./resources && ' +
-                    'ionic resources && ' +
-                    'ionic build && ' +
-                    'cp ./platforms/android/build/outputs/apk/android-armv7-debug.apk ../ && ' +
+                    'ionic resources &&' +
+                    'cordova build && ' +
+                    'cp ./platforms/android/build/outputs/apk/android-debug.apk ../ && ' +
                     'cd .. && ' +
-                    'mv ./android-armv7-debug.apk ./' + config.appName + '.apk && ' +
-                    'rm -r ./' + config.appName))
+                    'mv ./android-debug.apk ./"' + config.appName + '".apk && ' +
+                    'rm -r ./"' + config.title + '"'))
 })
 
-gulp.task('build', ['build-apk'])
+gulp.task('build-success', ['build-apk'], function(){
+    gulp.src('./')
+        .pipe(shell("echo '--------------------ALL DONE--------------------' &&" +
+                    'echo Thank you for using the build tool. &&' +
+                    'echo Enjoy your app!'))
+})
+
+gulp.task('build', ['build-success'])

@@ -62,11 +62,14 @@ module.exports = React.createClass({
         this.transitionTo('/courses')
     },
 
-    getInitialState: function(){
+    componentWillMount: function(){
         localStorage.setItem('courseTitle', courses.title)
         localStorage.setItem('mainUrl', courses.main)
         localStorage.setItem('loginUrl', courses.login)
         localStorage.setItem('lastSeen', Date.now())
+        console.log('Local Storage set')
+    },
+    getInitialState: function(){
         return {
             username: '',
             password: '',

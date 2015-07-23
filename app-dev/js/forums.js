@@ -65,7 +65,6 @@ var TopicExpanded = React.createClass({
                     }
                 }
                 else{
-                    console.log(res.body)
                     self.setState({
                         topicComments: res.body,
                         loading: false
@@ -132,8 +131,9 @@ var TopicExpanded = React.createClass({
                 zIndex: '10000',
                 transitionDuration: '3s',
                 padding: '10px',
-                overflowY: 'scroll',
-                marginBottom: '150px'
+                overflowX: 'hidden',
+                wordWrap: 'break-word',
+                paddingBottom: '150px'
             },
             closeStyle = {
                 position: 'fixed',
@@ -147,7 +147,7 @@ var TopicExpanded = React.createClass({
             },
             FABStyle = {
                 position: 'fixed',
-                bottom: '48px',
+                bottom: '20px',
                 right: '20px',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
@@ -155,7 +155,7 @@ var TopicExpanded = React.createClass({
             },
             ReplyStyle = {
                 position: 'fixed',
-                bottom: '48px',
+                bottom: '20px',
                 left: '20px',
                 backgroundColor: 'white',
                 width: 'calc(80% - 50px)'
@@ -170,8 +170,7 @@ var TopicExpanded = React.createClass({
             },
             TopicCommentsStyle = {
                 display: 'block',
-                height: 'calc(100%)',
-                overflowY: 'scroll'
+                height: 'calc(100%)'
             }
         return (
             <div style={expandedStyle}>
@@ -179,17 +178,17 @@ var TopicExpanded = React.createClass({
                     this.state.offline ? <Offline /> : null
                 }
                 <Animate transitionName="topicsOpen" transitionAppear={true}>
+                    <div style={{height: '40px'}}/>
                     <p style={{color: '#378E43'}}>{this.props.text}</p>
                     <IconButton
                         style={closeStyle}
                         onTouchTap={this.close}
                         iconClassName="mdi mdi-close"
-                        iconStyle={{color: 'red'}}
+                        iconStyle={{color: '#F0592A'}}
                     />
 
-                    <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}}>
-                    </div>
                     <div style={TopicCommentsStyle}>
+                    <div style={descStyle} dangerouslySetInnerHTML={{__html: this.props.description}} />
                     {
                         (self.state.topicComments[0].avatar == null)
                             ? <div>There are no replies</div>
@@ -207,6 +206,8 @@ var TopicExpanded = React.createClass({
                                 })
                     }
                     </div>
+
+                    <div style={{height: '150px', width: '100%'}}/>
                     <TextField
                         ref="replyField"
                         style={ReplyStyle}
@@ -411,8 +412,9 @@ var ForumShow = React.createClass({
             },
             FABStyle = {
                 position: 'absolute',
-                bottom: '0px',
+                bottom: '20px',
                 right: '20px',
+                zIndex: '5000',
                 backgroundColor: '#F0592A',
                 borderRadius: '50%',
                 boxShadow: '0px 0px 5px #727272'
@@ -430,6 +432,7 @@ var ForumShow = React.createClass({
                         })
                     }
                 </List>
+                <div style={{height: '100px'}} />
 
                 <IconButton onTouchTap={this.newForum} iconStyle={{color: 'white'}} style={FABStyle} iconClassName="mdi mdi-border-color" />
             </div>

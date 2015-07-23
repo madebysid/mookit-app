@@ -167,19 +167,21 @@ var ChatContainer = React.createClass({
     },
     render: function(){
         var ContainerStyle = {
+            display: this.props.opened ? 'block' : 'none',
             position: 'absolute',
             top: '60px',
             bottom: '0',
             width: '100vw',
             boxSizing: 'border-box',
             left: '0',
-            zIndex: '8000',
+            zIndex: '16000',
             backgroundColor: 'white',
             padding: '20px',
             paddingTop: '40px',
             overflowY: 'scroll'
         },
         EmptyStyle = {
+            display: this.props.opened ? 'block' : 'none',
             position: 'absolute',
             top: '60px',
             zIndex: '9000',
@@ -188,6 +190,7 @@ var ChatContainer = React.createClass({
             backgroundColor: 'white'
         },
         FadeStyle = {
+            display: this.props.opened ? 'block' : 'none',
             position: 'absolute',
             top: '80px',
             zIndex: '9000',
@@ -272,6 +275,8 @@ var ChatContainer = React.createClass({
 module.exports = React.createClass({
     toggleChat: function(){
         var self = this
+        if(this.state.opened)
+            this.props.onOpen()
         this.setState({
             unread: false,
             opened: !self.state.opened
@@ -302,8 +307,8 @@ module.exports = React.createClass({
                 }
             })
         return {
-            unread: (Date.now() > localStorage.getItem('lastSeen') && localStorage.getItem('newMsg')),
-            opened: false,
+            unread: true, //(Date.now() > localStorage.getItem('lastSeen') && localStorage.getItem('newMsg')),
+            opened: this.props.opened,
             new: false,
             offline: false
         }
@@ -313,7 +318,7 @@ module.exports = React.createClass({
             position: 'absolute',
             color: 'white',
             top: '8px',
-            right: '100px',
+            right: '60px',
             opacity: '0.9',
             fontSize: '20px'
         },
@@ -341,7 +346,7 @@ module.exports = React.createClass({
                     <div style={UnreadStyle}></div>
                 </div>
                 {
-                    this.state.opened ? <ChatContainer /> : null
+                    this.state.opened ? <ChatContainer opened={this.state.opened}/> : null
                 }
             </div>
         )

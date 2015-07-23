@@ -52,7 +52,7 @@ var NotificationContainer = React.createClass({
             width: '100vw',
             boxSizing: 'border-box',
             left: '0',
-            zIndex: '1000',
+            zIndex: '16000',
             backgroundColor: 'white',
             padding: '10px',
             overflowY: 'scroll'
@@ -98,6 +98,8 @@ var NotificationContainer = React.createClass({
 module.exports = React.createClass({
     toggleNotification: function(){
         var self = this
+        if(this.state.opened)
+            this.props.onOpen()
         this.setState({
             unread: false,
             opened: !self.state.opened
@@ -107,7 +109,7 @@ module.exports = React.createClass({
     getInitialState: function(){
         return {
             unread: true,
-            opened: false
+            opened: this.props.opened
         }
     },
     render: function(){
@@ -116,7 +118,7 @@ module.exports = React.createClass({
                 position: 'absolute',
                 color: 'white',
                 top: '8px',
-                right: '50px',
+                right: '10px',
                 opacity: '0.9',
                 fontSize: '20px'
             },
