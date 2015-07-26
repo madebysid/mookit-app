@@ -119,13 +119,14 @@ var ChatContainer = React.createClass({
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err,res){
+                console.log(res)
                 self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
                 else{
-                    newChat = res.body.reverse().concat(self.state.chat)
+                    newChat = res.body.reverse().concat(self.state.chats)
                     self.setState({
                         chats: newChat
                     })
@@ -141,7 +142,7 @@ var ChatContainer = React.createClass({
 
     getInitialState: function(){
         return {
-            chats: []
+            chats: [{uid: 0}]
         }
     },
     componentDidMount: function(){
@@ -171,7 +172,7 @@ var ChatContainer = React.createClass({
             node = this.refs.chatContainer.getDOMNode()
         this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
         superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now().toString().slice(0,10))
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
@@ -182,7 +183,7 @@ var ChatContainer = React.createClass({
                 }
                 else{
                     self.setState({
-                        chats: res.body.reverse()
+                        chats: res.body
                     })
                     if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
                         self.props.updateUnread()
@@ -196,7 +197,7 @@ var ChatContainer = React.createClass({
         }
     },
     componentWillUnmount: function(){
-        localStorage.setItem('lastSeenChat', Date.now())
+        localStorage.setItem('lastSeenChat', Date.now().toString().slice(0,10))
     },
     render: function(){
         var self = this,
@@ -253,19 +254,24 @@ var ChatContainer = React.createClass({
             <div style={arrowStyle}/>
 
             <div style={ContainerStyle} ref="chatContainer" >
-
-            <div style={extraSpace}/>
-            <FlatButton label="Load Earlier" style={btnStyle} onTouchTap={this.loadPrevious}/>
-            <div style={extraSpace}/>
-            <div style={fadeStyle}/>
                 {
-                    this.state.chats.map(function(element){
-                        return (
-                            (element.uid == localStorage.getItem('uid'))
-                            ? <Outgoing message={element.msg}/>
-                            : <Incoming sender={element.userName} message={element.msg}/>
-                        )
-                    })
+                    (self.state.chats[0].uid == 0)
+                    ? <div style={{paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}>No chats available</div>
+                : <div>
+                    <div style={extraSpace}/>
+                    <FlatButton label="Load Earlier" style={btnStyle} onTouchTap={this.loadPrevious}/>
+                    <div style={extraSpace}/>
+                    <div style={fadeStyle}/>
+                    {
+                    self.state.chats.map(function(element){
+                            return (
+                                (element.uid == localStorage.getItem('uid'))
+                                ? <Outgoing message={element.msg}/>
+                                : <Incoming sender={element.userName} message={element.msg}/>
+                            )
+                        })
+                    }
+                </div>
                 }
                 <Loader ref="loader" />
                 <div style={extraSpace}/>

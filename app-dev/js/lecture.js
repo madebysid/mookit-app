@@ -45,6 +45,7 @@ var Lecture = React.createClass({
             .end(function(err, res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }

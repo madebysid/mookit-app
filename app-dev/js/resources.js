@@ -29,6 +29,7 @@ var Resources = React.createClass({
             .end(function(err,res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -39,7 +40,6 @@ var Resources = React.createClass({
                 }
             })
     },
-
     render: function(){
         var self = this
         return (

@@ -14,11 +14,7 @@ var React = require('react'),
 var TopicExpanded = React.createClass({
     mixins: [Router.State],
 
-    reply: function(){
-        console.log('Post Reply')
-    },
-
-    componentDidMount: function(){
+    fetch: function(){
         var self = this
         self.refs.loader.showLoader()
         superagent
@@ -40,6 +36,39 @@ var TopicExpanded = React.createClass({
                     })
                 }
             })
+    },
+    reply: function(){
+        var self = this
+        if(self.refs.replyField.getValue() == ''){
+            self.refs.replyField.setErrorText('This field is compulsory')
+        }
+        else{
+            superagent
+                .post(localStorage.getItem('mainUrl') + '/comments/' + self.getParams().topicId)
+                .type('form')
+                .send({
+                    "parentCommentId": 0,
+                    "text": self.refs.replyField.getValue(),
+                    "subject": self.refs.replyField.getValue()
+                })
+                .timeout(10000)
+                .set('token', localStorage.getItem('token'))
+                .set('uid', localStorage.getItem('uid'))
+                .end(function(err, res){
+                    if(err){
+                        if(err.timeout==10000)
+                            console.log('Unable to process request')
+                    }
+                    else{
+                        self.refs.replyField.clearValue()
+                        self.fetch()
+                    }
+                })
+        }
+    },
+
+    componentDidMount: function(){
+        this.fetch()
     },
     getInitialState: function(){
         return {
@@ -96,7 +125,7 @@ var TopicExpanded = React.createClass({
                 <Loader ref="loader" />
 
             <div style={{position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}>
-                    <TextField ref="replyInput"
+                    <TextField ref="replyField"
                         style={InputStyle}
                         hintText="Reply"
                         onEnterKeyDown={this.reply}/>

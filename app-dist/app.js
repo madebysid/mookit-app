@@ -165,13 +165,14 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err,res){
+                console.log(res)
                 self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
                 else{
-                    newChat = res.body.reverse().concat(self.state.chat)
+                    newChat = res.body.reverse().concat(self.state.chats)
                     self.setState({
                         chats: newChat
                     })
@@ -187,7 +188,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
 
     getInitialState: function(){
         return {
-            chats: []
+            chats: [{uid: 0}]
         }
     },
     componentDidMount: function(){
@@ -217,7 +218,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
             node = this.refs.chatContainer.getDOMNode()
         this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
         superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now().toString().slice(0,10))
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
@@ -228,7 +229,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
                 }
                 else{
                     self.setState({
-                        chats: res.body.reverse()
+                        chats: res.body
                     })
                     if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
                         self.props.updateUnread()
@@ -242,7 +243,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
         }
     },
     componentWillUnmount: function(){
-        localStorage.setItem('lastSeenChat', Date.now())
+        localStorage.setItem('lastSeenChat', Date.now().toString().slice(0,10))
     },
     render: function(){
         var self = this,
@@ -299,19 +300,24 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
             React.createElement("div", {style: arrowStyle}), 
 
             React.createElement("div", {style: ContainerStyle, ref: "chatContainer"}, 
-
-            React.createElement("div", {style: extraSpace}), 
-            React.createElement(FlatButton, {label: "Load Earlier", style: btnStyle, onTouchTap: this.loadPrevious}), 
-            React.createElement("div", {style: extraSpace}), 
-            React.createElement("div", {style: fadeStyle}), 
                 
-                    this.state.chats.map(function(element){
-                        return (
-                            (element.uid == localStorage.getItem('uid'))
-                            ? React.createElement(Outgoing, {message: element.msg})
-                            : React.createElement(Incoming, {sender: element.userName, message: element.msg})
-                        )
-                    }), 
+                    (self.state.chats[0].uid == 0)
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No chats available")
+                : React.createElement("div", null, 
+                    React.createElement("div", {style: extraSpace}), 
+                    React.createElement(FlatButton, {label: "Load Earlier", style: btnStyle, onTouchTap: this.loadPrevious}), 
+                    React.createElement("div", {style: extraSpace}), 
+                    React.createElement("div", {style: fadeStyle}), 
+                    
+                    self.state.chats.map(function(element){
+                            return (
+                                (element.uid == localStorage.getItem('uid'))
+                                ? React.createElement(Outgoing, {message: element.msg})
+                                : React.createElement(Incoming, {sender: element.userName, message: element.msg})
+                            )
+                        })
+                    
+                ), 
                 
                 React.createElement(Loader, {ref: "loader"}), 
                 React.createElement("div", {style: extraSpace})
@@ -630,13 +636,14 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err,res){
+                console.log(res)
                 self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
                 else{
-                    newChat = res.body.reverse().concat(self.state.chat)
+                    newChat = res.body.reverse().concat(self.state.chats)
                     self.setState({
                         chats: newChat
                     })
@@ -652,7 +659,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
 
     getInitialState: function(){
         return {
-            chats: []
+            chats: [{uid: 0}]
         }
     },
     componentDidMount: function(){
@@ -682,7 +689,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
             node = this.refs.chatContainer.getDOMNode()
         this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
         superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now().toString().slice(0,10))
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
@@ -693,7 +700,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
                 }
                 else{
                     self.setState({
-                        chats: res.body.reverse()
+                        chats: res.body
                     })
                     if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
                         self.props.updateUnread()
@@ -707,7 +714,7 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
         }
     },
     componentWillUnmount: function(){
-        localStorage.setItem('lastSeenChat', Date.now())
+        localStorage.setItem('lastSeenChat', Date.now().toString().slice(0,10))
     },
     render: function(){
         var self = this,
@@ -764,19 +771,24 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
             React.createElement("div", {style: arrowStyle}), 
 
             React.createElement("div", {style: ContainerStyle, ref: "chatContainer"}, 
-
-            React.createElement("div", {style: extraSpace}), 
-            React.createElement(FlatButton, {label: "Load Earlier", style: btnStyle, onTouchTap: this.loadPrevious}), 
-            React.createElement("div", {style: extraSpace}), 
-            React.createElement("div", {style: fadeStyle}), 
                 
-                    this.state.chats.map(function(element){
-                        return (
-                            (element.uid == localStorage.getItem('uid'))
-                            ? React.createElement(Outgoing, {message: element.msg})
-                            : React.createElement(Incoming, {sender: element.userName, message: element.msg})
-                        )
-                    }), 
+                    (self.state.chats[0].uid == 0)
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No chats available")
+                : React.createElement("div", null, 
+                    React.createElement("div", {style: extraSpace}), 
+                    React.createElement(FlatButton, {label: "Load Earlier", style: btnStyle, onTouchTap: this.loadPrevious}), 
+                    React.createElement("div", {style: extraSpace}), 
+                    React.createElement("div", {style: fadeStyle}), 
+                    
+                    self.state.chats.map(function(element){
+                            return (
+                                (element.uid == localStorage.getItem('uid'))
+                                ? React.createElement(Outgoing, {message: element.msg})
+                                : React.createElement(Incoming, {sender: element.userName, message: element.msg})
+                            )
+                        })
+                    
+                ), 
                 
                 React.createElement(Loader, {ref: "loader"}), 
                 React.createElement("div", {style: extraSpace})
@@ -974,6 +986,7 @@ var Forums = React.createClass({displayName: "Forums",
             .end(function(err, res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -1095,6 +1108,7 @@ var Lecture = React.createClass({displayName: "Lecture",
             .end(function(err, res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -1981,6 +1995,7 @@ var Resources = React.createClass({displayName: "Resources",
             .end(function(err,res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -1991,7 +2006,6 @@ var Resources = React.createClass({displayName: "Resources",
                 }
             })
     },
-
     render: function(){
         var self = this
         return (
@@ -2085,11 +2099,7 @@ var React = require('react'),
 var TopicExpanded = React.createClass({displayName: "TopicExpanded",
     mixins: [Router.State],
 
-    reply: function(){
-        console.log('Post Reply')
-    },
-
-    componentDidMount: function(){
+    fetch: function(){
         var self = this
         self.refs.loader.showLoader()
         superagent
@@ -2111,6 +2121,39 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
                     })
                 }
             })
+    },
+    reply: function(){
+        var self = this
+        if(self.refs.replyField.getValue() == ''){
+            self.refs.replyField.setErrorText('This field is compulsory')
+        }
+        else{
+            superagent
+                .post(localStorage.getItem('mainUrl') + '/comments/' + self.getParams().topicId)
+                .type('form')
+                .send({
+                    "parentCommentId": 0,
+                    "text": self.refs.replyField.getValue(),
+                    "subject": self.refs.replyField.getValue()
+                })
+                .timeout(10000)
+                .set('token', localStorage.getItem('token'))
+                .set('uid', localStorage.getItem('uid'))
+                .end(function(err, res){
+                    if(err){
+                        if(err.timeout==10000)
+                            console.log('Unable to process request')
+                    }
+                    else{
+                        self.refs.replyField.clearValue()
+                        self.fetch()
+                    }
+                })
+        }
+    },
+
+    componentDidMount: function(){
+        this.fetch()
     },
     getInitialState: function(){
         return {
@@ -2167,7 +2210,7 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
                 React.createElement(Loader, {ref: "loader"}), 
 
             React.createElement("div", {style: {position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}, 
-                    React.createElement(TextField, {ref: "replyInput", 
+                    React.createElement(TextField, {ref: "replyField", 
                         style: InputStyle, 
                         hintText: "Reply", 
                         onEnterKeyDown: this.reply}), 
@@ -2221,7 +2264,7 @@ var TopicNormal = React.createClass({displayName: "TopicNormal",
 module.exports = TopicNormal
 
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_115c6397.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_1f82b2af.js","/")
 },{"../courseList.json":1,"./app.js":2,"./chat.js":3,"./course.js":4,"./forums.js":6,"./gems.js":7,"./lecture.js":8,"./lectures.js":9,"./loader.js":10,"./login.js":11,"./material.js":12,"./newForum.js":13,"./notifs.js":14,"./resources.js":15,"./topicExpanded.js":16,"./topicNormal.js":17,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"react-tap-event-plugin":193,"react-youtube":194,"react/addons":201,"socket.io-client":374,"superagent":424}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
@@ -2265,6 +2308,7 @@ var Forums = React.createClass({displayName: "Forums",
             .end(function(err, res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -2394,6 +2438,7 @@ var Lecture = React.createClass({displayName: "Lecture",
             .end(function(err, res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -3308,6 +3353,7 @@ var Resources = React.createClass({displayName: "Resources",
             .end(function(err,res){
                 self.refs.loader.hideLoader()
                 if(err){
+                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -3318,7 +3364,6 @@ var Resources = React.createClass({displayName: "Resources",
                 }
             })
     },
-
     render: function(){
         var self = this
         return (
@@ -3369,11 +3414,7 @@ var React = require('react'),
 var TopicExpanded = React.createClass({displayName: "TopicExpanded",
     mixins: [Router.State],
 
-    reply: function(){
-        console.log('Post Reply')
-    },
-
-    componentDidMount: function(){
+    fetch: function(){
         var self = this
         self.refs.loader.showLoader()
         superagent
@@ -3395,6 +3436,39 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
                     })
                 }
             })
+    },
+    reply: function(){
+        var self = this
+        if(self.refs.replyField.getValue() == ''){
+            self.refs.replyField.setErrorText('This field is compulsory')
+        }
+        else{
+            superagent
+                .post(localStorage.getItem('mainUrl') + '/comments/' + self.getParams().topicId)
+                .type('form')
+                .send({
+                    "parentCommentId": 0,
+                    "text": self.refs.replyField.getValue(),
+                    "subject": self.refs.replyField.getValue()
+                })
+                .timeout(10000)
+                .set('token', localStorage.getItem('token'))
+                .set('uid', localStorage.getItem('uid'))
+                .end(function(err, res){
+                    if(err){
+                        if(err.timeout==10000)
+                            console.log('Unable to process request')
+                    }
+                    else{
+                        self.refs.replyField.clearValue()
+                        self.fetch()
+                    }
+                })
+        }
+    },
+
+    componentDidMount: function(){
+        this.fetch()
     },
     getInitialState: function(){
         return {
@@ -3451,7 +3525,7 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
                 React.createElement(Loader, {ref: "loader"}), 
 
             React.createElement("div", {style: {position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}, 
-                    React.createElement(TextField, {ref: "replyInput", 
+                    React.createElement(TextField, {ref: "replyField", 
                         style: InputStyle, 
                         hintText: "Reply", 
                         onEnterKeyDown: this.reply}), 
