@@ -7,6 +7,7 @@ Making teaching as easy as learning
 1. Install global dependencies: `npm install -g gulp ionic`
 2. Install local dependencies: `npm install`
 3. Run gulp
+
 &nbsp;&nbsp;&nbsp;&nbsp;a. To develop, run gulp with the default task: `gulp`  
 &nbsp;&nbsp;&nbsp;&nbsp;b. To build APK, run gulp with the 'build' task: `gulp build`
 
@@ -19,17 +20,12 @@ Making teaching as easy as learning
 3. Run: `gulp build`
 
 #### Libraries:
-A BIG thank you to all the wonderful developers of the following libraries/utilities, without  which this project could not have been successful:
 
-1. Browser-Sync
-2. Cordova
-3. Gulp
-&nbsp;&nbsp;&nbsp;&nbsp;a. Browserify + Reactify
-&nbsp;&nbsp;&nbsp;&nbsp;b. gulp-shell
-4. Material-UI
-5. Material Design Icons
-6. React
-7. React Router
-8. React-YouTube
-9. Socket.IO
-10. Superagent
+1. [Cordova](https://github.com/apache/cordova-js)
+2. [Material-UI](https://github.com/callemall/material-ui)
+3. [Material Design Icons](https://github.com/templarian/MaterialDesign/)
+4. [React](https://github.com/facebook/react)
+5. [React Router](https://github.com/rackt/react-router)
+6. [React-YouTube](https://github.com/compedit/react-youtube)
+7. [Socket.IO](https://github.com/socketio/socket.io-client)
+8. [Superagent](https://github.com/visionmedia/superagent)

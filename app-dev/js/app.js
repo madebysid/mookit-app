@@ -29,7 +29,6 @@ var App = React.createClass({
             .timeout(10000)
             .end(function(err, res){
                 if(err){
-                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }

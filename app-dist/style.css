@@ -25,41 +25,6 @@ body {
     ANIMATIONS
 */
 
-.cardOpen-appear{
-    animation: cardOpen 0.3s;
-    -webkit-animation: cardOpen 0.3s;
-}
-
-@keyframes cardOpen {
-    from {
-        opacity: 0;
-        transform: translateY(100vh);
-        -webkit-transform: translateY(100vh);
-    }
-}
-
-.topics-appear{
-    animation: cardAnim 0.3s;
-    -webkit-animation: cardAnim 0.3s;
-}
-
-.topicsOpen-appear{
-    animation: topicOpenAnim 0.3s;
-    -webkit-animation: topicOpenAnim 0.3s;
-}
-
-@keyframes topicOpenAnim {
-    from {
-        transform: translateY(100vh);
-    }
-}
-
-@-webkit-keyframes topicOpenAnim {
-    from {
-        -webkit-transform: translateY(100vh);
-    }
-}
-
 @keyframes flyInFromBottom {
     0%{
         opacity: 0;

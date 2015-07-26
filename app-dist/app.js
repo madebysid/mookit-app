@@ -37,7 +37,6 @@ var App = React.createClass({displayName: "App",
             .timeout(10000)
             .end(function(err, res){
                 if(err){
-                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -531,7 +530,6 @@ var App = React.createClass({displayName: "App",
             .timeout(10000)
             .end(function(err, res){
                 if(err){
-                    superagent.abort()
                     if(err.timeout==10000)
                         console.log('Timeout')
                 }
@@ -2301,7 +2299,7 @@ var TopicNormal = React.createClass({displayName: "TopicNormal",
 module.exports = TopicNormal
 
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_8cc4ed59.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_6cbcb66e.js","/")
 },{"../courseList.json":1,"./app.js":2,"./chat.js":3,"./course.js":4,"./forums.js":6,"./gems.js":7,"./lecture.js":8,"./lectures.js":9,"./loader.js":10,"./login.js":11,"./material.js":12,"./newForum.js":13,"./notifs.js":14,"./resources.js":15,"./topicExpanded.js":16,"./topicNormal.js":17,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"react-tap-event-plugin":193,"react-youtube":194,"react/addons":201,"socket.io-client":374,"superagent":424}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
