@@ -20,7 +20,7 @@ var routes = (
         <Route name="loader" path="/loader" handler={Loader}></Route>
 
         <Route handler={App}>
-            <Route path="course" handler={Course}>
+            <Route name="home" path="course" handler={Course}>
                 <Route name="forums" path="forums" handler={Forums}></Route>
                 <Route name="lectures" path="lectures" handler={Lectures}></Route>
                 <Route name="resources" path="resources" handler={Resources}></Route>

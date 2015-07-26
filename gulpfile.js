@@ -3,7 +3,6 @@ var gulp = require('gulp'),
     batch = require('gulp-batch'),
     shell = require('gulp-shell'),
     jeditor = require('gulp-json-editor'),
-    del = require('del'),
     browserSync = require('browser-sync').create(),
     browserify = require('gulp-browserify'),
     concat = require('gulp-concat'),
@@ -105,16 +104,14 @@ gulp.task('build-apk', ['build-compile'], function(){
                     'cd .. && ' +
                     'mv ./android-debug.apk ./"' + config.appName + '".apk && ' +
                     'rm -r ./"' + config.title + '" && ' +
-                    'echo --------------------ALL DONE-------------------- &&' +
+                    'echo -------------------------ALL DONE------------------------- &&' +
                     'echo Thank you for using the build tool. &&' +
                     'echo Enjoy your app!'))
 })
 
 gulp.task('build-success', ['build-apk'], function(){
     gulp.src('./')
-        .pipe(shell('echo --------------------ALL DONE-------------------- &&' +
-                    'echo Thank you for using the build tool. &&' +
-                    'echo Enjoy your app!'))
+        .pipe(shell('echo -------------------------STARTING BUILD------------------------ '))
 })
 
 gulp.task('build', ['build-success'])

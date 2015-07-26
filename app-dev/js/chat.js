@@ -171,24 +171,6 @@ var ChatContainer = React.createClass({
         var self = this,
             node = this.refs.chatContainer.getDOMNode()
         this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now().toString().slice(0,10))
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000)
-                        console.log('Timeout')
-                }
-                else{
-                    self.setState({
-                        chats: res.body
-                    })
-                    if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
-                        self.props.updateUnread()
-                }
-            })
     },
     componentDidUpdate: function() {
         if (this.shouldScrollBottom) {

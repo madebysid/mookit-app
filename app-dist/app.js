@@ -4,34 +4,70 @@ module.exports={
   "login": "http://staging.mookit.co",
   "main": "http://node.mookit.co"
 }
-
 },{}],2:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     material = require('./material.js'),
     mui = require('material-ui'),
+    superagent = require('superagent'),
     Router = require('react-router'),
     Gems = require('./gems.js'),
     RouteHandler = Router.RouteHandler,
+    Route = Router.Route,
 
-    AppBar = mui.AppBar
+    AppBar = mui.AppBar,
+    Dialog = mui.Dialog
 
 var App = React.createClass({displayName: "App",
-    mixins: [material, Router.Navigation],
+    mixins: [material, Router.Navigation, Router.State],
 
+    goBackDude: function(){
+        var self = this
+        if (this.getRoutes()[2].name == 'home')
+            self.refs.confirmDialog.show()
+        else
+            self.goBack()
+    },
+    logout: function(){
+        var self = this
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/logout')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err, res){
+                if(err){
+                    superagent.abort()
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else
+                    self.transitionTo('login')
+            })
+    },
     render: function(){
         var self = this,
         AppBarStyle = {
             backgroundColor: '#378E43'
-        }
+        },
+        confirmActions = [
+            {text: 'No'},
+            {text: 'Yes', onTouchTap: self.logout}
+        ]
         return (
             React.createElement("div", null, 
                 React.createElement(AppBar, {
                     iconClassNameLeft: "mdi mdi-arrow-left", 
-                    onLeftIconButtonTouchTap: this.goBack, 
+                    onLeftIconButtonTouchTap: this.goBackDude, 
                     zDepth: 0, 
                     style: AppBarStyle}), 
                 React.createElement(Gems, null), 
+                React.createElement(Dialog, {
+                    ref: "confirmDialog", 
+                    title: "Confirm", 
+                    actions: confirmActions}, 
+                "Are you sure you want to log out?"
+                ), 
                 React.createElement(RouteHandler, null)
             )
         )
@@ -42,7 +78,7 @@ module.exports = App
 
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/app.js","/")
-},{"./gems.js":7,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175}],3:[function(require,module,exports){
+},{"./gems.js":7,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"superagent":424}],3:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     material = require('./material.js'),
@@ -217,24 +253,6 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
         var self = this,
             node = this.refs.chatContainer.getDOMNode()
         this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now().toString().slice(0,10))
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000)
-                        console.log('Timeout')
-                }
-                else{
-                    self.setState({
-                        chats: res.body
-                    })
-                    if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
-                        self.props.updateUnread()
-                }
-            })
     },
     componentDidUpdate: function() {
         if (this.shouldScrollBottom) {
@@ -485,28 +503,65 @@ module.exports = Course
 var React = require('react'),
     material = require('./material.js'),
     mui = require('material-ui'),
+    superagent = require('superagent'),
     Router = require('react-router'),
     Gems = require('./gems.js'),
     RouteHandler = Router.RouteHandler,
+    Route = Router.Route,
 
-    AppBar = mui.AppBar
+    AppBar = mui.AppBar,
+    Dialog = mui.Dialog
 
 var App = React.createClass({displayName: "App",
-    mixins: [material, Router.Navigation],
+    mixins: [material, Router.Navigation, Router.State],
 
+    goBackDude: function(){
+        var self = this
+        if (this.getRoutes()[2].name == 'home')
+            self.refs.confirmDialog.show()
+        else
+            self.goBack()
+    },
+    logout: function(){
+        var self = this
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/logout')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err, res){
+                if(err){
+                    superagent.abort()
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else
+                    self.transitionTo('login')
+            })
+    },
     render: function(){
         var self = this,
         AppBarStyle = {
             backgroundColor: '#378E43'
-        }
+        },
+        confirmActions = [
+            {text: 'No'},
+            {text: 'Yes', onTouchTap: self.logout}
+        ]
         return (
             React.createElement("div", null, 
                 React.createElement(AppBar, {
                     iconClassNameLeft: "mdi mdi-arrow-left", 
-                    onLeftIconButtonTouchTap: this.goBack, 
+                    onLeftIconButtonTouchTap: this.goBackDude, 
                     zDepth: 0, 
                     style: AppBarStyle}), 
                 React.createElement(Gems, null), 
+                React.createElement(Dialog, {
+                    ref: "confirmDialog", 
+                    title: "Confirm", 
+                    actions: confirmActions}, 
+                "Are you sure you want to log out?"
+                ), 
                 React.createElement(RouteHandler, null)
             )
         )
@@ -688,24 +743,6 @@ var ChatContainer = React.createClass({displayName: "ChatContainer",
         var self = this,
             node = this.refs.chatContainer.getDOMNode()
         this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now().toString().slice(0,10))
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000)
-                        console.log('Timeout')
-                }
-                else{
-                    self.setState({
-                        chats: res.body
-                    })
-                    if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
-                        self.props.updateUnread()
-                }
-            })
     },
     componentDidUpdate: function() {
         if (this.shouldScrollBottom) {
@@ -2058,7 +2095,7 @@ var routes = (
         React.createElement(Route, {name: "loader", path: "/loader", handler: Loader}), 
 
         React.createElement(Route, {handler: App}, 
-            React.createElement(Route, {path: "course", handler: Course}, 
+            React.createElement(Route, {name: "home", path: "course", handler: Course}, 
                 React.createElement(Route, {name: "forums", path: "forums", handler: Forums}), 
                 React.createElement(Route, {name: "lectures", path: "lectures", handler: Lectures}), 
                 React.createElement(Route, {name: "resources", path: "resources", handler: Resources})
@@ -2264,7 +2301,7 @@ var TopicNormal = React.createClass({displayName: "TopicNormal",
 module.exports = TopicNormal
 
 
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_1f82b2af.js","/")
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_8cc4ed59.js","/")
 },{"../courseList.json":1,"./app.js":2,"./chat.js":3,"./course.js":4,"./forums.js":6,"./gems.js":7,"./lecture.js":8,"./lectures.js":9,"./loader.js":10,"./login.js":11,"./material.js":12,"./newForum.js":13,"./notifs.js":14,"./resources.js":15,"./topicExpanded.js":16,"./topicNormal.js":17,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"react-tap-event-plugin":193,"react-youtube":194,"react/addons":201,"socket.io-client":374,"superagent":424}],6:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
