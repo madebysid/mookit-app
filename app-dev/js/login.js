@@ -3,7 +3,6 @@ var React = require('react'),
     material = require('./material.js'),
     superagent = require('superagent'),
     Router = require('react-router'),
-    Offline = require('./offline.js'),
     courses = require('../courseList.json'),
 
     Card = mui.Card,
@@ -21,6 +20,9 @@ module.exports = React.createClass({
         var self = this,
             username = this.state.username,
             password = this.state.password
+
+        localStorage.setItem('username', username)
+        localStorage.setItem('password', password)
         self.setState({
             loading: true
         })
@@ -37,10 +39,8 @@ module.exports = React.createClass({
                     loading: false
                 })
                 if(err){
-                    if(err.timeout == 10000 || err.status == 106 || err.status == 0) {
-                        self.setState({
-                            offline: true
-                        })
+                    if(err.timeout == 10000) {
+                        console.log('Timeout')
                     }
                     else if(err.status == 403 || err.status == 401){
                         self.refs.ErrorDialog.show()
@@ -49,7 +49,7 @@ module.exports = React.createClass({
                 else {
                     localStorage.setItem('token', res.body.token);
                     localStorage.setItem('uid', res.body.uid);
-                    self.transitionTo('/course')
+                    self.transitionTo('lectures')
                 }
             })
     },
@@ -58,23 +58,17 @@ module.exports = React.createClass({
             password: e.target.value
         })
     },
-    goBackDude: function(){
-        this.transitionTo('/courses')
-    },
 
     componentWillMount: function(){
         localStorage.setItem('courseTitle', courses.title)
         localStorage.setItem('mainUrl', courses.main)
         localStorage.setItem('loginUrl', courses.login)
-        localStorage.setItem('lastSeen', Date.now())
-        console.log('Local Storage set')
     },
     getInitialState: function(){
         return {
-            username: '',
-            password: '',
-            loading: false,
-            offline: false
+            username: (localStorage.getItem('username')) ? localStorage.getItem('username') : '',
+            password: (localStorage.getItem('password')) ? localStorage.getItem('password') : '',
+            loading: false
         }
     },
     render: function(){
@@ -150,15 +144,10 @@ module.exports = React.createClass({
         ];
         return (
             <div>
-                {
-                    this.state.offline ? <Offline /> : null
-                }
-
                 <div style={{backgroundColor: '#EDECEC'}}>
                     <Card style={CardStyle}>
                         <CardText>
                             <img src="img/logo.svg" style={LogoStyle}/>
-
                             <TextField
                                 style={TextFieldStyle}
                                 floatingLabelText="Username"
@@ -184,7 +173,6 @@ module.exports = React.createClass({
 
                             <img src="img/facebook.svg" style={FacebookStyle}/>
                             <img src="img/twitter.svg" style={TwitterStyle}/>
-
                         </CardText>
                     </Card>
                 </div>
@@ -194,6 +182,12 @@ module.exports = React.createClass({
                     actions={standardActions}
                     ref="ErrorDialog">
                     Please check username and/or password
+                </Dialog>
+                <Dialog
+                    ref="OfflineDialog"
+                    title="Error"
+                    actions={[{ text: 'Okay' }]}>
+                    We're having trouble connecting to our servers. Please check your internet connection or try again later.
                 </Dialog>
 
                 <div style={SignUpContainer}>

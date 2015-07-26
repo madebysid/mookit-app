@@ -1,5 +1,5 @@
 {
-    "title": "MOOC on MOOCs",
-    "login": "http://mooconmooc.org",
-    "main": "http://node.mooconmooc.org"
+  "title": "Staging Course",
+  "login": "http://staging.mookit.co",
+  "main": "http://node.mookit.co"
 }

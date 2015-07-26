@@ -21,68 +21,9 @@ body {
     outline: 0;
 }
 
-.chatContainer:after{
-    content: ' ';
-    position: absolute;
-    width: 0;
-    height: 0;
-    right: 75px;
-    top: 44px;
-    border: 8px solid;
-    border-color: transparent transparent #fff transparent;
-}
-
-.notificationContainer:after{
-    content: ' ';
-    position: absolute;
-    width: 0;
-    height: 0;
-    right: 15px;
-    top: 44px;
-    border: 8px solid;
-    border-color: transparent transparent #fff transparent;
-}
-
-.incomingMsg:before{
-    content: ' ';
-    position: absolute;
-    left: 64px;
-    margin-top: 0px;
-    width: 0;
-    height: 0;
-    border: 8px solid;
-    border-color: transparent #EDECEC transparent transparent;
-}
-
-.outgoingMsg:before{
-    content: ' ';
-    position: absolute;
-    right: 64px;
-    width: 0;
-    height: 0;
-    border: 8px solid;
-    border-color: transparent transparent transparent #378E43;
-}
-
-
-
 /*
     ANIMATIONS
 */
-
-
-.cardAnim-appear{
-    animation: cardAnim 0.3s;
-    -webkit-animation: cardAnim 0.3s;
-}
-
-@keyframes cardAnim {
-    from {
-        opacity: 0;
-        transform: translateY(100px);
-        -webkit-transform: translateY(100px);
-    }
-}
 
 .cardOpen-appear{
     animation: cardOpen 0.3s;

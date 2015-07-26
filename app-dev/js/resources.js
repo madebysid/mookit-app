@@ -2,7 +2,7 @@ var React = require('react/addons'),
     mui = require('material-ui'),
     material = require('./material.js'),
     superagent = require('superagent'),
-    Offline = require('./offline.js'),
+    Loader = require('./loader.js'),
 
     IconButton = mui.IconButton,
     CircularProgress = mui.CircularProgress,
@@ -11,55 +11,43 @@ var React = require('react/addons'),
     ListDivider = mui.ListDivider,
     Avatar = mui.Avatar
 
-module.exports = React.createClass({
+var Resources = React.createClass({
 
     getInitialState: function(){
         return {
-            notifs: [],
-            loading: true,
-            offline: false
+            res: [{data: 'null'}]
         }
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
         var self = this
+        self.refs.loader.showLoader()
         superagent
             .get(localStorage.getItem('mainUrl') + '/resources')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err,res){
+                self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
+                        console.log('Timeout')
                 }
                 else{
                     self.setState({
-                        notifs: res.body,
-                        loading: false
+                        res: res.body
                     })
                 }
             })
     },
 
     render: function(){
-        var loaderStyle = {
-                position: 'absolute',
-                left: '0',
-                right: '0',
-                top: '30vh',
-                margin: '0 auto',
-                display: this.state.loading ? 'block' : 'none'
-            }
+        var self = this
         return (
             <div style={{height: '70vh', overflowY: 'scroll', overflowX: 'hidden'}}>
                 {
-                    this.state.offline ? <Offline /> : null
-                }
-                {
-                    this.state.notifs.map(function(element, index){
+                    (this.state.res[0].data == 'null')
+                    ? <div style={{paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}>No resources available</div>
+                    : this.state.res.map(function(element, index){
                         return (
                             <div>
                                 <ListItem
@@ -74,8 +62,10 @@ module.exports = React.createClass({
                         )
                     })
                 }
-                <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
+                <Loader ref="loader" />
             </div>
         )
     }
 })
+
+module.exports = Resources

@@ -104,12 +104,15 @@ gulp.task('build-apk', ['build-compile'], function(){
                     'cp ./platforms/android/build/outputs/apk/android-debug.apk ../ && ' +
                     'cd .. && ' +
                     'mv ./android-debug.apk ./"' + config.appName + '".apk && ' +
-                    'rm -r ./"' + config.title + '"'))
+                    'rm -r ./"' + config.title + '" && ' +
+                    'echo --------------------ALL DONE-------------------- &&' +
+                    'echo Thank you for using the build tool. &&' +
+                    'echo Enjoy your app!'))
 })
 
 gulp.task('build-success', ['build-apk'], function(){
     gulp.src('./')
-        .pipe(shell("echo '--------------------ALL DONE--------------------' &&" +
+        .pipe(shell('echo --------------------ALL DONE-------------------- &&' +
                     'echo Thank you for using the build tool. &&' +
                     'echo Enjoy your app!'))
 })

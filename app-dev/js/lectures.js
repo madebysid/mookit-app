@@ -1,25 +1,39 @@
-var React = require('react/addons'),
-    Router = require('react-router'),
-    RouteHandler = Router.RouteHandler,
-    Link = Router.Link,
-    mui = require('material-ui'),
+var React = require('react'),
     material = require('./material.js'),
-    Lecture = require('./lecture.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Router = require('react-router'),
+    Loader = require('./loader.js'),
 
-    AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
-    Tabs = mui.Tabs,
-    Tab = mui.Tab,
-    Icon = mui.FontIcon,
     List = mui.List,
     ListItem = mui.ListItem,
     ListDivider = mui.ListDivider,
-    Menu = mui.Menu
-
-React.initializeTouchEvents(true)
+    Icon = mui.FontIcon
 
 var expanded = []
+
+var sortByWeeks = function(data) {
+    var newData = [],
+        maxWeek = 0
+
+    data.forEach(function (element) {
+        if (element.week.slice(5) > maxWeek)
+            maxWeek = element.week.slice(5)
+    })
+
+    for (var i = 0; i <= maxWeek; i++) {
+        newData[i] = new Array()
+        expanded[i] = false
+    }
+
+    data.forEach(function (element) {
+        newData[parseInt(element.week.slice(5))].push(element)
+    })
+
+    return newData
+}
 
 var NormalText = React.createClass({
     handleClick: function(){
@@ -66,12 +80,17 @@ var NormalText = React.createClass({
 })
 
 var CardList = React.createClass({
+    mixins: [Router.Navigation],
+
     handleClick: function(){
         this.props.onTouchTap()
     },
     goToLecture: function(lecture){
-        if(lecture.lid != undefined)
-            this.props.goToLecture(lecture)
+        var lectureId = lecture.forumsectionId
+        if(lectureId != undefined) {
+            localStorage.setItem('vurl', lecture.vurl)
+            this.transitionTo("lecture", {lectureId: lectureId})
+        }
     },
 
     render: function() {
@@ -113,10 +132,10 @@ var CardList = React.createClass({
                                         animationFillMode: 'forwards',
                                         opacity: '0'
                                     }}
-                                      rightIcon={<Icon className="mdi mdi-play"/>} key={index*2+self.props.data.length}>
+                                      rightIcon={<Icon className="mdi mdi-play"/>}>
                                         {self.props.data[index].title}
                                     </ListItem>
-                                    <ListDivider style = {{marginLeft: '20vw'}} key={index*3+self.props.data.length}/>
+                                    <ListDivider style = {{marginLeft: '20vw'}} />
                                 </div>
                             )
                         })
@@ -127,27 +146,32 @@ var CardList = React.createClass({
     }
 });
 
-
 var ExpandableListItem = React.createClass({
-    toggle: function(){
-        this.props.handleToggle(this.props.id)
-    },
-    goToLecture: function(lecture){
-        this.props.goToLecture(lecture)
+    handleTouch: function(){
+        this.props.onTouchTap(this.props.id)
     },
 
+    getInitialState: function() {
+        return {
+            expanded: this.props.expanded
+        };
+    },
     render: function(){
-        var Styles = {
+        var self = this,
+        Styles = {
             backgroundColor: 'white',
-            margin: (this.props.isExpanded) ? '2vh 3vw' : '1vh 5vw',
-            transitionDuration: '0.3s'
+            margin: expanded[this.props.id] ? '2vh 3vw' : '1vh 5vw',
+            transition: '0.3s'
         }
-        var ToRender = expanded[this.props.id] ? CardList : NormalText
         return (
             <div>
-                <Card zDepth={(this.props.isExpanded) ? 2 : 1} rounded={false} style={Styles}>
+                <Card zDepth={expanded[this.props.id] ? 2 : 1} rounded={false} style={Styles}>
                     <CardText style={{padding: '0vh 3vw'}}>
-                        <ToRender data={this.props.data} goToLecture={this.goToLecture} onTouchTap={this.toggle}/>
+                        {
+                            expanded[this.props.id]
+                            ? <CardList onTouchTap={this.handleTouch} data={this.props.data} />
+                            : <NormalText onTouchTap={this.handleTouch} data={this.props.data}/>
+                        }
                     </CardText>
                 </Card>
             </div>
@@ -155,45 +179,55 @@ var ExpandableListItem = React.createClass({
     }
 })
 
-module.exports = React.createClass({
-    mixins: [Router.Navigation],
+var Lectures = React.createClass({
+    mixins: [material, Router.Navigation],
 
-    toggleCard: function(cardId){
-        this.state.expanded.forEach(function(element, index){
-            expanded[index] = (index == cardId) ? !expanded[index] : false
+    handleTouch: function(id){
+        var self = this
+        expanded.forEach(function(element, index){
+            expanded[index] = (index == id) ? !expanded[index] : false
         })
-        this.setState({
+        self.setState({
             expanded: expanded
         })
     },
-    goToLecture: function(lecture){
-        this.setState({
-            lectureData: lecture,
-            lecture: true
-        })
-        this.props.goToLecture()
-    },
 
-    getInitialState: function(){
+
+    getInitialState: function() {
         return {
-            expanded: this.props.expanded,
-            lecture: this.props.lecture,
-            lectureData: []
-        }
+            data: [{data: 'null'}],
+            expanded: expanded
+        };
     },
-    componentWillReceiveProps: function(nextProps){
-        this.setState({
-            lecture: nextProps.lecture,
-            data: nextProps.repeatEntity
-        })
+    componentDidMount: function() {
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/lectures/summary')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err, res) {
+                self.refs.loader.hideLoader()
+                if(err) {
+                    if(err.timeout == 10000)
+                        console.log('Timeout')
+                }
+                else {
+                    self.setState({
+                        data: sortByWeeks(res.body)
+                    })
+                }
+            })
     },
     render: function(){
         var self = this
         return (
-            <div style={{height: '70vh', overflowY: 'scroll'}}>
-                {this.state.lecture
-                    ? <Lecture data={self.state.lectureData}/>
-                    : this.props.repeatEntity.map(function(element, index) {
+            <div style={{height: 'calc(99vh - 40px - 110px)', overflowY: 'scroll'}}>
+                {
+                    (this.state.data[0].data == 'null')
+                    ? <div style={{paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}>No lectures available</div>
+                    : self.state.data.map(function(element, index) {
                         return (
                             <div style={{
                                 animation: 'flyInFromBottom 0.3s ease ' + (index)*0.1 + 's',
@@ -201,12 +235,21 @@ module.exports = React.createClass({
                                 animationFillMode: 'forwards',
                                 WebkitAnimationFillMode: 'forwards',
                                 opacity: '0'
-                            }} key={index*4}>
-                                <ExpandableListItem data={element} goToLecture={self.goToLecture} isExpanded={self.state.expanded[index]} handleToggle={self.toggleCard} key={index} id={index}/>
+                            }}
+                            key={index}>
+                            <ExpandableListItem
+                                data={self.state.data[index]}
+                                id={index}
+                                onTouchTap={self.handleTouch}
+                                expanded={self.state.expanded}/>
                             </div>
-                            )}
-                )}
+                        )
+                    })
+                }
+                <Loader ref="loader" />
             </div>
         )
     }
 })
+
+module.exports = Lectures

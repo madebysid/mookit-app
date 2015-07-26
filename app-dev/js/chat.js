@@ -1,14 +1,18 @@
-var React = require('react/addons'),
-    mui = require('material-ui'),
+var React = require('react'),
     material = require('./material.js'),
+    mui = require('material-ui'),
     superagent = require('superagent'),
-    Offline = require('./offline.js'),
+    socket = require('socket.io-client'),
+    io = socket.connect(localStorage.getItem('mainUrl')),
+    Loader = require('./loader.js'),
 
     IconButton = mui.IconButton,
-    FlatButton = mui.FlatButton,
+    ListItem = mui.ListItem,
+    ListDivider = mui.ListDivider,
     Avatar = mui.Avatar,
+    IconButton = mui.IconButton,
     TextField = mui.TextField,
-    CircularProgress = mui.CircularProgress
+    FlatButton = mui.FlatButton
 
 var Incoming = React.createClass({
     render: function(){
@@ -29,6 +33,14 @@ var Incoming = React.createClass({
                 textAlign: 'right',
                 fontSize: '0.7em',
                 fontFamily: 'RobotoRegular'
+            },
+            arrowStyle = {
+                float: 'left',
+                marginTop: '10px',
+                width: '0',
+                height: '0',
+                border: '10px solid',
+                borderColor: 'transparent #EDECEC transparent transparent',
             }
         return (
             <div style={ContainerStyle}>
@@ -36,6 +48,7 @@ var Incoming = React.createClass({
                     {this.props.sender.slice(0,1).toUpperCase()}
                 </Avatar>
 
+                <div style={arrowStyle} />
                 <div style={MessageStyle} className="incomingMsg">
                     {this.props.message}
                     <div style={SenderStyle}>
@@ -49,10 +62,10 @@ var Incoming = React.createClass({
 
 var Outgoing = React.createClass({
     render: function(){
-        var ContainerStyle = {
+        var containerStyle = {
                 marginBottom: '20px'
             },
-            MessageStyle = {
+            messageStyle = {
                 backgroundColor: '#378E43',
                 color: 'white',
                 marginRight: '60px',
@@ -61,23 +74,32 @@ var Outgoing = React.createClass({
                 padding: '10px',
                 textAlign: 'right'
             },
-            SenderStyle = {
+            senderStyle = {
                 color: 'white',
                 opacity: '0.4',
                 width: '100%',
                 fontSize: '0.7em',
                 fontFamily: 'RobotoRegular',
                 textAlign: 'left'
+            },
+            arrowStyle = {
+                float: 'right',
+                marginTop: '10px',
+                width: '0',
+                height: '0',
+                border: '10px solid',
+                borderColor: 'transparent transparent transparent #378E43',
             }
         return (
-            <div style={ContainerStyle}>
+            <div style={containerStyle}>
                 <Avatar color={"white"} backgroundColor={'#49B752'} style={{float: 'right'}}>
                     Y
                 </Avatar>
 
-                <div style={MessageStyle} className="outgoingMsg">
+                <div style={arrowStyle} />
+                <div style={messageStyle} className="outgoingMsg">
                     {this.props.message}
-                    <div style={SenderStyle}>
+                    <div style={senderStyle}>
                         You
                     </div>
                 </div>
@@ -87,268 +109,244 @@ var Outgoing = React.createClass({
 })
 
 var ChatContainer = React.createClass({
+
     loadPrevious: function(){
         var self = this
-        self.setState({
-            loading: true
-        })
+        self.refs.loader.showLoader()
         superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + self.state.oldest)
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + self.state.chats[0].timestamp)
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err,res){
-                newChat = res.body.reverse().concat(self.state.chat)
+                self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
+                        console.log('Timeout')
+                }
+                else{
+                    newChat = res.body.reverse().concat(self.state.chat)
+                    self.setState({
+                        chats: newChat
+                    })
+                }
+            })
+    },
+    sendMsg: function(){
+        var msg = this.refs.msgInput.getValue()
+        io.emit('chatMessage', msg, localStorage.getItem('uid'), localStorage.getItem('token'))
+        this.forceUpdate();
+        this.refs.msgInput.setValue('')
+    },
+
+    getInitialState: function(){
+        return {
+            chats: []
+        }
+    },
+    componentDidMount: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/1')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
                 }
                 else{
                     self.setState({
-                        previousLoaded: true,
-                        chat: newChat,
-                        oldest: res.body[0].timestamp,
-                        loading: false
+                        chats: res.body.reverse()
                     })
                 }
             })
     },
 
     componentWillUpdate: function() {
-        var node = this.refs.chatContainer.getDOMNode();
+        var self = this,
+            node = this.refs.chatContainer.getDOMNode()
         this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    self.setState({
+                        chats: res.body.reverse()
+                    })
+                    if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
+                        self.props.updateUnread()
+                }
+            })
     },
-
     componentDidUpdate: function() {
         if (this.shouldScrollBottom) {
             var node = this.refs.chatContainer.getDOMNode();
             node.scrollTop = node.scrollHeight
         }
     },
-    componentWillMount: function(){
-        var self = this
-        localStorage.setItem('lastSeen', Date.now())
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + localStorage.getItem('lastSeen'))
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
-                    }
-                }
-                else{
-                    self.setState({
-                        chat: res.body.reverse(),
-                        oldest: res.body[res.body.length-1].timestamp,
-                        newest: res.body[0].timestamp,
-                        loading: false
-                    })
-                }
-            })
-    },
-    getInitialState: function(){
-        return {
-            chat: [],
-            oldest: 0,
-            newest: 0,
-            previousLoaded: false,
-            offline: false,
-            loading: true
-        }
+    componentWillUnmount: function(){
+        localStorage.setItem('lastSeenChat', Date.now())
     },
     render: function(){
-        var ContainerStyle = {
-            display: this.props.opened ? 'block' : 'none',
+        var self = this,
+        ContainerStyle = {
             position: 'absolute',
             top: '60px',
             bottom: '0',
             width: '100vw',
             boxSizing: 'border-box',
             left: '0',
-            zIndex: '16000',
             backgroundColor: 'white',
-            padding: '20px',
-            paddingTop: '40px',
-            overflowY: 'scroll'
+            padding: '10px',
+            overflowY: 'scroll',
+            zIndex: '2'
         },
-        EmptyStyle = {
-            display: this.props.opened ? 'block' : 'none',
+        arrowStyle = {
             position: 'absolute',
-            top: '60px',
-            zIndex: '9000',
-            height: '20px',
-            width: '100vw',
+            width: '0',
+            height: '0',
+            right: '75px',
+            top: '44px',
+            border: '8px solid',
+            borderColor: 'transparent transparent #fff transparent'
+        },
+        InputStyle = {
+            left: '20px',
+            width: '75vw'
+        },
+        SendStyle = {
+            right: '-20px'
+        },
+        extraSpace = {
+            height: '50px',
             backgroundColor: 'white'
         },
-        FadeStyle = {
-            display: this.props.opened ? 'block' : 'none',
-            position: 'absolute',
-            top: '80px',
-            zIndex: '9000',
+        fadeStyle = {
+            position: 'fixed',
+            top: '60px',
+            zIndex: '4',
             height: '50px',
             width: '100vw',
             background: 'linear-gradient(white, transparent)'
         },
-        Empty2Style = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9000',
-            height: '50px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        Empty3Style = {
-            bottom: '50px',
-            zIndex: '2000',
-            height: '40px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        InputStyle = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9001'
-        },
-        SendStyle = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9001',
-            right: '0',
-            color: '#378E43'
-        },
-        previousStyle = {
-            display: 'block',
-            margin: '0px auto',
-            width: '50vw',
-            textAlign: 'center',
-            fontSize: '0.8em',
-            color: '#378E43',
-            marginTop: '15px'
-        },
-        loaderStyle = {
+        btnStyle = {
+            position: 'absolute',
+            margin: '0 auto',
             left: '0',
             right: '0',
-            margin: '0 auto',
-            display: this.state.loading ? 'block' : 'none'
+            width: '50vw',
+            color: '#378E43'
         }
         return (
-            <div className="chatContainer">
+            <div className="notifContainer">
+            <div style={arrowStyle}/>
+
+            <div style={ContainerStyle} ref="chatContainer" >
+
+            <div style={extraSpace}/>
+            <FlatButton label="Load Earlier" style={btnStyle} onTouchTap={this.loadPrevious}/>
+            <div style={extraSpace}/>
+            <div style={fadeStyle}/>
                 {
-                    this.state.offline ? <Offline /> : null
+                    this.state.chats.map(function(element){
+                        return (
+                            (element.uid == localStorage.getItem('uid'))
+                            ? <Outgoing message={element.msg}/>
+                            : <Incoming sender={element.userName} message={element.msg}/>
+                        )
+                    })
                 }
-                <div style={EmptyStyle} />
-                <div style={FadeStyle} />
-                <div style={ContainerStyle} ref="chatContainer">
-                    <FlatButton style={previousStyle} onClick={this.loadPrevious}>Load Previous</FlatButton>
-                    <CircularProgress mode="indeterminate" size={0.5} style={loaderStyle}/>
-                    <div style={Empty3Style} />
-                    {
-                        this.state.chat.map(function(element){
-                            return (
-                                (element.uid == localStorage.getItem('uid'))
-                                ? <Outgoing message={element.msg}/>
-                                : <Incoming sender={element.userName} message={element.msg}/>
-                            )
-                        })
-                    }
+                <Loader ref="loader" />
+                <div style={extraSpace}/>
+            </div>
 
-                    <div style={Empty3Style} />
+            <div style={{position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}>
+                <TextField ref="msgInput"
+                    style={InputStyle}
+                    hintText="Message"
+                    onEnterKeyDown={this.sendMsg}/>
+                <IconButton
+                    iconClassName="mdi mdi-send"
+                    iconStyle={{color: '#378E43'}}
+                    style={SendStyle}
+                    onTouchTap={this.sendMsg} />
+            </div>
 
-                    <div style={Empty2Style} />
-                    <TextField style={InputStyle} hintText="Message" />
-                    <IconButton iconClassName="mdi mdi-send" style={SendStyle}/>
-                </div>
             </div>
         )
     }
 })
 
-module.exports = React.createClass({
+var Chat = React.createClass({
+    mixins: [material],
+
     toggleChat: function(){
         var self = this
-        if(this.state.opened)
-            this.props.onOpen()
         this.setState({
-            unread: false,
             opened: !self.state.opened
         })
     },
+    updateUnread: function(){
+        this.setState({
+            unread: true
+        })
+    },
 
-    getInitialState: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res) {
-                if (err) {
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true
-                        })
-                }
-                else
-                {
-                    if (res.body[0].timestamp > parseInt(localStorage.getItem('lastSeen').slice(0, 10))) {
-                        self.setState({
-                            unread: true
-                        })
-                    }
-                }
-            })
+    getInitialState: function() {
         return {
-            unread: true, //(Date.now() > localStorage.getItem('lastSeen') && localStorage.getItem('newMsg')),
-            opened: this.props.opened,
-            new: false,
-            offline: false
-        }
+            unread: false,
+            lastSeen: localStorage.getItem('lastSeenChat'),
+            opened: false
+        };
+    },
+    componentDidMount: function(){
+        io.on('authenticate', function(msg){ })
+        io.emit('addUser', localStorage.getItem('uid'), localStorage.getItem('token'))
     },
     render: function(){
-        var IconStyle = {
+        var self = this,
+        iconStyle = {
             position: 'absolute',
-            color: 'white',
-            top: '8px',
-            right: '60px',
-            opacity: '0.9',
-            fontSize: '20px'
+            right: '55px',
+            top: '10px',
+            opacity: '0.9'
         },
         UnreadStyle = {
             position: 'absolute',
-            top: '10px',
-            right: '10px',
+            top: '20px',
+            right: '65px',
             borderRadius: '50%',
             height: '10px',
             width: '10px',
             backgroundColor: '#F0592A',
             display: (this.state.unread) ? 'block' : 'none'
         }
-
         return (
             <div>
-                {
-                    this.state.offline ? <Offline /> : null
-                }
-                <div style={IconStyle}>
-                    <IconButton
-                        iconStyle={{color: 'white', fontSize: '20px'}}
-                        iconClassName="mdi mdi-message"
-                        onTouchTap={this.toggleChat} />
-                    <div style={UnreadStyle}></div>
-                </div>
-                {
-                    this.state.opened ? <ChatContainer opened={this.state.opened}/> : null
-                }
+            <IconButton
+                style={iconStyle}
+                iconStyle={{color: 'white', fontSize: '20px'}}
+                iconClassName="mdi mdi-message"
+                onTouchTap={this.toggleChat} />
+
+            <div style={UnreadStyle}></div>
+            {
+                this.state.opened ? <ChatContainer updateUnread={this.updateUnread}/> : null
+            }
             </div>
         )
     }
 })
+
+module.exports = Chat

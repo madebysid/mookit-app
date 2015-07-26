@@ -1,6 +1,6 @@
 {
-    "appName": "MOOC on MOOCs",
-    "title": "mooconmoocs",
-    "login": "http://mooconmooc.org",
-    "main": "http://node.mooconmooc.org"
+    "appName": "Staging Course",
+    "title": "stagingcourse",
+    "login": "http://staging.mookit.co",
+    "main": "http://node.mookit.co"
 }

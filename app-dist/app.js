@@ -1,1660 +1,104 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports={
-    "title": "MOOC on MOOCs",
-    "login": "http://mooconmooc.org",
-    "main": "http://node.mooconmooc.org"
+  "title": "Staging Course",
+  "login": "http://staging.mookit.co",
+  "main": "http://node.mookit.co"
 }
+
 },{}],2:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
     Router = require('react-router'),
-    RouteHandler = Router.RouteHandler
+    Gems = require('./gems.js'),
+    RouteHandler = Router.RouteHandler,
 
-module.exports = React.createClass({displayName: "exports",
+    AppBar = mui.AppBar
+
+var App = React.createClass({displayName: "App",
+    mixins: [material, Router.Navigation],
+
     render: function(){
+        var self = this,
+        AppBarStyle = {
+            backgroundColor: '#378E43'
+        }
         return (
             React.createElement("div", null, 
+                React.createElement(AppBar, {
+                    iconClassNameLeft: "mdi mdi-arrow-left", 
+                    onLeftIconButtonTouchTap: this.goBack, 
+                    zDepth: 0, 
+                    style: AppBarStyle}), 
+                React.createElement(Gems, null), 
                 React.createElement(RouteHandler, null)
             )
         )
     }
 })
+
+module.exports = App
+
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/app.js","/")
-},{"buffer":14,"oMfpAn":17,"react":373,"react-router":173}],3:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react/addons'),
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    superagent = require('superagent'),
-    Offline = require('./offline.js'),
-
-    IconButton = mui.IconButton,
-    FlatButton = mui.FlatButton,
-    Avatar = mui.Avatar,
-    TextField = mui.TextField,
-    CircularProgress = mui.CircularProgress
-
-var Incoming = React.createClass({displayName: "Incoming",
-    render: function(){
-        var ContainerStyle = {
-                marginBottom: '20px'
-            },
-            MessageStyle = {
-                backgroundColor: '#EDECEC',
-                marginLeft: '60px',
-                marginRight: '40px',
-                borderRadius: '10px',
-                padding: '10px'
-            },
-            SenderStyle = {
-                color: 'black',
-                opacity: '0.2',
-                width: '100%',
-                textAlign: 'right',
-                fontSize: '0.7em',
-                fontFamily: 'RobotoRegular'
-            }
-        return (
-            React.createElement("div", {style: ContainerStyle}, 
-                React.createElement(Avatar, {color: "white", backgroundColor: '#56C7DE', style: {float: 'left'}}, 
-                    this.props.sender.slice(0,1).toUpperCase()
-                ), 
-
-                React.createElement("div", {style: MessageStyle, className: "incomingMsg"}, 
-                    this.props.message, 
-                    React.createElement("div", {style: SenderStyle}, 
-                        this.props.sender
-                    )
-                )
-            )
-        )
-    }
-})
-
-var Outgoing = React.createClass({displayName: "Outgoing",
-    render: function(){
-        var ContainerStyle = {
-                marginBottom: '20px'
-            },
-            MessageStyle = {
-                backgroundColor: '#378E43',
-                color: 'white',
-                marginRight: '60px',
-                marginLeft: '40px',
-                borderRadius: '10px',
-                padding: '10px',
-                textAlign: 'right'
-            },
-            SenderStyle = {
-                color: 'white',
-                opacity: '0.4',
-                width: '100%',
-                fontSize: '0.7em',
-                fontFamily: 'RobotoRegular',
-                textAlign: 'left'
-            }
-        return (
-            React.createElement("div", {style: ContainerStyle}, 
-                React.createElement(Avatar, {color: "white", backgroundColor: '#49B752', style: {float: 'right'}}, 
-                    "Y"
-                ), 
-
-                React.createElement("div", {style: MessageStyle, className: "outgoingMsg"}, 
-                    this.props.message, 
-                    React.createElement("div", {style: SenderStyle}, 
-                        "You"
-                    )
-                )
-            )
-        )
-    }
-})
-
-var ChatContainer = React.createClass({displayName: "ChatContainer",
-    loadPrevious: function(){
-        var self = this
-        self.setState({
-            loading: true
-        })
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + self.state.oldest)
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                newChat = res.body.reverse().concat(self.state.chat)
-                if(err){
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
-                }
-                else{
-                    self.setState({
-                        previousLoaded: true,
-                        chat: newChat,
-                        oldest: res.body[0].timestamp,
-                        loading: false
-                    })
-                }
-            })
-    },
-
-    componentWillUpdate: function() {
-        var node = this.refs.chatContainer.getDOMNode();
-        this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
-    },
-
-    componentDidUpdate: function() {
-        if (this.shouldScrollBottom) {
-            var node = this.refs.chatContainer.getDOMNode();
-            node.scrollTop = node.scrollHeight
-        }
-    },
-    componentWillMount: function(){
-        var self = this
-        localStorage.setItem('lastSeen', Date.now())
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + localStorage.getItem('lastSeen'))
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
-                    }
-                }
-                else{
-                    self.setState({
-                        chat: res.body.reverse(),
-                        oldest: res.body[res.body.length-1].timestamp,
-                        newest: res.body[0].timestamp,
-                        loading: false
-                    })
-                }
-            })
-    },
-    getInitialState: function(){
-        return {
-            chat: [],
-            oldest: 0,
-            newest: 0,
-            previousLoaded: false,
-            offline: false,
-            loading: true
-        }
-    },
-    render: function(){
-        var ContainerStyle = {
-            display: this.props.opened ? 'block' : 'none',
-            position: 'absolute',
-            top: '60px',
-            bottom: '0',
-            width: '100vw',
-            boxSizing: 'border-box',
-            left: '0',
-            zIndex: '16000',
-            backgroundColor: 'white',
-            padding: '20px',
-            paddingTop: '40px',
-            overflowY: 'scroll'
-        },
-        EmptyStyle = {
-            display: this.props.opened ? 'block' : 'none',
-            position: 'absolute',
-            top: '60px',
-            zIndex: '9000',
-            height: '20px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        FadeStyle = {
-            display: this.props.opened ? 'block' : 'none',
-            position: 'absolute',
-            top: '80px',
-            zIndex: '9000',
-            height: '50px',
-            width: '100vw',
-            background: 'linear-gradient(white, transparent)'
-        },
-        Empty2Style = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9000',
-            height: '50px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        Empty3Style = {
-            bottom: '50px',
-            zIndex: '2000',
-            height: '40px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        InputStyle = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9001'
-        },
-        SendStyle = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9001',
-            right: '0',
-            color: '#378E43'
-        },
-        previousStyle = {
-            display: 'block',
-            margin: '0px auto',
-            width: '50vw',
-            textAlign: 'center',
-            fontSize: '0.8em',
-            color: '#378E43',
-            marginTop: '15px'
-        },
-        loaderStyle = {
-            left: '0',
-            right: '0',
-            margin: '0 auto',
-            display: this.state.loading ? 'block' : 'none'
-        }
-        return (
-            React.createElement("div", {className: "chatContainer"}, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement("div", {style: EmptyStyle}), 
-                React.createElement("div", {style: FadeStyle}), 
-                React.createElement("div", {style: ContainerStyle, ref: "chatContainer"}, 
-                    React.createElement(FlatButton, {style: previousStyle, onClick: this.loadPrevious}, "Load Previous"), 
-                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                    React.createElement("div", {style: Empty3Style}), 
-                    
-                        this.state.chat.map(function(element){
-                            return (
-                                (element.uid == localStorage.getItem('uid'))
-                                ? React.createElement(Outgoing, {message: element.msg})
-                                : React.createElement(Incoming, {sender: element.userName, message: element.msg})
-                            )
-                        }), 
-                    
-
-                    React.createElement("div", {style: Empty3Style}), 
-
-                    React.createElement("div", {style: Empty2Style}), 
-                    React.createElement(TextField, {style: InputStyle, hintText: "Message"}), 
-                    React.createElement(IconButton, {iconClassName: "mdi mdi-send", style: SendStyle})
-                )
-            )
-        )
-    }
-})
-
-module.exports = React.createClass({displayName: "exports",
-    toggleChat: function(){
-        var self = this
-        if(this.state.opened)
-            this.props.onOpen()
-        this.setState({
-            unread: false,
-            opened: !self.state.opened
-        })
-    },
-
-    getInitialState: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res) {
-                if (err) {
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true
-                        })
-                }
-                else
-                {
-                    if (res.body[0].timestamp > parseInt(localStorage.getItem('lastSeen').slice(0, 10))) {
-                        self.setState({
-                            unread: true
-                        })
-                    }
-                }
-            })
-        return {
-            unread: true, //(Date.now() > localStorage.getItem('lastSeen') && localStorage.getItem('newMsg')),
-            opened: this.props.opened,
-            new: false,
-            offline: false
-        }
-    },
-    render: function(){
-        var IconStyle = {
-            position: 'absolute',
-            color: 'white',
-            top: '8px',
-            right: '60px',
-            opacity: '0.9',
-            fontSize: '20px'
-        },
-        UnreadStyle = {
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            borderRadius: '50%',
-            height: '10px',
-            width: '10px',
-            backgroundColor: '#F0592A',
-            display: (this.state.unread) ? 'block' : 'none'
-        }
-
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement("div", {style: IconStyle}, 
-                    React.createElement(IconButton, {
-                        iconStyle: {color: 'white', fontSize: '20px'}, 
-                        iconClassName: "mdi mdi-message", 
-                        onTouchTap: this.toggleChat}), 
-                    React.createElement("div", {style: UnreadStyle})
-                ), 
-                
-                    this.state.opened ? React.createElement(ChatContainer, {opened: this.state.opened}) : null
-                
-            )
-        )
-    }
-})
-
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/chat.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],4:[function(require,module,exports){
+},{"./gems.js":7,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175}],3:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
-    mui = require('material-ui'),
     material = require('./material.js'),
-    Router = require('react-router'),
-    superagent = require('superagent'),
-
-    Forums = require('./forums.js'),
-    Lectures = require('./lectures.js'),
-    Resources = require('./resources.js'),
-    Notifications = require('./notifications.js'),
-    Chat = require('./chat.js'),
-    Offline = require('./offline.js'),
-
-    AppBar = mui.AppBar,
-    Tabs = mui.Tabs,
-    Tab = mui.Tab,
-    IconButton = mui.IconButton,
-    IconMenu = mui.IconMenu,
-    MenuItem = require('material-ui/lib/menus/menu-item'),
-    CircularProgress = mui.CircularProgress,
-    Dialog = mui.Dialog,
-    Snackbar = mui.Snackbar
-
-var expanded = []
-
-module.exports = React.createClass({displayName: "exports",
-    mixins: [material, Router.Navigation],
-
-    sortByWeeks: function(data) {
-        var newData = [],
-            maxWeek = 0
-
-        data.forEach(function (element) {
-            if (element.week.slice(5) > maxWeek)
-                maxWeek = element.week.slice(5)
-        })
-
-        for (var i = 0; i <= maxWeek; i++) {
-            newData[i] = new Array()
-            expanded[i] = false
-        }
-
-        data.forEach(function (element) {
-            newData[parseInt(element.week.slice(5))].push(element)
-        })
-
-        return newData
-    },
-    tabChange: function(){
-        this.setState({
-            lecture: false
-        })
-    },
-    goToLecture: function(){
-        this.setState({
-            lecture: true
-        })
-    },
-    createForum: function(){
-        this.setState({
-            newForum: true
-        })
-    },
-    cancelCreate: function(){
-        this.setState({
-            newForum: false
-        })
-    },
-    goBackDude: function(){
-        var self = this
-        if(self.state.lecture == true)
-            self.setState({
-                lecture: false
-            })
-        else if(self.state.newForum == true){
-            self.setState({
-                newForum: false
-            })
-        }
-    },
-    notifOpen: function(){
-        this.setState({
-            chat: false,
-            notif: true
-        })
-    },
-    chatOpen: function(){
-        this.setState({
-            chat: true,
-            notif: false
-        })
-    },
-    openSettings: function(){
-        this.refs.settingsDialog.show();
-    },
-    saveSettings: function(){
-        this.refs.settingsDialog.dismiss();
-        this.refs.settingsSnackbar.show();
-    },
-    openAbout: function(){
-        this.refs.aboutDialog.show();
-    },
-    menuOpen: function(e, item){
-        item.props.index==0 ? this.openSettings() : this.openAbout();
-    },
-    logout: function(){
-        this.transitionTo('/login')
-    },
-
-
-    getInitialState: function(){
-        return {
-            lecture: false,
-            newForum: false,
-            data: [],
-            loading: true,
-            error: false,
-            offline: false,
-            chat: false,
-            notif: false
-        }
-    },
-    componentWillMount: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/lectures/summary')
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err, res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true
-                        })
-                    }
-                    else {
-                        document.addEventListener("resume", function() {
-                            self.refs.logoutDialog.show()
-                        }, false);
-                    }
-                    self.setState({
-                        error: true
-                    })
-                }
-                else
-                    self.setState({
-                        data: self.sortByWeeks(res.body),
-                        loading: false
-                    })
-            })
-    },
-    render: function(){
-        var self = this,
-        AppBarStyle = {
-            backgroundColor: '#378E43'
-        },
-        TitleStyle = {
-            backgroundColor: '#378E43',
-            color: 'white',
-            height: '40px',
-            paddingLeft: '20vw',
-            fontSize: '1.5em'
-        },
-        TabStyle = {
-            backgroundColor: '#378E43'
-        },
-        TabInsideStyle = {
-            fontSize: '0.8em',
-            fontFamily: 'RobotoLight',
-            overflow: 'scroll'
-        },
-        ExtraDivStyle = {
-            width: '100%',
-            height: '1vh',
-            backgroundColor: '#378E43'
-        },
-        loaderStyle = {
-            position: 'absolute',
-            left: '0',
-            right: '0',
-            margin: '0 auto',
-            top: '30vh',
-            display: (this.state.loading) ? 'block' : 'none',
-        },
-        settingsDialog = [
-            { text: 'Cancel' },
-            { text: 'Save', onTouchTap: self.saveSettings }
-        ],
-        aboutDialog = [
-            { text: 'Okay' }
-        ],
-        logoutDialog = [
-            {text: 'Okay', onTouchTap: self.logout}
-        ]
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(AppBar, {
-                    iconClassNameLeft: (!this.state.lecture && !this.state.newForum) ? "none" : "mdi mdi-arrow-left", 
-                    onLeftIconButtonTouchTap: this.goBackDude, 
-                    zDepth: 0, 
-                    style: AppBarStyle}), 
-
-                React.createElement(Notifications, {opened: this.state.notif, onOpen: this.notifOpen}), 
-                React.createElement(Chat, {opened: this.state.chat, onOpen: this.chatOpen}), 
-
-                React.createElement("div", {style: TitleStyle}, 
-                    localStorage.getItem('courseTitle')
-                ), 
-
-                React.createElement(Tabs, {onChange: this.tabChange, tabItemContainerStyle: TabStyle, initialSelectedIndex: 0}, 
-                    React.createElement(Tab, {style: TabInsideStyle, label: "FORUMS"}, 
-                        React.createElement("div", null, 
-                            React.createElement("div", {style: ExtraDivStyle}), 
-                            React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                            React.createElement(Forums, {createForum: this.createForum, cancelCreate: this.cancelCreate, forum: this.state.newForum})
-                        )
-                    ), 
-                    React.createElement(Tab, {style: TabInsideStyle, label: "LECTURES"}, 
-                        React.createElement("div", null, 
-                            React.createElement("div", {style: ExtraDivStyle}), 
-                            React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                            React.createElement(Lectures, {goToLecture: this.goToLecture, lecture: this.state.lecture, expanded: expanded, repeatEntity: this.state.data})
-                        )
-                    ), 
-                    React.createElement(Tab, {style: TabInsideStyle, label: "RESOURCES"}, 
-                        React.createElement("div", null, 
-                            React.createElement("div", {style: ExtraDivStyle}), 
-                            React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                            React.createElement(Resources, null)
-                        )
-                    )
-                ), 
-
-
-
-                React.createElement(Dialog, {
-                    ref: "settingsDialog", 
-                    title: "Settings", 
-                    actions: settingsDialog, 
-                    modal: true}, 
-                    "Settings dialog. Put settings in here"
-                ), 
-
-                React.createElement(Dialog, {
-                    ref: "aboutDialog", 
-                    title: "About", 
-                    actions: aboutDialog, 
-                    modal: true}, 
-                    "Something about the app, or the project, maybe"
-                ), 
-
-                React.createElement(Dialog, {
-                    ref: "logoutDialog", 
-                    title: "About", 
-                    actions: logoutDialog, 
-                    modal: true}, 
-                    "You were logged out due to inactivity"
-                ), 
-
-                React.createElement(Snackbar, {
-                    ref: "settingsSnackbar", 
-                    message: "Settings saved", 
-                    action: "Okay", 
-                    autoHideDuration: 2000, 
-                    style: {position: 'absolute', left: '-30px'}})
-            )
-        )
-    }
-})
-
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/course.js","/")
-},{"./chat.js":3,"./forums.js":6,"./lectures.js":8,"./material.js":10,"./notifications.js":11,"./offline.js":12,"./resources.js":13,"buffer":14,"material-ui":50,"material-ui/lib/menus/menu-item":63,"oMfpAn":17,"react":373,"react-router":173,"superagent":374}],5:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react'),
-    Router = require('react-router'),
-    RouteHandler = Router.RouteHandler
-
-module.exports = React.createClass({displayName: "exports",
-    render: function(){
-        return (
-            React.createElement("div", null, 
-                React.createElement(RouteHandler, null)
-            )
-        )
-    }
-})
-var React = require('react/addons'),
     mui = require('material-ui'),
-    material = require('./material.js'),
     superagent = require('superagent'),
-    Offline = require('./offline.js'),
+    socket = require('socket.io-client'),
+    io = socket.connect(localStorage.getItem('mainUrl')),
+    Loader = require('./loader.js'),
 
     IconButton = mui.IconButton,
-    FlatButton = mui.FlatButton,
-    Avatar = mui.Avatar,
-    TextField = mui.TextField,
-    CircularProgress = mui.CircularProgress
-
-var Incoming = React.createClass({displayName: "Incoming",
-    render: function(){
-        var ContainerStyle = {
-                marginBottom: '20px'
-            },
-            MessageStyle = {
-                backgroundColor: '#EDECEC',
-                marginLeft: '60px',
-                marginRight: '40px',
-                borderRadius: '10px',
-                padding: '10px'
-            },
-            SenderStyle = {
-                color: 'black',
-                opacity: '0.2',
-                width: '100%',
-                textAlign: 'right',
-                fontSize: '0.7em',
-                fontFamily: 'RobotoRegular'
-            }
-        return (
-            React.createElement("div", {style: ContainerStyle}, 
-                React.createElement(Avatar, {color: "white", backgroundColor: '#56C7DE', style: {float: 'left'}}, 
-                    this.props.sender.slice(0,1).toUpperCase()
-                ), 
-
-                React.createElement("div", {style: MessageStyle, className: "incomingMsg"}, 
-                    this.props.message, 
-                    React.createElement("div", {style: SenderStyle}, 
-                        this.props.sender
-                    )
-                )
-            )
-        )
-    }
-})
-
-var Outgoing = React.createClass({displayName: "Outgoing",
-    render: function(){
-        var ContainerStyle = {
-                marginBottom: '20px'
-            },
-            MessageStyle = {
-                backgroundColor: '#378E43',
-                color: 'white',
-                marginRight: '60px',
-                marginLeft: '40px',
-                borderRadius: '10px',
-                padding: '10px',
-                textAlign: 'right'
-            },
-            SenderStyle = {
-                color: 'white',
-                opacity: '0.4',
-                width: '100%',
-                fontSize: '0.7em',
-                fontFamily: 'RobotoRegular',
-                textAlign: 'left'
-            }
-        return (
-            React.createElement("div", {style: ContainerStyle}, 
-                React.createElement(Avatar, {color: "white", backgroundColor: '#49B752', style: {float: 'right'}}, 
-                    "Y"
-                ), 
-
-                React.createElement("div", {style: MessageStyle, className: "outgoingMsg"}, 
-                    this.props.message, 
-                    React.createElement("div", {style: SenderStyle}, 
-                        "You"
-                    )
-                )
-            )
-        )
-    }
-})
-
-var ChatContainer = React.createClass({displayName: "ChatContainer",
-    loadPrevious: function(){
-        var self = this
-        self.setState({
-            loading: true
-        })
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + self.state.oldest)
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                newChat = res.body.reverse().concat(self.state.chat)
-                if(err){
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
-                }
-                else{
-                    self.setState({
-                        previousLoaded: true,
-                        chat: newChat,
-                        oldest: res.body[0].timestamp,
-                        loading: false
-                    })
-                }
-            })
-    },
-
-    componentWillUpdate: function() {
-        var node = this.refs.chatContainer.getDOMNode();
-        this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
-    },
-
-    componentDidUpdate: function() {
-        if (this.shouldScrollBottom) {
-            var node = this.refs.chatContainer.getDOMNode();
-            node.scrollTop = node.scrollHeight
-        }
-    },
-    componentWillMount: function(){
-        var self = this
-        localStorage.setItem('lastSeen', Date.now())
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + localStorage.getItem('lastSeen'))
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
-                    }
-                }
-                else{
-                    self.setState({
-                        chat: res.body.reverse(),
-                        oldest: res.body[res.body.length-1].timestamp,
-                        newest: res.body[0].timestamp,
-                        loading: false
-                    })
-                }
-            })
-    },
-    getInitialState: function(){
-        return {
-            chat: [],
-            oldest: 0,
-            newest: 0,
-            previousLoaded: false,
-            offline: false,
-            loading: true
-        }
-    },
-    render: function(){
-        var ContainerStyle = {
-            display: this.props.opened ? 'block' : 'none',
-            position: 'absolute',
-            top: '60px',
-            bottom: '0',
-            width: '100vw',
-            boxSizing: 'border-box',
-            left: '0',
-            zIndex: '16000',
-            backgroundColor: 'white',
-            padding: '20px',
-            paddingTop: '40px',
-            overflowY: 'scroll'
-        },
-        EmptyStyle = {
-            display: this.props.opened ? 'block' : 'none',
-            position: 'absolute',
-            top: '60px',
-            zIndex: '9000',
-            height: '20px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        FadeStyle = {
-            display: this.props.opened ? 'block' : 'none',
-            position: 'absolute',
-            top: '80px',
-            zIndex: '9000',
-            height: '50px',
-            width: '100vw',
-            background: 'linear-gradient(white, transparent)'
-        },
-        Empty2Style = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9000',
-            height: '50px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        Empty3Style = {
-            bottom: '50px',
-            zIndex: '2000',
-            height: '40px',
-            width: '100vw',
-            backgroundColor: 'white'
-        },
-        InputStyle = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9001'
-        },
-        SendStyle = {
-            position: 'fixed',
-            bottom: '0',
-            zIndex: '9001',
-            right: '0',
-            color: '#378E43'
-        },
-        previousStyle = {
-            display: 'block',
-            margin: '0px auto',
-            width: '50vw',
-            textAlign: 'center',
-            fontSize: '0.8em',
-            color: '#378E43',
-            marginTop: '15px'
-        },
-        loaderStyle = {
-            left: '0',
-            right: '0',
-            margin: '0 auto',
-            display: this.state.loading ? 'block' : 'none'
-        }
-        return (
-            React.createElement("div", {className: "chatContainer"}, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement("div", {style: EmptyStyle}), 
-                React.createElement("div", {style: FadeStyle}), 
-                React.createElement("div", {style: ContainerStyle, ref: "chatContainer"}, 
-                    React.createElement(FlatButton, {style: previousStyle, onClick: this.loadPrevious}, "Load Previous"), 
-                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                    React.createElement("div", {style: Empty3Style}), 
-                    
-                        this.state.chat.map(function(element){
-                            return (
-                                (element.uid == localStorage.getItem('uid'))
-                                ? React.createElement(Outgoing, {message: element.msg})
-                                : React.createElement(Incoming, {sender: element.userName, message: element.msg})
-                            )
-                        }), 
-                    
-
-                    React.createElement("div", {style: Empty3Style}), 
-
-                    React.createElement("div", {style: Empty2Style}), 
-                    React.createElement(TextField, {style: InputStyle, hintText: "Message"}), 
-                    React.createElement(IconButton, {iconClassName: "mdi mdi-send", style: SendStyle})
-                )
-            )
-        )
-    }
-})
-
-module.exports = React.createClass({displayName: "exports",
-    toggleChat: function(){
-        var self = this
-        if(this.state.opened)
-            this.props.onOpen()
-        this.setState({
-            unread: false,
-            opened: !self.state.opened
-        })
-    },
-
-    getInitialState: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res) {
-                if (err) {
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true
-                        })
-                }
-                else
-                {
-                    if (res.body[0].timestamp > parseInt(localStorage.getItem('lastSeen').slice(0, 10))) {
-                        self.setState({
-                            unread: true
-                        })
-                    }
-                }
-            })
-        return {
-            unread: true, //(Date.now() > localStorage.getItem('lastSeen') && localStorage.getItem('newMsg')),
-            opened: this.props.opened,
-            new: false,
-            offline: false
-        }
-    },
-    render: function(){
-        var IconStyle = {
-            position: 'absolute',
-            color: 'white',
-            top: '8px',
-            right: '60px',
-            opacity: '0.9',
-            fontSize: '20px'
-        },
-        UnreadStyle = {
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            borderRadius: '50%',
-            height: '10px',
-            width: '10px',
-            backgroundColor: '#F0592A',
-            display: (this.state.unread) ? 'block' : 'none'
-        }
-
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement("div", {style: IconStyle}, 
-                    React.createElement(IconButton, {
-                        iconStyle: {color: 'white', fontSize: '20px'}, 
-                        iconClassName: "mdi mdi-message", 
-                        onTouchTap: this.toggleChat}), 
-                    React.createElement("div", {style: UnreadStyle})
-                ), 
-                
-                    this.state.opened ? React.createElement(ChatContainer, {opened: this.state.opened}) : null
-                
-            )
-        )
-    }
-})
-
-var React = require('react'),
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    Router = require('react-router'),
-    superagent = require('superagent'),
-
-    Forums = require('./forums.js'),
-    Lectures = require('./lectures.js'),
-    Resources = require('./resources.js'),
-    Notifications = require('./notifications.js'),
-    Chat = require('./chat.js'),
-    Offline = require('./offline.js'),
-
-    AppBar = mui.AppBar,
-    Tabs = mui.Tabs,
-    Tab = mui.Tab,
-    IconButton = mui.IconButton,
-    IconMenu = mui.IconMenu,
-    MenuItem = require('material-ui/lib/menus/menu-item'),
-    CircularProgress = mui.CircularProgress,
-    Dialog = mui.Dialog,
-    Snackbar = mui.Snackbar
-
-var expanded = []
-
-module.exports = React.createClass({displayName: "exports",
-    mixins: [material, Router.Navigation],
-
-    sortByWeeks: function(data) {
-        var newData = [],
-            maxWeek = 0
-
-        data.forEach(function (element) {
-            if (element.week.slice(5) > maxWeek)
-                maxWeek = element.week.slice(5)
-        })
-
-        for (var i = 0; i <= maxWeek; i++) {
-            newData[i] = new Array()
-            expanded[i] = false
-        }
-
-        data.forEach(function (element) {
-            newData[parseInt(element.week.slice(5))].push(element)
-        })
-
-        return newData
-    },
-    tabChange: function(){
-        this.setState({
-            lecture: false
-        })
-    },
-    goToLecture: function(){
-        this.setState({
-            lecture: true
-        })
-    },
-    createForum: function(){
-        this.setState({
-            newForum: true
-        })
-    },
-    cancelCreate: function(){
-        this.setState({
-            newForum: false
-        })
-    },
-    goBackDude: function(){
-        var self = this
-        if(self.state.lecture == true)
-            self.setState({
-                lecture: false
-            })
-        else if(self.state.newForum == true){
-            self.setState({
-                newForum: false
-            })
-        }
-    },
-    notifOpen: function(){
-        this.setState({
-            chat: false,
-            notif: true
-        })
-    },
-    chatOpen: function(){
-        this.setState({
-            chat: true,
-            notif: false
-        })
-    },
-    openSettings: function(){
-        this.refs.settingsDialog.show();
-    },
-    saveSettings: function(){
-        this.refs.settingsDialog.dismiss();
-        this.refs.settingsSnackbar.show();
-    },
-    openAbout: function(){
-        this.refs.aboutDialog.show();
-    },
-    menuOpen: function(e, item){
-        item.props.index==0 ? this.openSettings() : this.openAbout();
-    },
-    logout: function(){
-        this.transitionTo('/login')
-    },
-
-
-    getInitialState: function(){
-        return {
-            lecture: false,
-            newForum: false,
-            data: [],
-            loading: true,
-            error: false,
-            offline: false,
-            chat: false,
-            notif: false
-        }
-    },
-    componentWillMount: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/lectures/summary')
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err, res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true
-                        })
-                    }
-                    else {
-                        document.addEventListener("resume", function() {
-                            self.refs.logoutDialog.show()
-                        }, false);
-                    }
-                    self.setState({
-                        error: true
-                    })
-                }
-                else
-                    self.setState({
-                        data: self.sortByWeeks(res.body),
-                        loading: false
-                    })
-            })
-    },
-    render: function(){
-        var self = this,
-        AppBarStyle = {
-            backgroundColor: '#378E43'
-        },
-        TitleStyle = {
-            backgroundColor: '#378E43',
-            color: 'white',
-            height: '40px',
-            paddingLeft: '20vw',
-            fontSize: '1.5em'
-        },
-        TabStyle = {
-            backgroundColor: '#378E43'
-        },
-        TabInsideStyle = {
-            fontSize: '0.8em',
-            fontFamily: 'RobotoLight',
-            overflow: 'scroll'
-        },
-        ExtraDivStyle = {
-            width: '100%',
-            height: '1vh',
-            backgroundColor: '#378E43'
-        },
-        loaderStyle = {
-            position: 'absolute',
-            left: '0',
-            right: '0',
-            margin: '0 auto',
-            top: '30vh',
-            display: (this.state.loading) ? 'block' : 'none',
-        },
-        settingsDialog = [
-            { text: 'Cancel' },
-            { text: 'Save', onTouchTap: self.saveSettings }
-        ],
-        aboutDialog = [
-            { text: 'Okay' }
-        ],
-        logoutDialog = [
-            {text: 'Okay', onTouchTap: self.logout}
-        ]
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(AppBar, {
-                    iconClassNameLeft: (!this.state.lecture && !this.state.newForum) ? "none" : "mdi mdi-arrow-left", 
-                    onLeftIconButtonTouchTap: this.goBackDude, 
-                    zDepth: 0, 
-                    style: AppBarStyle}), 
-
-                React.createElement(Notifications, {opened: this.state.notif, onOpen: this.notifOpen}), 
-                React.createElement(Chat, {opened: this.state.chat, onOpen: this.chatOpen}), 
-
-                React.createElement("div", {style: TitleStyle}, 
-                    localStorage.getItem('courseTitle')
-                ), 
-
-                React.createElement(Tabs, {onChange: this.tabChange, tabItemContainerStyle: TabStyle, initialSelectedIndex: 0}, 
-                    React.createElement(Tab, {style: TabInsideStyle, label: "FORUMS"}, 
-                        React.createElement("div", null, 
-                            React.createElement("div", {style: ExtraDivStyle}), 
-                            React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                            React.createElement(Forums, {createForum: this.createForum, cancelCreate: this.cancelCreate, forum: this.state.newForum})
-                        )
-                    ), 
-                    React.createElement(Tab, {style: TabInsideStyle, label: "LECTURES"}, 
-                        React.createElement("div", null, 
-                            React.createElement("div", {style: ExtraDivStyle}), 
-                            React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                            React.createElement(Lectures, {goToLecture: this.goToLecture, lecture: this.state.lecture, expanded: expanded, repeatEntity: this.state.data})
-                        )
-                    ), 
-                    React.createElement(Tab, {style: TabInsideStyle, label: "RESOURCES"}, 
-                        React.createElement("div", null, 
-                            React.createElement("div", {style: ExtraDivStyle}), 
-                            React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                            React.createElement(Resources, null)
-                        )
-                    )
-                ), 
-
-
-
-                React.createElement(Dialog, {
-                    ref: "settingsDialog", 
-                    title: "Settings", 
-                    actions: settingsDialog, 
-                    modal: true}, 
-                    "Settings dialog. Put settings in here"
-                ), 
-
-                React.createElement(Dialog, {
-                    ref: "aboutDialog", 
-                    title: "About", 
-                    actions: aboutDialog, 
-                    modal: true}, 
-                    "Something about the app, or the project, maybe"
-                ), 
-
-                React.createElement(Dialog, {
-                    ref: "logoutDialog", 
-                    title: "About", 
-                    actions: logoutDialog, 
-                    modal: true}, 
-                    "You were logged out due to inactivity"
-                ), 
-
-                React.createElement(Snackbar, {
-                    ref: "settingsSnackbar", 
-                    message: "Settings saved", 
-                    action: "Okay", 
-                    autoHideDuration: 2000, 
-                    style: {position: 'absolute', left: '-30px'}})
-            )
-        )
-    }
-})
-
-var React = require('react'),
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    Animate = React.addons.CSSTransitionGroup,
-    superagent = require('superagent'),
-    Offline = require('./offline.js'),
-
-    Card = mui.Card,
-    CardMedia = mui.CardMedia,
-    CardText = mui.CardText,
-    CardTitle = mui.CardTitle,
-    List = mui.List,
     ListItem = mui.ListItem,
-    FontIcon = mui.FontIcon,
-    IconButton = mui.IconButton,
-    LinearProgress = mui.LinearProgress,
-    Dialog = mui.Dialog,
+    ListDivider = mui.ListDivider,
     Avatar = mui.Avatar,
+    IconButton = mui.IconButton,
     TextField = mui.TextField,
     FlatButton = mui.FlatButton
 
-var TopicNormal = React.createClass({displayName: "TopicNormal",
+var Incoming = React.createClass({displayName: "Incoming",
     render: function(){
-        var styles = {
-            position: 'absolute',
-            top: 'calc(50% - 1.25em)',
-            right: '10px',
-            color: '#378E43'
-        }
-        return (
-            React.createElement(Animate, {transitionName: "topics", transitionAppear: true}, 
-                React.createElement(ListItem, {onTouchTap: this.props.toggle, secondaryText: this.props.text, secondaryTextLines: 1}, 
-                    React.createElement("p", {style: styles}, this.props.replies)
-                )
-            )
-        )
-    }
-})
-
-var TopicExpanded = React.createClass({displayName: "TopicExpanded",
-    close: function(){
-        var self = this
-        setTimeout(function(){
-            self.props.toggle()
-        },300)
-
-    },
-    fetch: function(){
-        var self = this
-        this.setState({
-            loading: true
-        })
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.props.tid)
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .unset('Content-Type')
-            .timeout(10000)
-            .end(function(err, res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true
-                        })
-                    }
-                }
-                else{
-                    self.setState({
-                        topicComments: res.body,
-                        loading: false
-                    })
-                }
-            })
-    },
-    reply: function(){
-        this.setState({
-            topicComments: []
-        })
-    },
-    postReply: function(){
-        var self = this
-        if(self.refs.replyField.getValue() == ''){
-            self.refs.replyField.setErrorText('This field is compulsory')
-        }
-        else{
-            superagent
-                .post(localStorage.getItem('mainUrl') + '/comments/' + this.props.tid)
-                .type('form')
-                .send({
-                    "parentCommentId": 0,
-                    "text": self.refs.replyField.getValue(),
-                    "subject": self.refs.replyField.getValue()
-                })
-                .timeout(10000)
-                .set('token', localStorage.getItem('token'))
-                .set('uid', localStorage.getItem('uid'))
-                .end(function(err, res){
-                    if(err){
-                        if(err.timeout==10000)
-                            console.log('Unable to process request')
-                    }
-                    else{
-                        self.refs.replyField.clearValue()
-                        self.fetch()
-                    }
-                })
-        }
-    },
-
-    componentWillMount: function(){
-        this.fetch()
-    },
-    getInitialState: function(){
-        return {
-            topicComments: [{avatar: null}],
-            loading: false,
-            offline: false
-        }
-    },
-    render: function(){
-        var self = this
-        var expandedStyle = {
-                position: 'absolute',
-                backgroundColor: 'white',
-                width: '100vw',
-                left: '0',
-                bottom: '0',
-                top: '0',
-                height: '70vh',
-                paddingLeft: '10px',
-                zIndex: '10000',
-                transitionDuration: '3s',
-                padding: '10px',
-                overflowX: 'hidden',
-                wordWrap: 'break-word',
-                paddingBottom: '150px'
+        var ContainerStyle = {
+                marginBottom: '20px'
             },
-            closeStyle = {
-                position: 'fixed',
-                top: '190px',
-                right: '10px',
-                zIndex: '2000'
+            MessageStyle = {
+                backgroundColor: '#EDECEC',
+                marginLeft: '60px',
+                marginRight: '40px',
+                borderRadius: '10px',
+                padding: '10px'
             },
-            descStyle = {
-                padding: '10px',
-                color: '#727272'
-            },
-            FABStyle = {
-                position: 'fixed',
-                bottom: '20px',
-                right: '20px',
-                backgroundColor: '#F0592A',
-                borderRadius: '50%',
-                boxShadow: '0px 0px 5px #727272'
-            },
-            ReplyStyle = {
-                position: 'fixed',
-                bottom: '20px',
-                left: '20px',
-                backgroundColor: 'white',
-                width: 'calc(80% - 50px)'
-            },
-            loaderStyle = {
-                position: 'absolute',
-                top: '0',
-                left: '0',
+            SenderStyle = {
+                color: 'black',
+                opacity: '0.2',
                 width: '100%',
-                zIndex: '5000',
-                display: (this.state.loading) ? 'block' : 'none',
+                textAlign: 'right',
+                fontSize: '0.7em',
+                fontFamily: 'RobotoRegular'
             },
-            TopicCommentsStyle = {
-                display: 'block',
-                height: 'calc(100%)'
+            arrowStyle = {
+                float: 'left',
+                marginTop: '10px',
+                width: '0',
+                height: '0',
+                border: '10px solid',
+                borderColor: 'transparent #EDECEC transparent transparent',
             }
         return (
-            React.createElement("div", {style: expandedStyle}, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true}, 
-                    React.createElement("div", {style: {height: '40px'}}), 
-                    React.createElement("p", {style: {color: '#378E43'}}, this.props.text), 
-                    React.createElement(IconButton, {
-                        style: closeStyle, 
-                        onTouchTap: this.close, 
-                        iconClassName: "mdi mdi-close", 
-                        iconStyle: {color: '#F0592A'}}
-                    ), 
-
-                    React.createElement("div", {style: TopicCommentsStyle}, 
-                    React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: this.props.description}}), 
-                    
-                        (self.state.topicComments[0].avatar == null)
-                            ? React.createElement("div", null, "There are no replies")
-                            : self.state.topicComments.map(function(element){
-                                    return (
-                                        React.createElement("div", null, 
-                                            React.createElement(ListItem, {disabled: true, leftAvatar: 
-                                        React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})
-                                    }, 
-                                                React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em', lineHeight: '1.5em'}}, element.username), 
-                                                React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
-                                            )
-                                        )
-                                    )
-                                })
-                    
-                    ), 
-
-                    React.createElement("div", {style: {height: '150px', width: '100%'}}), 
-                    React.createElement(TextField, {
-                        ref: "replyField", 
-                        style: ReplyStyle, 
-                        floatingLabelText: "Reply", 
-                        onFocus: self.reply}), 
-                    React.createElement(IconButton, {
-                        iconStyle: {color: 'white'}, 
-                        style: FABStyle, 
-                        iconClassName: "mdi mdi-reply", 
-                        onTouchTap: this.postReply})
+            React.createElement("div", {style: ContainerStyle}, 
+                React.createElement(Avatar, {color: "white", backgroundColor: '#56C7DE', style: {float: 'left'}}, 
+                    this.props.sender.slice(0,1).toUpperCase()
                 ), 
-                React.createElement(LinearProgress, {mode: "indeterminate", style: loaderStyle})
-            )
-        )
-    }
-})
 
-var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
-    toggle: function(){
-        var self = this
-        this.setState({
-            opened: !self.state.opened
-        })
-    },
-    getInitialState: function(){
-        return {
-            opened: false
-        }
-    },
-    render: function(){
-        var ListStyle = {
-                position: this.state.opened ? 'absolute' : 'inherit',
-                margin: this.state.opened ? '0' : '10px',
-                transitionDuration: '3s'
-            },
-            ToRender = this.state.opened ? TopicExpanded : TopicNormal
-        return (
-            React.createElement("div", null, 
-                React.createElement(ToRender, {refresh: this.props.refresh, style: ListStyle, toggle: this.toggle, text: this.props.data.topic, replies: this.props.data.numPosts, description: this.props.data.description, tid: this.props.data.tid})
-            )
-        )
-    }
-})
-
-var ForumCreate = React.createClass({displayName: "ForumCreate",
-    create: function(){
-        var self = this
-        if(self.refs.forumTitle.getValue() == ''){
-            self.refs.forumTitle.setErrorText('This field is compulsory')
-        }
-        if(self.refs.forumDesc.getValue() == ''){
-            self.refs.forumDesc.setErrorText('This field is compulsory')
-        }
-        else{
-            superagent
-                .post(localStorage.getItem('mainUrl') + '/addForum')
-                .type('form')
-                .send({
-                    subject: self.refs.forumTitle.getValue(),
-                    description: self.refs.forumDesc.getValue(),
-                    tid: 1,
-                    topicId: 1})
-                .timeout(10000)
-                .set('token', localStorage.getItem('token'))
-                .set('uid', localStorage.getItem('uid'))
-                .end(function(err, res){
-                    if(err){
-                        if(err.timeout==10000)
-                            console.log('Unable to process request')
-                    }
-                    else{
-                        self.props.cancel()
-                    }
-                })
-        }
-    },
-    cancel: function(){
-        var self = this
-        this.setState({
-            reload: !self.state.reload
-        })
-        this.props.cancel();
-    },
-    clearErrors: function(){
-        this.refs.forumTitle.setErrorText('')
-        this.refs.forumDesc.setErrorText('')
-    },
-
-    getInitialState: function(){
-        return {
-            reload: false
-        }
-    },
-    render: function(){
-        var containerStyle = {
-            zIndex: '6000',
-            backgroundColor: 'white',
-            height: '70vh',
-            width: '100%'
-        },
-        TextFieldStyle = {
-            display: 'block',
-            width: '80vw',
-            margin: '0 auto'
-        },
-        PostStyle = {
-            position: 'absolute',
-            right: '20px',
-            bottom: '20px',
-            fontFamily: 'RobotoLight',
-            backgroundColor: '#378E43',
-            color: 'white',
-        },
-        CancelStyle = {
-            position: 'absolute',
-            left: '20px',
-            bottom: '20px',
-            color: 'red'
-        }
-        return (
-            React.createElement("div", {style: containerStyle}, 
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true}, 
-                    React.createElement("div", null, 
-                        React.createElement("p", {style: {fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}, "New Topic"), 
-                        React.createElement(TextField, {
-                            ref: "forumTitle", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Title", 
-                            onFocus: this.clearErrors}), 
-
-                        React.createElement(TextField, {
-                            ref: "forumDesc", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Description", 
-                            multiLine: true, 
-                            onFocus: this.clearErrors}), 
-
-                        React.createElement(FlatButton, {
-                            style: PostStyle, 
-                            onTouchTap: this.create}, 
-                            "POST"
-                        ), 
-                        React.createElement(FlatButton, {onTouchTap: this.cancel, style: CancelStyle}, "Cancel")
+                React.createElement("div", {style: arrowStyle}), 
+                React.createElement("div", {style: MessageStyle, className: "incomingMsg"}, 
+                    this.props.message, 
+                    React.createElement("div", {style: SenderStyle}, 
+                        this.props.sender
                     )
                 )
             )
@@ -1662,242 +106,889 @@ var ForumCreate = React.createClass({displayName: "ForumCreate",
     }
 })
 
-var ForumShow = React.createClass({displayName: "ForumShow",
-    newForum: function(){
-        this.props.newForum()
+var Outgoing = React.createClass({displayName: "Outgoing",
+    render: function(){
+        var containerStyle = {
+                marginBottom: '20px'
+            },
+            messageStyle = {
+                backgroundColor: '#378E43',
+                color: 'white',
+                marginRight: '60px',
+                marginLeft: '40px',
+                borderRadius: '10px',
+                padding: '10px',
+                textAlign: 'right'
+            },
+            senderStyle = {
+                color: 'white',
+                opacity: '0.4',
+                width: '100%',
+                fontSize: '0.7em',
+                fontFamily: 'RobotoRegular',
+                textAlign: 'left'
+            },
+            arrowStyle = {
+                float: 'right',
+                marginTop: '10px',
+                width: '0',
+                height: '0',
+                border: '10px solid',
+                borderColor: 'transparent transparent transparent #378E43',
+            }
+        return (
+            React.createElement("div", {style: containerStyle}, 
+                React.createElement(Avatar, {color: "white", backgroundColor: '#49B752', style: {float: 'right'}}, 
+                    "Y"
+                ), 
+
+                React.createElement("div", {style: arrowStyle}), 
+                React.createElement("div", {style: messageStyle, className: "outgoingMsg"}, 
+                    this.props.message, 
+                    React.createElement("div", {style: senderStyle}, 
+                        "You"
+                    )
+                )
+            )
+        )
+    }
+})
+
+var ChatContainer = React.createClass({displayName: "ChatContainer",
+
+    loadPrevious: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + self.state.chats[0].timestamp)
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    newChat = res.body.reverse().concat(self.state.chat)
+                    self.setState({
+                        chats: newChat
+                    })
+                }
+            })
     },
-    fetch: function(){
+    sendMsg: function(){
+        var msg = this.refs.msgInput.getValue()
+        io.emit('chatMessage', msg, localStorage.getItem('uid'), localStorage.getItem('token'))
+        this.forceUpdate();
+        this.refs.msgInput.setValue('')
+    },
+
+    getInitialState: function(){
+        return {
+            chats: []
+        }
+    },
+    componentDidMount: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/1')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    self.setState({
+                        chats: res.body.reverse()
+                    })
+                }
+            })
+    },
+
+    componentWillUpdate: function() {
+        var self = this,
+            node = this.refs.chatContainer.getDOMNode()
+        this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    self.setState({
+                        chats: res.body.reverse()
+                    })
+                    if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
+                        self.props.updateUnread()
+                }
+            })
+    },
+    componentDidUpdate: function() {
+        if (this.shouldScrollBottom) {
+            var node = this.refs.chatContainer.getDOMNode();
+            node.scrollTop = node.scrollHeight
+        }
+    },
+    componentWillUnmount: function(){
+        localStorage.setItem('lastSeenChat', Date.now())
+    },
+    render: function(){
+        var self = this,
+        ContainerStyle = {
+            position: 'absolute',
+            top: '60px',
+            bottom: '0',
+            width: '100vw',
+            boxSizing: 'border-box',
+            left: '0',
+            backgroundColor: 'white',
+            padding: '10px',
+            overflowY: 'scroll',
+            zIndex: '2'
+        },
+        arrowStyle = {
+            position: 'absolute',
+            width: '0',
+            height: '0',
+            right: '75px',
+            top: '44px',
+            border: '8px solid',
+            borderColor: 'transparent transparent #fff transparent'
+        },
+        InputStyle = {
+            left: '20px',
+            width: '75vw'
+        },
+        SendStyle = {
+            right: '-20px'
+        },
+        extraSpace = {
+            height: '50px',
+            backgroundColor: 'white'
+        },
+        fadeStyle = {
+            position: 'fixed',
+            top: '60px',
+            zIndex: '4',
+            height: '50px',
+            width: '100vw',
+            background: 'linear-gradient(white, transparent)'
+        },
+        btnStyle = {
+            position: 'absolute',
+            margin: '0 auto',
+            left: '0',
+            right: '0',
+            width: '50vw',
+            color: '#378E43'
+        }
+        return (
+            React.createElement("div", {className: "notifContainer"}, 
+            React.createElement("div", {style: arrowStyle}), 
+
+            React.createElement("div", {style: ContainerStyle, ref: "chatContainer"}, 
+
+            React.createElement("div", {style: extraSpace}), 
+            React.createElement(FlatButton, {label: "Load Earlier", style: btnStyle, onTouchTap: this.loadPrevious}), 
+            React.createElement("div", {style: extraSpace}), 
+            React.createElement("div", {style: fadeStyle}), 
+                
+                    this.state.chats.map(function(element){
+                        return (
+                            (element.uid == localStorage.getItem('uid'))
+                            ? React.createElement(Outgoing, {message: element.msg})
+                            : React.createElement(Incoming, {sender: element.userName, message: element.msg})
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"}), 
+                React.createElement("div", {style: extraSpace})
+            ), 
+
+            React.createElement("div", {style: {position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}, 
+                React.createElement(TextField, {ref: "msgInput", 
+                    style: InputStyle, 
+                    hintText: "Message", 
+                    onEnterKeyDown: this.sendMsg}), 
+                React.createElement(IconButton, {
+                    iconClassName: "mdi mdi-send", 
+                    iconStyle: {color: '#378E43'}, 
+                    style: SendStyle, 
+                    onTouchTap: this.sendMsg})
+            )
+
+            )
+        )
+    }
+})
+
+var Chat = React.createClass({displayName: "Chat",
+    mixins: [material],
+
+    toggleChat: function(){
         var self = this
         this.setState({
-            loading: true
+            opened: !self.state.opened
         })
+    },
+    updateUnread: function(){
+        this.setState({
+            unread: true
+        })
+    },
+
+    getInitialState: function() {
+        return {
+            unread: false,
+            lastSeen: localStorage.getItem('lastSeenChat'),
+            opened: false
+        };
+    },
+    componentDidMount: function(){
+        io.on('authenticate', function(msg){ })
+        io.emit('addUser', localStorage.getItem('uid'), localStorage.getItem('token'))
+    },
+    render: function(){
+        var self = this,
+        iconStyle = {
+            position: 'absolute',
+            right: '55px',
+            top: '10px',
+            opacity: '0.9'
+        },
+        UnreadStyle = {
+            position: 'absolute',
+            top: '20px',
+            right: '65px',
+            borderRadius: '50%',
+            height: '10px',
+            width: '10px',
+            backgroundColor: '#F0592A',
+            display: (this.state.unread) ? 'block' : 'none'
+        }
+        return (
+            React.createElement("div", null, 
+            React.createElement(IconButton, {
+                style: iconStyle, 
+                iconStyle: {color: 'white', fontSize: '20px'}, 
+                iconClassName: "mdi mdi-message", 
+                onTouchTap: this.toggleChat}), 
+
+            React.createElement("div", {style: UnreadStyle}), 
+            
+                this.state.opened ? React.createElement(ChatContainer, {updateUnread: this.updateUnread}) : null
+            
+            )
+        )
+    }
+})
+
+module.exports = Chat
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/chat.js","/")
+},{"./loader.js":10,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"socket.io-client":374,"superagent":424}],4:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Router = require('react-router'),
+    RouteHandler = Router.RouteHandler,
+
+    Tabs = mui.Tabs,
+    Tab = mui.Tab
+
+var Course = React.createClass({displayName: "Course",
+    mixins: [material, Router.Navigation],
+
+    activeTab: function(tab){
+        this.transitionTo(tab.props.label.toLowerCase())
+    },
+
+    render: function(){
+        var self = this,
+        TitleStyle = {
+            backgroundColor: '#378E43',
+            color: 'white',
+            height: '40px',
+            paddingLeft: '20vw',
+            fontSize: '1.5em'
+        },
+        TabStyle = {
+            backgroundColor: '#378E43'
+        },
+        TabInsideStyle = {
+            fontSize: '0.8em',
+            fontFamily: 'RobotoLight',
+            overflow: 'scroll'
+        },
+        ExtraDivStyle = {
+            width: '100%',
+            height: '1vh',
+            backgroundColor: '#378E43'
+        }
+        return (
+            React.createElement("div", null, 
+                React.createElement("div", {style: TitleStyle}, 
+                    localStorage.getItem('courseTitle')
+                ), 
+
+                React.createElement(Tabs, {tabItemContainerStyle: TabStyle, initialSelectedIndex: 1}, 
+                    React.createElement(Tab, {onActive: this.activeTab, style: TabInsideStyle, label: "FORUMS"}, 
+                        React.createElement("div", null, 
+                            React.createElement("div", {style: ExtraDivStyle}), 
+                            React.createElement(RouteHandler, null)
+                        )
+                    ), 
+                    React.createElement(Tab, {onActive: this.activeTab, style: TabInsideStyle, label: "LECTURES"}, 
+                        React.createElement("div", null, 
+                            React.createElement("div", {style: ExtraDivStyle}), 
+                            React.createElement(RouteHandler, null)
+                        )
+                    ), 
+                    React.createElement(Tab, {onActive: this.activeTab, style: TabInsideStyle, label: "RESOURCES"}, 
+                        React.createElement("div", null, 
+                            React.createElement("div", {style: ExtraDivStyle}), 
+                            React.createElement(RouteHandler, null)
+                        )
+                    )
+                )
+            )
+        )
+    }
+})
+
+module.exports = Course
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/course.js","/")
+},{"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175}],5:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Router = require('react-router'),
+    Gems = require('./gems.js'),
+    RouteHandler = Router.RouteHandler,
+
+    AppBar = mui.AppBar
+
+var App = React.createClass({displayName: "App",
+    mixins: [material, Router.Navigation],
+
+    render: function(){
+        var self = this,
+        AppBarStyle = {
+            backgroundColor: '#378E43'
+        }
+        return (
+            React.createElement("div", null, 
+                React.createElement(AppBar, {
+                    iconClassNameLeft: "mdi mdi-arrow-left", 
+                    onLeftIconButtonTouchTap: this.goBack, 
+                    zDepth: 0, 
+                    style: AppBarStyle}), 
+                React.createElement(Gems, null), 
+                React.createElement(RouteHandler, null)
+            )
+        )
+    }
+})
+
+module.exports = App
+
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    socket = require('socket.io-client'),
+    io = socket.connect(localStorage.getItem('mainUrl')),
+    Loader = require('./loader.js'),
+
+    IconButton = mui.IconButton,
+    ListItem = mui.ListItem,
+    ListDivider = mui.ListDivider,
+    Avatar = mui.Avatar,
+    IconButton = mui.IconButton,
+    TextField = mui.TextField,
+    FlatButton = mui.FlatButton
+
+var Incoming = React.createClass({displayName: "Incoming",
+    render: function(){
+        var ContainerStyle = {
+                marginBottom: '20px'
+            },
+            MessageStyle = {
+                backgroundColor: '#EDECEC',
+                marginLeft: '60px',
+                marginRight: '40px',
+                borderRadius: '10px',
+                padding: '10px'
+            },
+            SenderStyle = {
+                color: 'black',
+                opacity: '0.2',
+                width: '100%',
+                textAlign: 'right',
+                fontSize: '0.7em',
+                fontFamily: 'RobotoRegular'
+            },
+            arrowStyle = {
+                float: 'left',
+                marginTop: '10px',
+                width: '0',
+                height: '0',
+                border: '10px solid',
+                borderColor: 'transparent #EDECEC transparent transparent',
+            }
+        return (
+            React.createElement("div", {style: ContainerStyle}, 
+                React.createElement(Avatar, {color: "white", backgroundColor: '#56C7DE', style: {float: 'left'}}, 
+                    this.props.sender.slice(0,1).toUpperCase()
+                ), 
+
+                React.createElement("div", {style: arrowStyle}), 
+                React.createElement("div", {style: MessageStyle, className: "incomingMsg"}, 
+                    this.props.message, 
+                    React.createElement("div", {style: SenderStyle}, 
+                        this.props.sender
+                    )
+                )
+            )
+        )
+    }
+})
+
+var Outgoing = React.createClass({displayName: "Outgoing",
+    render: function(){
+        var containerStyle = {
+                marginBottom: '20px'
+            },
+            messageStyle = {
+                backgroundColor: '#378E43',
+                color: 'white',
+                marginRight: '60px',
+                marginLeft: '40px',
+                borderRadius: '10px',
+                padding: '10px',
+                textAlign: 'right'
+            },
+            senderStyle = {
+                color: 'white',
+                opacity: '0.4',
+                width: '100%',
+                fontSize: '0.7em',
+                fontFamily: 'RobotoRegular',
+                textAlign: 'left'
+            },
+            arrowStyle = {
+                float: 'right',
+                marginTop: '10px',
+                width: '0',
+                height: '0',
+                border: '10px solid',
+                borderColor: 'transparent transparent transparent #378E43',
+            }
+        return (
+            React.createElement("div", {style: containerStyle}, 
+                React.createElement(Avatar, {color: "white", backgroundColor: '#49B752', style: {float: 'right'}}, 
+                    "Y"
+                ), 
+
+                React.createElement("div", {style: arrowStyle}), 
+                React.createElement("div", {style: messageStyle, className: "outgoingMsg"}, 
+                    this.props.message, 
+                    React.createElement("div", {style: senderStyle}, 
+                        "You"
+                    )
+                )
+            )
+        )
+    }
+})
+
+var ChatContainer = React.createClass({displayName: "ChatContainer",
+
+    loadPrevious: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + self.state.chats[0].timestamp)
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    newChat = res.body.reverse().concat(self.state.chat)
+                    self.setState({
+                        chats: newChat
+                    })
+                }
+            })
+    },
+    sendMsg: function(){
+        var msg = this.refs.msgInput.getValue()
+        io.emit('chatMessage', msg, localStorage.getItem('uid'), localStorage.getItem('token'))
+        this.forceUpdate();
+        this.refs.msgInput.setValue('')
+    },
+
+    getInitialState: function(){
+        return {
+            chats: []
+        }
+    },
+    componentDidMount: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/1')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    self.setState({
+                        chats: res.body.reverse()
+                    })
+                }
+            })
+    },
+
+    componentWillUpdate: function() {
+        var self = this,
+            node = this.refs.chatContainer.getDOMNode()
+        this.shouldScrollBottom = node.scrollTop + node.offsetHeight === node.scrollHeight;
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/getChat/' + Date.now())
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    self.setState({
+                        chats: res.body.reverse()
+                    })
+                    if(parseInt(localStorage.getItem('lastSeenChat').slice(0,10)) > res.body.reverse()[0].timestamp)
+                        self.props.updateUnread()
+                }
+            })
+    },
+    componentDidUpdate: function() {
+        if (this.shouldScrollBottom) {
+            var node = this.refs.chatContainer.getDOMNode();
+            node.scrollTop = node.scrollHeight
+        }
+    },
+    componentWillUnmount: function(){
+        localStorage.setItem('lastSeenChat', Date.now())
+    },
+    render: function(){
+        var self = this,
+        ContainerStyle = {
+            position: 'absolute',
+            top: '60px',
+            bottom: '0',
+            width: '100vw',
+            boxSizing: 'border-box',
+            left: '0',
+            backgroundColor: 'white',
+            padding: '10px',
+            overflowY: 'scroll',
+            zIndex: '2'
+        },
+        arrowStyle = {
+            position: 'absolute',
+            width: '0',
+            height: '0',
+            right: '75px',
+            top: '44px',
+            border: '8px solid',
+            borderColor: 'transparent transparent #fff transparent'
+        },
+        InputStyle = {
+            left: '20px',
+            width: '75vw'
+        },
+        SendStyle = {
+            right: '-20px'
+        },
+        extraSpace = {
+            height: '50px',
+            backgroundColor: 'white'
+        },
+        fadeStyle = {
+            position: 'fixed',
+            top: '60px',
+            zIndex: '4',
+            height: '50px',
+            width: '100vw',
+            background: 'linear-gradient(white, transparent)'
+        },
+        btnStyle = {
+            position: 'absolute',
+            margin: '0 auto',
+            left: '0',
+            right: '0',
+            width: '50vw',
+            color: '#378E43'
+        }
+        return (
+            React.createElement("div", {className: "notifContainer"}, 
+            React.createElement("div", {style: arrowStyle}), 
+
+            React.createElement("div", {style: ContainerStyle, ref: "chatContainer"}, 
+
+            React.createElement("div", {style: extraSpace}), 
+            React.createElement(FlatButton, {label: "Load Earlier", style: btnStyle, onTouchTap: this.loadPrevious}), 
+            React.createElement("div", {style: extraSpace}), 
+            React.createElement("div", {style: fadeStyle}), 
+                
+                    this.state.chats.map(function(element){
+                        return (
+                            (element.uid == localStorage.getItem('uid'))
+                            ? React.createElement(Outgoing, {message: element.msg})
+                            : React.createElement(Incoming, {sender: element.userName, message: element.msg})
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"}), 
+                React.createElement("div", {style: extraSpace})
+            ), 
+
+            React.createElement("div", {style: {position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}, 
+                React.createElement(TextField, {ref: "msgInput", 
+                    style: InputStyle, 
+                    hintText: "Message", 
+                    onEnterKeyDown: this.sendMsg}), 
+                React.createElement(IconButton, {
+                    iconClassName: "mdi mdi-send", 
+                    iconStyle: {color: '#378E43'}, 
+                    style: SendStyle, 
+                    onTouchTap: this.sendMsg})
+            )
+
+            )
+        )
+    }
+})
+
+var Chat = React.createClass({displayName: "Chat",
+    mixins: [material],
+
+    toggleChat: function(){
+        var self = this
+        this.setState({
+            opened: !self.state.opened
+        })
+    },
+    updateUnread: function(){
+        this.setState({
+            unread: true
+        })
+    },
+
+    getInitialState: function() {
+        return {
+            unread: false,
+            lastSeen: localStorage.getItem('lastSeenChat'),
+            opened: false
+        };
+    },
+    componentDidMount: function(){
+        io.on('authenticate', function(msg){ })
+        io.emit('addUser', localStorage.getItem('uid'), localStorage.getItem('token'))
+    },
+    render: function(){
+        var self = this,
+        iconStyle = {
+            position: 'absolute',
+            right: '55px',
+            top: '10px',
+            opacity: '0.9'
+        },
+        UnreadStyle = {
+            position: 'absolute',
+            top: '20px',
+            right: '65px',
+            borderRadius: '50%',
+            height: '10px',
+            width: '10px',
+            backgroundColor: '#F0592A',
+            display: (this.state.unread) ? 'block' : 'none'
+        }
+        return (
+            React.createElement("div", null, 
+            React.createElement(IconButton, {
+                style: iconStyle, 
+                iconStyle: {color: 'white', fontSize: '20px'}, 
+                iconClassName: "mdi mdi-message", 
+                onTouchTap: this.toggleChat}), 
+
+            React.createElement("div", {style: UnreadStyle}), 
+            
+                this.state.opened ? React.createElement(ChatContainer, {updateUnread: this.updateUnread}) : null
+            
+            )
+        )
+    }
+})
+
+module.exports = Chat
+
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Router = require('react-router'),
+    RouteHandler = Router.RouteHandler,
+
+    Tabs = mui.Tabs,
+    Tab = mui.Tab
+
+var Course = React.createClass({displayName: "Course",
+    mixins: [material, Router.Navigation],
+
+    activeTab: function(tab){
+        this.transitionTo(tab.props.label.toLowerCase())
+    },
+
+    render: function(){
+        var self = this,
+        TitleStyle = {
+            backgroundColor: '#378E43',
+            color: 'white',
+            height: '40px',
+            paddingLeft: '20vw',
+            fontSize: '1.5em'
+        },
+        TabStyle = {
+            backgroundColor: '#378E43'
+        },
+        TabInsideStyle = {
+            fontSize: '0.8em',
+            fontFamily: 'RobotoLight',
+            overflow: 'scroll'
+        },
+        ExtraDivStyle = {
+            width: '100%',
+            height: '1vh',
+            backgroundColor: '#378E43'
+        }
+        return (
+            React.createElement("div", null, 
+                React.createElement("div", {style: TitleStyle}, 
+                    localStorage.getItem('courseTitle')
+                ), 
+
+                React.createElement(Tabs, {tabItemContainerStyle: TabStyle, initialSelectedIndex: 1}, 
+                    React.createElement(Tab, {onActive: this.activeTab, style: TabInsideStyle, label: "FORUMS"}, 
+                        React.createElement("div", null, 
+                            React.createElement("div", {style: ExtraDivStyle}), 
+                            React.createElement(RouteHandler, null)
+                        )
+                    ), 
+                    React.createElement(Tab, {onActive: this.activeTab, style: TabInsideStyle, label: "LECTURES"}, 
+                        React.createElement("div", null, 
+                            React.createElement("div", {style: ExtraDivStyle}), 
+                            React.createElement(RouteHandler, null)
+                        )
+                    ), 
+                    React.createElement(Tab, {onActive: this.activeTab, style: TabInsideStyle, label: "RESOURCES"}, 
+                        React.createElement("div", null, 
+                            React.createElement("div", {style: ExtraDivStyle}), 
+                            React.createElement(RouteHandler, null)
+                        )
+                    )
+                )
+            )
+        )
+    }
+})
+
+module.exports = Course
+
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Router = require('react-router'),
+    superagent = require('superagent'),
+    TopicNormal = require('./topicNormal.js'),
+    Loader = require('./loader.js'),
+
+    List = mui.List,
+    IconButton = mui.IconButton
+
+var Forums = React.createClass({displayName: "Forums",
+    mixins: [material, Router.Navigation],
+
+    handleTouch: function(topic) {
+        localStorage.setItem('lectureTopicTitle', topic.topic)
+        localStorage.setItem('lectureTopicDesc', topic.description)
+        this.transitionTo('generalTopic', {topicId: topic.tid})
+        console.log(topic)
+    },
+    newForum: function(){
+        localStorage.setItem('topicId', '1')
+        this.transitionTo('newGeneralForum')
+    },
+
+    getInitialState: function(){
+        return {
+            topics: [{data: 'null'}]
+        }
+    },
+    componentDidMount: function() {
+        var self = this
+        self.refs.loader.showLoader()
         superagent
             .get(localStorage.getItem('mainUrl') + '/forums/getdiscussions/general')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err, res){
+                self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        self.setState({
-                            offline: true
-                        })
+                        console.log('Timeout')
                 }
                 else if(res.body[0].data != "null")
                     self.setState({
-                        topics: res.body,
-                        loading: false
+                        topics: res.body
                     })
                 else
                     self.setState({
-                        topics: 'Nothing to show',
-                        loading: false
+                        topics: 'Nothing to show'
                     })
             })
     },
-
-    getInitialState: function(){
-        return {
-            topics: [],
-            loading: false,
-            offline: false,
-            newForum: this.props.newForum
-        }
-    },
-    componentWillMount: function(){
-        this.fetch()
-    },
     render: function(){
-        var self = this
-        var DisTitleStyle = {
-                paddingLeft: '20px',
-                paddingTop: '20px',
-                fontFamily: 'RobotoRegular'
-            },
-            FABStyle = {
-                position: 'absolute',
-                bottom: '20px',
-                right: '20px',
-                zIndex: '5000',
-                backgroundColor: '#F0592A',
-                borderRadius: '50%',
-                boxShadow: '0px 0px 5px #727272'
-            }
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
-                React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
-                    
-                        self.state.topics.map(function(element, index){
-                            return React.createElement(ExpandableListItem, {refresh: self.fetch, key: index, data: element})
-                        })
-                    
-                ), 
-                React.createElement("div", {style: {height: '100px'}}), 
-
-                React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
-            )
-        )
-    }
-})
-
-module.exports = React.createClass({displayName: "exports",
-
-    newForum: function(){
-        this.setState({
-            newForum: true
-        })
-        this.props.createForum()
-    },
-    cancelNewForum: function(){
-        this.setState({
-            newForum: false
-        })
-        this.props.cancelCreate();
-    },
-
-    componentWillReceiveProps: function(nextProps){
-        this.setState({
-            newForum: nextProps.forum
-        })
-    },
-
-
-    getInitialState: function(){
-        return {
-            topics: [],
-            loading: false,
-            offline: false,
-            newForum: this.props.newForum
-        }
-    },
-    render: function(){
-        var self = this
-        return (
-            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
-                
-                    this.state.newForum
-                        ? React.createElement(ForumCreate, {cancel: self.cancelNewForum})
-                        : React.createElement(ForumShow, {newForum: self.newForum})
-                
-            )
-        )
-    }
-})
-
-var React = require('react'),
-    Animate = React.addons.CSSTransitionGroup,
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    YouTube = require('react-youtube'),
-    superagent = require('superagent'),
-    Offline = require('./offline.js'),
-
-    Card = mui.Card,
-    CardMedia = mui.CardMedia,
-    CardText = mui.CardText,
-    CardTitle = mui.CardTitle,
-    List = mui.List,
-    ListItem = mui.ListItem,
-    FontIcon = mui.FontIcon,
-    IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
-    LinearProgress = mui.LinearProgress,
-    Dialog = mui.Dialog,
-    Avatar = mui.Avatar,
-    TextField = mui.TextField,
-    FlatButton = mui.FlatButton
-
-var TopicNormal = React.createClass({displayName: "TopicNormal",
-    render: function(){
-        var styles = {
-            position: 'absolute',
-            top: 'calc(50% - 1.25em)',
-            right: '10px',
-            color: '#378E43'
-        }
-        return (
-        (this.props.text == undefined)
-            ? React.createElement("div", null, "No topics")
-            : React.createElement(Animate, {transitionName: "topics", transitionAppear: true, transitionLeave: false}, 
-                React.createElement(ListItem, {onTouchTap: this.props.toggle, secondaryText: this.props.text, secondaryTextLines: 1}, 
-                    React.createElement("p", {style: styles}, this.props.replies)
-                )
-            )
-        )
-    }
-})
-
-var TopicExpanded = React.createClass({displayName: "TopicExpanded",
-    close: function(){
-        var self = this
-        setTimeout(function(){
-            self.props.toggle()
-        },300)
-
-    },
-
-    componentWillMount: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.props.tid)
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .unset('Content-Type')
-            .timeout(10000)
-            .end(function(err, res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true
-                        })
-                    }
-                }
-                else{
-                    self.setState({
-                        lectureTopicComments: res.body,
-                        loading: false
-                    })
-                }
-            })
-    },
-    getInitialState: function(){
-        return {
-            lectureTopicComments: [{avatar: null}],
-            loading: true,
-            offline: false
-        }
-    },
-    render: function(){
-        var self = this
-        var expandedStyle = {
-            position: 'absolute',
-            backgroundColor: 'white',
-            width: '100vw',
-            left: '0',
-            bottom: '0',
-            top: '0',
-            paddingLeft: '10px',
-            zIndex: '1000',
-            transitionDuration: '3s',
-            padding: '10px',
-            overflowY: 'scroll',
-            height: '70vh'
-        },
-        closeStyle = {
-            position: 'fixed',
-            top: '190px',
-            right: '10px',
-            zIndex: '2000'
-        },
-        descStyle = {
-            padding: '10px',
-            paddingTop: '0px',
-            color: '#727272'
-        },
+        var self = this,
         FABStyle = {
             position: 'fixed',
             bottom: '20px',
@@ -1905,234 +996,125 @@ var TopicExpanded = React.createClass({displayName: "TopicExpanded",
             backgroundColor: '#F0592A',
             borderRadius: '50%',
             boxShadow: '0px 0px 5px #727272'
-        },
-        loaderStyle = {
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            width: '100%',
-            zIndex: '5000',
-            display: (this.state.loading) ? 'block' : 'none',
         }
         return (
-            React.createElement("div", {style: expandedStyle}, 
+            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
+            React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '100px'}}, 
                 
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true, transitionLeave: false}, 
-                    React.createElement("p", {style: {color: '#378E43'}}, this.props.text), 
-                    React.createElement(IconButton, {style: closeStyle, onTouchTap: this.close, iconClassName: "mdi mdi-close"}), 
-
-                    React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: this.props.description}}), 
-                    
-                        (self.state.lectureTopicComments[0].avatar == null)
-                            ? React.createElement("div", null, "There are no replies")
-                            : self.state.lectureTopicComments.map(function(element){
-                            return (
-                                React.createElement("div", null, 
-                                    React.createElement(ListItem, {disabled: true, leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})}, 
-                                        React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em', lineHeight: '0em'}}, element.username), 
-                                        React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
-                                    )
-                                )
+                    (this.state.topics[0].data == 'null')
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No forums available")
+                    : self.state.topics.map(function(element, index){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(TopicNormal, {text: element.topic, onTouchTap: self.handleTouch.bind(this, element), replies: element.numPosts})
                             )
-                        }), 
-                    
-                    React.createElement(IconButton, {iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-reply"})
-                ), 
-                React.createElement(LinearProgress, {mode: "indeterminate", style: loaderStyle})
+                        )
+                    })
+
+                
+            ), 
+            React.createElement(Loader, {ref: "loader"}), 
+            React.createElement(IconButton, {
+                onTouchTap: this.newForum, 
+                iconStyle: {color: 'white'}, 
+                style: FABStyle, 
+                iconClassName: "mdi mdi-plus"})
             )
         )
     }
 })
 
-var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
-    toggle: function(){
-        var self = this
-        this.setState({
-            opened: !self.state.opened
-        })
-    },
-    getInitialState: function(){
-        return {
-            opened: false
-        }
-    },
+
+module.exports = Forums
+
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Chat = require('./chat.js'),
+    Notifs = require('./notifs.js')
+
+var Gems = React.createClass({displayName: "Gems",
+    mixins: [material],
+
     render: function(){
-        var ListStyle = {
-            position: this.state.opened ? 'absolute' : 'inherit',
-            margin: this.state.opened ? '0' : '10px',
-            transitionDuration: '3s'
-        },
-        ToRender = this.state.opened ? TopicExpanded : TopicNormal
         return (
             React.createElement("div", null, 
-                React.createElement(ToRender, {style: ListStyle, toggle: this.toggle, text: this.props.data.topic, replies: this.props.data.numPosts, description: this.props.data.description, tid: this.props.data.tid})
-            )
-        )
-}
-})
-
-var LectureForumCreate = React.createClass({displayName: "LectureForumCreate",
-    create: function(){
-        var self = this
-        if(self.refs.forumTitle.getValue() == ''){
-            self.refs.forumTitle.setErrorText('This field is compulsory')
-        }
-        if(self.refs.forumDesc.getValue() == ''){
-            self.refs.forumDesc.setErrorText('This field is compulsory')
-        }
-        else{
-            alert('POST Request here')
-            //superagent
-            //    .post(localStorage.getItem('mainUrl') + '/addForum')
-            //    .type('form')
-            //    .send({
-            //        subject: self.refs.forumTitle.getValue(),
-            //        description: self.refs.forumDesc.getValue(),
-            //        tid: 1,
-            //        topicId: 1})
-            //    .timeout(10000)
-            //    .set('token', localStorage.getItem('token'))
-            //    .set('uid', localStorage.getItem('uid'))
-            //    .end(function(err, res){
-            //        if(err){
-            //            if(err.timeout==10000)
-            //                console.log('Unable to process request')
-            //        }
-            //        else{
-            //            self.props.cancel()
-            //        }
-            //    })
-        }
-    },
-    cancel: function(){
-        var self = this
-        this.setState({
-            reload: !self.state.reload
-        })
-        this.props.cancel();
-    },
-    clearErrors: function(){
-        this.refs.forumTitle.setErrorText('')
-        this.refs.forumDesc.setErrorText('')
-    },
-
-    getInitialState: function(){
-        return {
-            reload: false
-        }
-    },
-    render: function(){
-        var containerStyle = {
-                zIndex: '10000',
-                backgroundColor: 'white',
-                height: '70vh',
-                width: '100%'
-            },
-            TextFieldStyle = {
-                display: 'block',
-                width: '80vw',
-                margin: '0 auto'
-            },
-            PostStyle = {
-                position: 'absolute',
-                right: '20px',
-                bottom: '20px',
-                fontFamily: 'RobotoLight',
-                backgroundColor: '#378E43',
-                color: 'white',
-            },
-            CancelStyle = {
-                position: 'absolute',
-                left: '20px',
-                bottom: '20px',
-                color: 'red'
-            }
-        return (
-            React.createElement("div", {style: containerStyle}, 
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true, transitionLeave: false}, 
-                    React.createElement("div", null, 
-                        React.createElement("p", {style: {fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}, "New Topic"), 
-                        React.createElement(TextField, {
-                            ref: "forumTitle", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Title", 
-                            onFocus: this.clearErrors}), 
-
-                        React.createElement(TextField, {
-                            ref: "forumDesc", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Description", 
-                            multiLine: true, 
-                            onFocus: this.clearErrors}), 
-
-                        React.createElement(FlatButton, {
-                            style: PostStyle, 
-                            onTouchTap: this.create}, 
-                            "POST"
-                        ), 
-                        React.createElement(FlatButton, {onTouchTap: this.cancel, style: CancelStyle}, "Cancel")
-                    )
-                )
+                React.createElement(Chat, null), 
+                React.createElement(Notifs, null)
             )
         )
     }
 })
 
-var LectureForumShow = React.createClass({displayName: "LectureForumShow",
-    newForum: function(){
-        this.props.newForum()
+module.exports = Gems
+
+var React = require('react'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Router = require('react-router'),
+    Video = require('react-youtube'),
+    Loader = require('./loader.js'),
+
+    TopicNormal = require('./topicNormal.js'),
+
+    Card = mui.Card,
+    CardText = mui.CardText,
+    CardMedia = mui.CardMedia,
+    List = mui.List,
+    IconButton = mui.IconButton
+
+var Lecture = React.createClass({displayName: "Lecture",
+    mixins: [Router.State, Router.Navigation],
+
+    handleTouch: function(topic){
+        localStorage.setItem('lectureTopicTitle', topic.lectureTitle)
+        localStorage.setItem('lectureTopicDesc', topic.description)
+        this.transitionTo('lectureTopic', {lectureId: this.getParams().lectureId, topicId: topic.tid})
+        // console.log(topic)
     },
-    fetch: function(){
-        var self = this
-        this.setState({
-            loading: true
-        })
+    newForum: function(){
+        localStorage.setItem('topicId', this.getParams().lectureId)
+        this.transitionTo('newTopicForum', {lectureId: this.getParams().lectureId})
+    },
+
+
+    getInitialState: function() {
+        return {
+            topics: [],
+            vurl: localStorage.getItem('vurl')
+        };
+    },
+    componentDidMount: function() {
+        var self = this,
+            lectureId = this.getParams().lectureId
+        self.refs.loader.showLoader()
         superagent
-            .get(localStorage.getItem('mainUrl') + '/forums/' + self.props.data.forumsectionId)
+            .get(localStorage.getItem('mainUrl') + '/forums/' + lectureId)
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .end(function(err, res){
+                self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        this.setState({
-                            offline: true
-                        })
-                    this.refs.lectureLoadError.show()
+                        console.log('Timeout')
                 }
-                else if(res.body[0].data != "null")
-                    self.setState({
-                        lectureTopics: res.body,
-                        loading: false
-                    })
-                else
-                    self.setState({
-                        lectureTopics: ['Nothing to show'],
-                        loading: false
-                    })
+                else {
+                    if(res.body[0].data != "null")
+                        self.setState({
+                            topics: res.body
+                        })
+                    else
+                        self.setState({
+                            topics: ['Nothing to show']
+                        })
+                }
             })
-    },
-
-    getInitialState: function(){
-        return {
-            lectureTopics: [],
-            loading: false,
-            offline: false,
-            newForum: this.props.newForum
-        }
-    },
-    componentWillMount: function(){
-        this.fetch()
     },
     render: function(){
         var self = this
         var VidOpts = {
-            height: 'auto',
-            width: '100%',
-            playerVars: {
-                autoplay: 1
-            }
+            height: '100%',
+            width: '100%'
         },
         DisTitleStyle = {
             paddingLeft: '20px',
@@ -2154,7 +1136,6 @@ var LectureForumShow = React.createClass({displayName: "LectureForumShow",
         },
         FABStyle = {
             position: 'fixed',
-            zIndex: '9001',
             bottom: '20px',
             right: '20px',
             backgroundColor: '#F0592A',
@@ -2162,95 +1143,80 @@ var LectureForumShow = React.createClass({displayName: "LectureForumShow",
             boxShadow: '0px 0px 5px #727272'
         }
         return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(Animate, {transitionName: "cardOpen", transitionAppear: true, transitionLeave: false}, 
-                    React.createElement(Card, {style: {zIndex: '1000'}}, 
-                        React.createElement(CardMedia, null, 
-                            React.createElement(YouTube, {opts: VidOpts, url: self.props.data.vurl})
-                        ), 
-                        React.createElement(CardText, {subtitle: "Instructor", style: CardTitleStyle}, 
-                            React.createElement("p", {style: {lineHeight: '1em'}}, self.props.data.title), 
-                            React.createElement("p", {style: {lineHeight: '0em', fontSize: '0.75em', color: '#B6B6B6'}}, "Instructor")
-                        )
+            React.createElement("div", {style: {height: 'calc(100vh - 40px)', overflowY: 'scroll'}}, 
+                React.createElement(Card, null, 
+                    React.createElement(CardMedia, null, 
+                        React.createElement(Video, {opts: VidOpts, url: self.state.vurl})
                     ), 
+                    React.createElement(CardText, {subtitle: "Instructor", style: CardTitleStyle}, 
+                        React.createElement("p", {style: {lineHeight: '1em'}}, "Title"), 
+                        React.createElement("p", {style: {lineHeight: '0em', fontSize: '0.75em', color: '#B6B6B6'}}, "Instructor")
+                    )
+                ), 
 
-                    React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
-                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                    React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
-                        
-                            self.state.lectureTopics.map(function(element, index){
-                                return React.createElement(ExpandableListItem, {key: index, data: element})
-                            })
-                        
-                    ), 
+                React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
+                React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '100px'}}, 
+                    
+                        self.state.topics.map(function(element, index){
+                            return (
+                                React.createElement("div", null, 
+                                    React.createElement(TopicNormal, {text: element.topic, onTouchTap: self.handleTouch.bind(this, element), replies: element.numPosts})
+                                )
+                            )
+                        }), 
 
-                React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
-                )
+                    
+                React.createElement(Loader, {ref: "loader"})
+                ), 
+
+                React.createElement(IconButton, {
+                    onTouchTap: this.newForum, 
+                    iconStyle: {color: 'white'}, 
+                    style: FABStyle, 
+                    iconClassName: "mdi mdi-plus"})
             )
         )
     }
 })
 
-module.exports = React.createClass({displayName: "exports",
+module.exports = Lecture
 
-    newForum: function(){
-        this.setState({
-            newForum: true
-        })
-    },
-    cancelNewForum: function(){
-        this.setState({
-            newForum: false
-        })
-    },
-
-
-    getInitialState: function(){
-        return {
-            lectureTopics: [],
-            loading: true,
-            offline: false,
-            newForum: false
-        }
-    },
-    render: function(){
-        var self = this
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.newForum
-                        ? React.createElement(LectureForumCreate, {cancel: self.cancelNewForum})
-                        : React.createElement(LectureForumShow, {data: self.props.data, newForum: self.newForum})
-                
-            )
-        )
-    }
-})
-var React = require('react/addons'),
-    Router = require('react-router'),
-    RouteHandler = Router.RouteHandler,
-    Link = Router.Link,
-    mui = require('material-ui'),
+var React = require('react'),
     material = require('./material.js'),
-    Lecture = require('./lecture.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Router = require('react-router'),
+    Loader = require('./loader.js'),
 
-    AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
-    Tabs = mui.Tabs,
-    Tab = mui.Tab,
-    Icon = mui.FontIcon,
     List = mui.List,
     ListItem = mui.ListItem,
     ListDivider = mui.ListDivider,
-    Menu = mui.Menu
-
-React.initializeTouchEvents(true)
+    Icon = mui.FontIcon
 
 var expanded = []
+
+var sortByWeeks = function(data) {
+    var newData = [],
+        maxWeek = 0
+
+    data.forEach(function (element) {
+        if (element.week.slice(5) > maxWeek)
+            maxWeek = element.week.slice(5)
+    })
+
+    for (var i = 0; i <= maxWeek; i++) {
+        newData[i] = new Array()
+        expanded[i] = false
+    }
+
+    data.forEach(function (element) {
+        newData[parseInt(element.week.slice(5))].push(element)
+    })
+
+    return newData
+}
 
 var NormalText = React.createClass({displayName: "NormalText",
     handleClick: function(){
@@ -2297,12 +1263,17 @@ var NormalText = React.createClass({displayName: "NormalText",
 })
 
 var CardList = React.createClass({displayName: "CardList",
+    mixins: [Router.Navigation],
+
     handleClick: function(){
         this.props.onTouchTap()
     },
     goToLecture: function(lecture){
-        if(lecture.lid != undefined)
-            this.props.goToLecture(lecture)
+        var lectureId = lecture.forumsectionId
+        if(lectureId != undefined) {
+            localStorage.setItem('vurl', lecture.vurl)
+            this.transitionTo("lecture", {lectureId: lectureId})
+        }
     },
 
     render: function() {
@@ -2344,10 +1315,10 @@ var CardList = React.createClass({displayName: "CardList",
                                         animationFillMode: 'forwards',
                                         opacity: '0'
                                     }, 
-                                      rightIcon: React.createElement(Icon, {className: "mdi mdi-play"}), key: index*2+self.props.data.length}, 
+                                      rightIcon: React.createElement(Icon, {className: "mdi mdi-play"})}, 
                                         self.props.data[index].title
                                     ), 
-                                    React.createElement(ListDivider, {style: {marginLeft: '20vw'}, key: index*3+self.props.data.length})
+                                    React.createElement(ListDivider, {style: {marginLeft: '20vw'}})
                                 )
                             )
                         })
@@ -2358,27 +1329,32 @@ var CardList = React.createClass({displayName: "CardList",
     }
 });
 
-
 var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
-    toggle: function(){
-        this.props.handleToggle(this.props.id)
-    },
-    goToLecture: function(lecture){
-        this.props.goToLecture(lecture)
+    handleTouch: function(){
+        this.props.onTouchTap(this.props.id)
     },
 
+    getInitialState: function() {
+        return {
+            expanded: this.props.expanded
+        };
+    },
     render: function(){
-        var Styles = {
+        var self = this,
+        Styles = {
             backgroundColor: 'white',
-            margin: (this.props.isExpanded) ? '2vh 3vw' : '1vh 5vw',
-            transitionDuration: '0.3s'
+            margin: expanded[this.props.id] ? '2vh 3vw' : '1vh 5vw',
+            transition: '0.3s'
         }
-        var ToRender = expanded[this.props.id] ? CardList : NormalText
         return (
             React.createElement("div", null, 
-                React.createElement(Card, {zDepth: (this.props.isExpanded) ? 2 : 1, rounded: false, style: Styles}, 
+                React.createElement(Card, {zDepth: expanded[this.props.id] ? 2 : 1, rounded: false, style: Styles}, 
                     React.createElement(CardText, {style: {padding: '0vh 3vw'}}, 
-                        React.createElement(ToRender, {data: this.props.data, goToLecture: this.goToLecture, onTouchTap: this.toggle})
+                        
+                            expanded[this.props.id]
+                            ? React.createElement(CardList, {onTouchTap: this.handleTouch, data: this.props.data})
+                            : React.createElement(NormalText, {onTouchTap: this.handleTouch, data: this.props.data})
+                        
                     )
                 )
             )
@@ -2386,45 +1362,55 @@ var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
     }
 })
 
-module.exports = React.createClass({displayName: "exports",
-    mixins: [Router.Navigation],
+var Lectures = React.createClass({displayName: "Lectures",
+    mixins: [material, Router.Navigation],
 
-    toggleCard: function(cardId){
-        this.state.expanded.forEach(function(element, index){
-            expanded[index] = (index == cardId) ? !expanded[index] : false
+    handleTouch: function(id){
+        var self = this
+        expanded.forEach(function(element, index){
+            expanded[index] = (index == id) ? !expanded[index] : false
         })
-        this.setState({
+        self.setState({
             expanded: expanded
         })
     },
-    goToLecture: function(lecture){
-        this.setState({
-            lectureData: lecture,
-            lecture: true
-        })
-        this.props.goToLecture()
-    },
 
-    getInitialState: function(){
+
+    getInitialState: function() {
         return {
-            expanded: this.props.expanded,
-            lecture: this.props.lecture,
-            lectureData: []
-        }
+            data: [{data: 'null'}],
+            expanded: expanded
+        };
     },
-    componentWillReceiveProps: function(nextProps){
-        this.setState({
-            lecture: nextProps.lecture,
-            data: nextProps.repeatEntity
-        })
+    componentDidMount: function() {
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/lectures/summary')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err, res) {
+                self.refs.loader.hideLoader()
+                if(err) {
+                    if(err.timeout == 10000)
+                        console.log('Timeout')
+                }
+                else {
+                    self.setState({
+                        data: sortByWeeks(res.body)
+                    })
+                }
+            })
     },
     render: function(){
         var self = this
         return (
-            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
-                this.state.lecture
-                    ? React.createElement(Lecture, {data: self.state.lectureData})
-                    : this.props.repeatEntity.map(function(element, index) {
+            React.createElement("div", {style: {height: 'calc(99vh - 40px - 110px)', overflowY: 'scroll'}}, 
+                
+                    (this.state.data[0].data == 'null')
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No lectures available")
+                    : self.state.data.map(function(element, index) {
                         return (
                             React.createElement("div", {style: {
                                 animation: 'flyInFromBottom 0.3s ease ' + (index)*0.1 + 's',
@@ -2432,22 +1418,79 @@ module.exports = React.createClass({displayName: "exports",
                                 animationFillMode: 'forwards',
                                 WebkitAnimationFillMode: 'forwards',
                                 opacity: '0'
-                            }, key: index*4}, 
-                                React.createElement(ExpandableListItem, {data: element, goToLecture: self.goToLecture, isExpanded: self.state.expanded[index], handleToggle: self.toggleCard, key: index, id: index})
+                            }, 
+                            key: index}, 
+                            React.createElement(ExpandableListItem, {
+                                data: self.state.data[index], 
+                                id: index, 
+                                onTouchTap: self.handleTouch, 
+                                expanded: self.state.expanded})
                             )
-                            )}
-                )
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"})
             )
         )
     }
 })
+
+module.exports = Lectures
+
+var React = require('react'),
+    material  = require('./material.js'),
+    mui = require('material-ui'),
+
+    CircularProgress = mui.CircularProgress
+
+var Loader = React.createClass({displayName: "Loader",
+    mixins: [material],
+
+    showLoader: function(){
+        var self = this
+        this.setState({
+            loading: true
+        })
+    },
+    hideLoader: function(){
+        var self = this
+        this.setState({
+            loading: false
+        })
+    },
+
+    getInitialState: function() {
+        return {
+            loading: false
+        };
+    },
+    render: function(){
+        var self = this,
+        loaderStyle = {
+            position: 'absolute',
+            left: '0',
+            right: '0',
+            margin: '0 auto',
+            display: (this.state.loading) ? 'block' : 'none',
+        }
+        return (
+            React.createElement("div", null, 
+                React.createElement(CircularProgress, {
+                    mode: "indeterminate", 
+                    size: 0.5, 
+                    style: loaderStyle})
+            )
+        )
+    }
+})
+
+module.exports = Loader
 
 var React = require('react'),
     mui = require('material-ui'),
     material = require('./material.js'),
     superagent = require('superagent'),
     Router = require('react-router'),
-    Offline = require('./offline.js'),
     courses = require('../courseList.json'),
 
     Card = mui.Card,
@@ -2465,6 +1508,9 @@ module.exports = React.createClass({displayName: "exports",
         var self = this,
             username = this.state.username,
             password = this.state.password
+
+        localStorage.setItem('username', username)
+        localStorage.setItem('password', password)
         self.setState({
             loading: true
         })
@@ -2481,10 +1527,8 @@ module.exports = React.createClass({displayName: "exports",
                     loading: false
                 })
                 if(err){
-                    if(err.timeout == 10000 || err.status == 106 || err.status == 0) {
-                        self.setState({
-                            offline: true
-                        })
+                    if(err.timeout == 10000) {
+                        console.log('Timeout')
                     }
                     else if(err.status == 403 || err.status == 401){
                         self.refs.ErrorDialog.show()
@@ -2493,7 +1537,7 @@ module.exports = React.createClass({displayName: "exports",
                 else {
                     localStorage.setItem('token', res.body.token);
                     localStorage.setItem('uid', res.body.uid);
-                    self.transitionTo('/course')
+                    self.transitionTo('lectures')
                 }
             })
     },
@@ -2502,23 +1546,17 @@ module.exports = React.createClass({displayName: "exports",
             password: e.target.value
         })
     },
-    goBackDude: function(){
-        this.transitionTo('/courses')
-    },
 
     componentWillMount: function(){
         localStorage.setItem('courseTitle', courses.title)
         localStorage.setItem('mainUrl', courses.main)
         localStorage.setItem('loginUrl', courses.login)
-        localStorage.setItem('lastSeen', Date.now())
-        console.log('Local Storage set')
     },
     getInitialState: function(){
         return {
-            username: '',
-            password: '',
-            loading: false,
-            offline: false
+            username: (localStorage.getItem('username')) ? localStorage.getItem('username') : '',
+            password: (localStorage.getItem('password')) ? localStorage.getItem('password') : '',
+            loading: false
         }
     },
     render: function(){
@@ -2594,15 +1632,10 @@ module.exports = React.createClass({displayName: "exports",
         ];
         return (
             React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-
                 React.createElement("div", {style: {backgroundColor: '#EDECEC'}}, 
                     React.createElement(Card, {style: CardStyle}, 
                         React.createElement(CardText, null, 
                             React.createElement("img", {src: "img/logo.svg", style: LogoStyle}), 
-
                             React.createElement(TextField, {
                                 style: TextFieldStyle, 
                                 floatingLabelText: "Username", 
@@ -2628,7 +1661,6 @@ module.exports = React.createClass({displayName: "exports",
 
                             React.createElement("img", {src: "img/facebook.svg", style: FacebookStyle}), 
                             React.createElement("img", {src: "img/twitter.svg", style: TwitterStyle})
-
                         )
                     )
                 ), 
@@ -2638,6 +1670,12 @@ module.exports = React.createClass({displayName: "exports",
                     actions: standardActions, 
                     ref: "ErrorDialog"}, 
                     "Please check username and/or password"
+                ), 
+                React.createElement(Dialog, {
+                    ref: "OfflineDialog", 
+                    title: "Error", 
+                    actions: [{ text: 'Okay' }]}, 
+                    "We're having trouble connecting to our servers. Please check your internet connection or try again later."
                 ), 
 
                 React.createElement("div", {style: SignUpContainer}, 
@@ -2668,643 +1706,18 @@ module.exports = {
         };
     }
 }
-var React = require('react/addons'),
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    superagent = require('superagent'),
-    Offline = require('./offline.js'),
-
-    IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
-    List = mui.List,
-    ListItem = mui.ListItem,
-    ListDivider = mui.ListDivider,
-    Avatar = mui.Avatar
-
-var NotificationContainer = React.createClass({displayName: "NotificationContainer",
-
-    getInitialState: function(){
-        return {
-            notifs: [],
-            loading: true,
-            offline: false
-        }
-    },
-    componentWillMount: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/announcement/summary')
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
-                }
-                else{
-                    self.setState({
-                        notifs: res.body,
-                        loading: false
-                    })
-                }
-            })
-    },
-
-    render: function(){
-        var ContainerStyle = {
-            position: 'absolute',
-            top: '60px',
-            bottom: '0',
-            width: '100vw',
-            boxSizing: 'border-box',
-            left: '0',
-            zIndex: '16000',
-            backgroundColor: 'white',
-            padding: '10px',
-            overflowY: 'scroll'
-        },
-        loaderStyle = {
-            position: 'absolute',
-            left: '0',
-            right: '0',
-            top: '30vh',
-            margin: '0 auto',
-            display: this.state.loading ? 'block' : 'none'
-        }
-        return (
-            React.createElement("div", {className: "notificationContainer"}, 
-                React.createElement("div", {style: ContainerStyle}, 
-                    
-                        this.state.offline ? React.createElement(Offline, null) : null, 
-                    
-                    
-                        this.state.notifs.map(function(element, index){
-                            return (
-                                React.createElement("div", null, 
-                                    React.createElement(ListItem, {
-                                         leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.uri.slice(8)}), 
-                                         disabled: true, 
-                                         secondaryText: 
-                                            React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
-                                         }, 
-                                        element.name
-                                    ), 
-                                    React.createElement(ListDivider, null)
-                                )
-                            )
-                        }), 
-                    
-                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
-                )
-            )
-        )
-    }
-})
-
-module.exports = React.createClass({displayName: "exports",
-    toggleNotification: function(){
-        var self = this
-        if(this.state.opened)
-            this.props.onOpen()
-        this.setState({
-            unread: false,
-            opened: !self.state.opened
-        })
-    },
-
-    getInitialState: function(){
-        return {
-            unread: true,
-            opened: this.props.opened
-        }
-    },
-    render: function(){
-        var self = this,
-            IconStyle = {
-                position: 'absolute',
-                color: 'white',
-                top: '8px',
-                right: '10px',
-                opacity: '0.9',
-                fontSize: '20px'
-            },
-            UnreadStyle = {
-                position: 'absolute',
-                top: '10px',
-                right: '13px',
-                borderRadius: '50%',
-                height: '10px',
-                width: '10px',
-                backgroundColor: '#F0592A',
-                display: (this.state.unread) ? 'block' : 'none'
-            }
-
-        return (
-            React.createElement("div", null, 
-                React.createElement("div", {style: IconStyle}, 
-                    React.createElement(IconButton, {
-                        iconStyle: {color: 'white', fontSize: '20px'}, 
-                        iconClassName: "mdi mdi-bell", 
-                        onTouchTap: this.toggleNotification}), 
-                    React.createElement("div", {style: UnreadStyle})
-                ), 
-                
-                    this.state.opened ? React.createElement(NotificationContainer, null) : null
-                
-            )
-        )
-    }
-})
-
 var React = require('react'),
     material = require('./material.js'),
     mui = require('material-ui'),
-
-    Dialog = mui.Dialog
-
-module.exports = React.createClass({displayName: "exports",
-    mixins: [material],
-
-    componentWillMount: function(){
-        var self = this
-        console.log(self.refs.OfflineDialog)
-    },
-
-
-    render: function(){
-        var standardActions = [
-            { text: 'Okay' }
-        ]
-        return (
-            React.createElement("div", null, 
-                React.createElement(Dialog, {
-                    ref: "OfflineDialog", 
-                    title: "Error", 
-                    actions: standardActions}, 
-                    "We're having trouble connecting to our servers. Please check your internet connection or try again later."
-                )
-            )
-
-        )
-    }
-})
-var React = require('react/addons'),
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    superagent = require('superagent'),
-    Offline = require('./offline.js'),
-
-    IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
-    List = mui.List,
-    ListItem = mui.ListItem,
-    ListDivider = mui.ListDivider,
-    Avatar = mui.Avatar
-
-module.exports = React.createClass({displayName: "exports",
-
-    getInitialState: function(){
-        return {
-            notifs: [],
-            loading: true,
-            offline: false
-        }
-    },
-    componentWillMount: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/resources')
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err,res){
-                if(err){
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
-                }
-                else{
-                    self.setState({
-                        notifs: res.body,
-                        loading: false
-                    })
-                }
-            })
-    },
-
-    render: function(){
-        var loaderStyle = {
-                position: 'absolute',
-                left: '0',
-                right: '0',
-                top: '30vh',
-                margin: '0 auto',
-                display: this.state.loading ? 'block' : 'none'
-            }
-        return (
-            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll', overflowX: 'hidden'}}, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                
-                    this.state.notifs.map(function(element, index){
-                        return (
-                            React.createElement("div", null, 
-                                React.createElement(ListItem, {
-                                    disabled: true, 
-                                    secondaryText: 
-                                        React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
-                                     }, 
-                                    element.name
-                                ), 
-                                React.createElement(ListDivider, null)
-                            )
-                        )
-                    }), 
-                
-                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
-            )
-        )
-    }
-})
-var React = require('react'),
     Router = require('react-router'),
-    Route = Router.Route,
-    Redirect = Router.Redirect,
+    superagent = require('superagent'),
 
-    App = require('./app.js'),
-    Login = require('./login.js'),
-    Course = require('./course.js'),
-    Lecture = require('./lecture.js')
+    FlatButton = mui.FlatButton,
+    TextField = mui.TextField
 
-var routes = (
-
-    React.createElement(Route, {handler: App}, 
-
-        React.createElement(Route, {path: "/course", handler: Course}), 
-        React.createElement(Route, {path: "/login", handler: Login}), 
-
-        React.createElement(Redirect, {from: "/", to: "/login"})
-    )
-)
-
-Router.run(routes, Router.HashLocation, function(Root){
-    React.render(
-        React.createElement(Root, null),
-        document.body
-    )
-})
-var React = require('react'),
-    material = require('./material.js'),
-    mui = require('material-ui'),
-    Swipe = require('react-swipe'),
-    Router = require('react-router'),
-
-    IconButton = mui.IconButton
-
-module.exports = React.createClass({displayName: "exports",
+var newTopicForum = React.createClass({displayName: "newTopicForum",
     mixins: [material, Router.Navigation],
 
-
-    nextImage: function(){
-        var self = this
-        this.refs.ReactSwipe.swipe.next();
-        if(this.state.selected === "3")
-            this.transitionTo("/dash")
-        this.setState({
-            selected: (parseInt(self.state.selected)+1).toString()
-        })
-    },
-
-    getInitialState: function(){
-        return {
-            selected: "0"
-        }
-    },
-    render: function(){
-        var ContainerStyle = {
-            backgroundColor: "#4CAE4E",
-            height: '100%',
-        },
-        imgStyle = {
-            position: 'absolute',
-            left: '0',
-            right: '0',
-            margin: '0 auto',
-            bottom: '20vh',
-            width: '40vw',
-        },
-        markerContainerStyle = {
-            position: 'absolute',
-            left: '0',
-            right: '0',
-            margin: '0 auto',
-            bottom: '5vh',
-            width: '90px',
-        },
-        markerStyle = {
-            float: 'left',
-            borderRadius: '50%',
-            backgroundColor: 'white',
-            width: '10px',
-            height: '10px',
-            margin: '0 10px',
-        },
-        nextBtnStyle = {
-            position: 'absolute',
-            right: '10px',
-            zIndex: '1000'
-        }
-        return (
-            React.createElement("div", {style: ContainerStyle}, 
-                React.createElement(IconButton, {iconClassName: "mdi mdi-chevron-right", iconStyle: {color: 'white'}, style: nextBtnStyle, onTouchTap: this.nextImage}
-
-                ), 
-                React.createElement(Swipe, {ref: "ReactSwipe", slideToIndex: 1, continuous: false}, 
-                    React.createElement("div", {style: {height: '100vh'}}, 
-                        React.createElement("img", {style: imgStyle, src: "img/iphone.svg"})
-                    ), 
-                    React.createElement("div", {style: {height: '100vh'}}, 
-                        React.createElement("img", {style: imgStyle, src: "img/iphone.svg"})
-                    ), 
-                    React.createElement("div", {style: {height: '100vh'}}, 
-                        React.createElement("img", {style: imgStyle, src: "img/iphone.svg"})
-                    )
-                ), 
-                React.createElement("div", {style: markerContainerStyle}, 
-                    React.createElement("div", {ref: "marker1", style: markerStyle}), 
-                    React.createElement("div", {ref: "marker2", style: markerStyle}), 
-                    React.createElement("div", {ref: "marker3", style: markerStyle})
-                )
-            )
-        )
-    }
-})
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_675176b8.js","/")
-},{"../courseList.json":1,"./app.js":2,"./chat.js":3,"./course.js":4,"./forums.js":6,"./lecture.js":7,"./lectures.js":8,"./login.js":9,"./material.js":10,"./notifications.js":11,"./offline.js":12,"./resources.js":13,"buffer":14,"material-ui":50,"material-ui/lib/menus/menu-item":63,"oMfpAn":17,"react":373,"react-router":173,"react-swipe":189,"react-tap-event-plugin":193,"react-youtube":194,"react/addons":201,"superagent":374}],6:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react'),
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    Animate = React.addons.CSSTransitionGroup,
-    superagent = require('superagent'),
-    Offline = require('./offline.js'),
-
-    Card = mui.Card,
-    CardMedia = mui.CardMedia,
-    CardText = mui.CardText,
-    CardTitle = mui.CardTitle,
-    List = mui.List,
-    ListItem = mui.ListItem,
-    FontIcon = mui.FontIcon,
-    IconButton = mui.IconButton,
-    LinearProgress = mui.LinearProgress,
-    Dialog = mui.Dialog,
-    Avatar = mui.Avatar,
-    TextField = mui.TextField,
-    FlatButton = mui.FlatButton
-
-var TopicNormal = React.createClass({displayName: "TopicNormal",
-    render: function(){
-        var styles = {
-            position: 'absolute',
-            top: 'calc(50% - 1.25em)',
-            right: '10px',
-            color: '#378E43'
-        }
-        return (
-            React.createElement(Animate, {transitionName: "topics", transitionAppear: true}, 
-                React.createElement(ListItem, {onTouchTap: this.props.toggle, secondaryText: this.props.text, secondaryTextLines: 1}, 
-                    React.createElement("p", {style: styles}, this.props.replies)
-                )
-            )
-        )
-    }
-})
-
-var TopicExpanded = React.createClass({displayName: "TopicExpanded",
-    close: function(){
-        var self = this
-        setTimeout(function(){
-            self.props.toggle()
-        },300)
-
-    },
-    fetch: function(){
-        var self = this
-        this.setState({
-            loading: true
-        })
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.props.tid)
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .unset('Content-Type')
-            .timeout(10000)
-            .end(function(err, res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true
-                        })
-                    }
-                }
-                else{
-                    self.setState({
-                        topicComments: res.body,
-                        loading: false
-                    })
-                }
-            })
-    },
-    reply: function(){
-        this.setState({
-            topicComments: []
-        })
-    },
-    postReply: function(){
-        var self = this
-        if(self.refs.replyField.getValue() == ''){
-            self.refs.replyField.setErrorText('This field is compulsory')
-        }
-        else{
-            superagent
-                .post(localStorage.getItem('mainUrl') + '/comments/' + this.props.tid)
-                .type('form')
-                .send({
-                    "parentCommentId": 0,
-                    "text": self.refs.replyField.getValue(),
-                    "subject": self.refs.replyField.getValue()
-                })
-                .timeout(10000)
-                .set('token', localStorage.getItem('token'))
-                .set('uid', localStorage.getItem('uid'))
-                .end(function(err, res){
-                    if(err){
-                        if(err.timeout==10000)
-                            console.log('Unable to process request')
-                    }
-                    else{
-                        self.refs.replyField.clearValue()
-                        self.fetch()
-                    }
-                })
-        }
-    },
-
-    componentWillMount: function(){
-        this.fetch()
-    },
-    getInitialState: function(){
-        return {
-            topicComments: [{avatar: null}],
-            loading: false,
-            offline: false
-        }
-    },
-    render: function(){
-        var self = this
-        var expandedStyle = {
-                position: 'absolute',
-                backgroundColor: 'white',
-                width: '100vw',
-                left: '0',
-                bottom: '0',
-                top: '0',
-                height: '70vh',
-                paddingLeft: '10px',
-                zIndex: '10000',
-                transitionDuration: '3s',
-                padding: '10px',
-                overflowX: 'hidden',
-                wordWrap: 'break-word',
-                paddingBottom: '150px'
-            },
-            closeStyle = {
-                position: 'fixed',
-                top: '190px',
-                right: '10px',
-                zIndex: '2000'
-            },
-            descStyle = {
-                padding: '10px',
-                color: '#727272'
-            },
-            FABStyle = {
-                position: 'fixed',
-                bottom: '20px',
-                right: '20px',
-                backgroundColor: '#F0592A',
-                borderRadius: '50%',
-                boxShadow: '0px 0px 5px #727272'
-            },
-            ReplyStyle = {
-                position: 'fixed',
-                bottom: '20px',
-                left: '20px',
-                backgroundColor: 'white',
-                width: 'calc(80% - 50px)'
-            },
-            loaderStyle = {
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                width: '100%',
-                zIndex: '5000',
-                display: (this.state.loading) ? 'block' : 'none',
-            },
-            TopicCommentsStyle = {
-                display: 'block',
-                height: 'calc(100%)'
-            }
-        return (
-            React.createElement("div", {style: expandedStyle}, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true}, 
-                    React.createElement("div", {style: {height: '40px'}}), 
-                    React.createElement("p", {style: {color: '#378E43'}}, this.props.text), 
-                    React.createElement(IconButton, {
-                        style: closeStyle, 
-                        onTouchTap: this.close, 
-                        iconClassName: "mdi mdi-close", 
-                        iconStyle: {color: '#F0592A'}}
-                    ), 
-
-                    React.createElement("div", {style: TopicCommentsStyle}, 
-                    React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: this.props.description}}), 
-                    
-                        (self.state.topicComments[0].avatar == null)
-                            ? React.createElement("div", null, "There are no replies")
-                            : self.state.topicComments.map(function(element){
-                                    return (
-                                        React.createElement("div", null, 
-                                            React.createElement(ListItem, {disabled: true, leftAvatar: 
-                                        React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})
-                                    }, 
-                                                React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em', lineHeight: '1.5em'}}, element.username), 
-                                                React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
-                                            )
-                                        )
-                                    )
-                                })
-                    
-                    ), 
-
-                    React.createElement("div", {style: {height: '150px', width: '100%'}}), 
-                    React.createElement(TextField, {
-                        ref: "replyField", 
-                        style: ReplyStyle, 
-                        floatingLabelText: "Reply", 
-                        onFocus: self.reply}), 
-                    React.createElement(IconButton, {
-                        iconStyle: {color: 'white'}, 
-                        style: FABStyle, 
-                        iconClassName: "mdi mdi-reply", 
-                        onTouchTap: this.postReply})
-                ), 
-                React.createElement(LinearProgress, {mode: "indeterminate", style: loaderStyle})
-            )
-        )
-    }
-})
-
-var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
-    toggle: function(){
-        var self = this
-        this.setState({
-            opened: !self.state.opened
-        })
-    },
-    getInitialState: function(){
-        return {
-            opened: false
-        }
-    },
-    render: function(){
-        var ListStyle = {
-                position: this.state.opened ? 'absolute' : 'inherit',
-                margin: this.state.opened ? '0' : '10px',
-                transitionDuration: '3s'
-            },
-            ToRender = this.state.opened ? TopicExpanded : TopicNormal
-        return (
-            React.createElement("div", null, 
-                React.createElement(ToRender, {refresh: this.props.refresh, style: ListStyle, toggle: this.toggle, text: this.props.data.topic, replies: this.props.data.numPosts, description: this.props.data.description, tid: this.props.data.tid})
-            )
-        )
-    }
-})
-
-var ForumCreate = React.createClass({displayName: "ForumCreate",
     create: function(){
         var self = this
         if(self.refs.forumTitle.getValue() == ''){
@@ -3315,474 +1728,33 @@ var ForumCreate = React.createClass({displayName: "ForumCreate",
         }
         else{
             superagent
-                .post(localStorage.getItem('mainUrl') + '/addForum')
-                .type('form')
-                .send({
-                    subject: self.refs.forumTitle.getValue(),
-                    description: self.refs.forumDesc.getValue(),
-                    tid: 1,
-                    topicId: 1})
-                .timeout(10000)
-                .set('token', localStorage.getItem('token'))
-                .set('uid', localStorage.getItem('uid'))
-                .end(function(err, res){
-                    if(err){
-                        if(err.timeout==10000)
-                            console.log('Unable to process request')
-                    }
-                    else{
-                        self.props.cancel()
-                    }
-                })
+               .post(localStorage.getItem('mainUrl') + '/addForum')
+               .type('form')
+               .send({
+                   subject: self.refs.forumTitle.getValue(),
+                   description: self.refs.forumDesc.getValue(),
+                   topicId: localStorage.getItem('topicId')})
+               .timeout(10000)
+               .set('token', localStorage.getItem('token'))
+               .set('uid', localStorage.getItem('uid'))
+               .end(function(err, res){
+                   if(err){
+                       if(err.timeout==10000)
+                           console.log('Timeout')
+                   }
+                   else{
+                       this.goBack()
+                   }
+               })
         }
-    },
-    cancel: function(){
-        var self = this
-        this.setState({
-            reload: !self.state.reload
-        })
-        this.props.cancel();
     },
     clearErrors: function(){
         this.refs.forumTitle.setErrorText('')
         this.refs.forumDesc.setErrorText('')
     },
 
-    getInitialState: function(){
-        return {
-            reload: false
-        }
-    },
     render: function(){
-        var containerStyle = {
-            zIndex: '6000',
-            backgroundColor: 'white',
-            height: '70vh',
-            width: '100%'
-        },
-        TextFieldStyle = {
-            display: 'block',
-            width: '80vw',
-            margin: '0 auto'
-        },
-        PostStyle = {
-            position: 'absolute',
-            right: '20px',
-            bottom: '20px',
-            fontFamily: 'RobotoLight',
-            backgroundColor: '#378E43',
-            color: 'white',
-        },
-        CancelStyle = {
-            position: 'absolute',
-            left: '20px',
-            bottom: '20px',
-            color: 'red'
-        }
-        return (
-            React.createElement("div", {style: containerStyle}, 
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true}, 
-                    React.createElement("div", null, 
-                        React.createElement("p", {style: {fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}, "New Topic"), 
-                        React.createElement(TextField, {
-                            ref: "forumTitle", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Title", 
-                            onFocus: this.clearErrors}), 
-
-                        React.createElement(TextField, {
-                            ref: "forumDesc", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Description", 
-                            multiLine: true, 
-                            onFocus: this.clearErrors}), 
-
-                        React.createElement(FlatButton, {
-                            style: PostStyle, 
-                            onTouchTap: this.create}, 
-                            "POST"
-                        ), 
-                        React.createElement(FlatButton, {onTouchTap: this.cancel, style: CancelStyle}, "Cancel")
-                    )
-                )
-            )
-        )
-    }
-})
-
-var ForumShow = React.createClass({displayName: "ForumShow",
-    newForum: function(){
-        this.props.newForum()
-    },
-    fetch: function(){
-        var self = this
-        this.setState({
-            loading: true
-        })
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/forums/getdiscussions/general')
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .timeout(10000)
-            .end(function(err, res){
-                if(err){
-                    if(err.timeout==10000)
-                        self.setState({
-                            offline: true
-                        })
-                }
-                else if(res.body[0].data != "null")
-                    self.setState({
-                        topics: res.body,
-                        loading: false
-                    })
-                else
-                    self.setState({
-                        topics: 'Nothing to show',
-                        loading: false
-                    })
-            })
-    },
-
-    getInitialState: function(){
-        return {
-            topics: [],
-            loading: false,
-            offline: false,
-            newForum: this.props.newForum
-        }
-    },
-    componentWillMount: function(){
-        this.fetch()
-    },
-    render: function(){
-        var self = this
-        var DisTitleStyle = {
-                paddingLeft: '20px',
-                paddingTop: '20px',
-                fontFamily: 'RobotoRegular'
-            },
-            FABStyle = {
-                position: 'absolute',
-                bottom: '20px',
-                right: '20px',
-                zIndex: '5000',
-                backgroundColor: '#F0592A',
-                borderRadius: '50%',
-                boxShadow: '0px 0px 5px #727272'
-            }
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
-                React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
-                    
-                        self.state.topics.map(function(element, index){
-                            return React.createElement(ExpandableListItem, {refresh: self.fetch, key: index, data: element})
-                        })
-                    
-                ), 
-                React.createElement("div", {style: {height: '100px'}}), 
-
-                React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
-            )
-        )
-    }
-})
-
-module.exports = React.createClass({displayName: "exports",
-
-    newForum: function(){
-        this.setState({
-            newForum: true
-        })
-        this.props.createForum()
-    },
-    cancelNewForum: function(){
-        this.setState({
-            newForum: false
-        })
-        this.props.cancelCreate();
-    },
-
-    componentWillReceiveProps: function(nextProps){
-        this.setState({
-            newForum: nextProps.forum
-        })
-    },
-
-
-    getInitialState: function(){
-        return {
-            topics: [],
-            loading: false,
-            offline: false,
-            newForum: this.props.newForum
-        }
-    },
-    render: function(){
-        var self = this
-        return (
-            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
-                
-                    this.state.newForum
-                        ? React.createElement(ForumCreate, {cancel: self.cancelNewForum})
-                        : React.createElement(ForumShow, {newForum: self.newForum})
-                
-            )
-        )
-    }
-})
-
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/forums.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"superagent":374}],7:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react'),
-    Animate = React.addons.CSSTransitionGroup,
-    mui = require('material-ui'),
-    material = require('./material.js'),
-    YouTube = require('react-youtube'),
-    superagent = require('superagent'),
-    Offline = require('./offline.js'),
-
-    Card = mui.Card,
-    CardMedia = mui.CardMedia,
-    CardText = mui.CardText,
-    CardTitle = mui.CardTitle,
-    List = mui.List,
-    ListItem = mui.ListItem,
-    FontIcon = mui.FontIcon,
-    IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
-    LinearProgress = mui.LinearProgress,
-    Dialog = mui.Dialog,
-    Avatar = mui.Avatar,
-    TextField = mui.TextField,
-    FlatButton = mui.FlatButton
-
-var TopicNormal = React.createClass({displayName: "TopicNormal",
-    render: function(){
-        var styles = {
-            position: 'absolute',
-            top: 'calc(50% - 1.25em)',
-            right: '10px',
-            color: '#378E43'
-        }
-        return (
-        (this.props.text == undefined)
-            ? React.createElement("div", null, "No topics")
-            : React.createElement(Animate, {transitionName: "topics", transitionAppear: true, transitionLeave: false}, 
-                React.createElement(ListItem, {onTouchTap: this.props.toggle, secondaryText: this.props.text, secondaryTextLines: 1}, 
-                    React.createElement("p", {style: styles}, this.props.replies)
-                )
-            )
-        )
-    }
-})
-
-var TopicExpanded = React.createClass({displayName: "TopicExpanded",
-    close: function(){
-        var self = this
-        setTimeout(function(){
-            self.props.toggle()
-        },300)
-
-    },
-
-    componentWillMount: function(){
-        var self = this
-        superagent
-            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.props.tid)
-            .set('token', localStorage.getItem('token'))
-            .set('uid', localStorage.getItem('uid'))
-            .unset('Content-Type')
-            .timeout(10000)
-            .end(function(err, res){
-                if(err){
-                    if(err.timeout==10000){
-                        self.setState({
-                            offline: true
-                        })
-                    }
-                }
-                else{
-                    self.setState({
-                        lectureTopicComments: res.body,
-                        loading: false
-                    })
-                }
-            })
-    },
-    getInitialState: function(){
-        return {
-            lectureTopicComments: [{avatar: null}],
-            loading: true,
-            offline: false
-        }
-    },
-    render: function(){
-        var self = this
-        var expandedStyle = {
-            position: 'absolute',
-            backgroundColor: 'white',
-            width: '100vw',
-            left: '0',
-            bottom: '0',
-            top: '0',
-            paddingLeft: '10px',
-            zIndex: '1000',
-            transitionDuration: '3s',
-            padding: '10px',
-            overflowY: 'scroll',
-            height: '70vh'
-        },
-        closeStyle = {
-            position: 'fixed',
-            top: '190px',
-            right: '10px',
-            zIndex: '2000'
-        },
-        descStyle = {
-            padding: '10px',
-            paddingTop: '0px',
-            color: '#727272'
-        },
-        FABStyle = {
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            backgroundColor: '#F0592A',
-            borderRadius: '50%',
-            boxShadow: '0px 0px 5px #727272'
-        },
-        loaderStyle = {
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            width: '100%',
-            zIndex: '5000',
-            display: (this.state.loading) ? 'block' : 'none',
-        }
-        return (
-            React.createElement("div", {style: expandedStyle}, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true, transitionLeave: false}, 
-                    React.createElement("p", {style: {color: '#378E43'}}, this.props.text), 
-                    React.createElement(IconButton, {style: closeStyle, onTouchTap: this.close, iconClassName: "mdi mdi-close"}), 
-
-                    React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: this.props.description}}), 
-                    
-                        (self.state.lectureTopicComments[0].avatar == null)
-                            ? React.createElement("div", null, "There are no replies")
-                            : self.state.lectureTopicComments.map(function(element){
-                            return (
-                                React.createElement("div", null, 
-                                    React.createElement(ListItem, {disabled: true, leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})}, 
-                                        React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em', lineHeight: '0em'}}, element.username), 
-                                        React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
-                                    )
-                                )
-                            )
-                        }), 
-                    
-                    React.createElement(IconButton, {iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-reply"})
-                ), 
-                React.createElement(LinearProgress, {mode: "indeterminate", style: loaderStyle})
-            )
-        )
-    }
-})
-
-var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
-    toggle: function(){
-        var self = this
-        this.setState({
-            opened: !self.state.opened
-        })
-    },
-    getInitialState: function(){
-        return {
-            opened: false
-        }
-    },
-    render: function(){
-        var ListStyle = {
-            position: this.state.opened ? 'absolute' : 'inherit',
-            margin: this.state.opened ? '0' : '10px',
-            transitionDuration: '3s'
-        },
-        ToRender = this.state.opened ? TopicExpanded : TopicNormal
-        return (
-            React.createElement("div", null, 
-                React.createElement(ToRender, {style: ListStyle, toggle: this.toggle, text: this.props.data.topic, replies: this.props.data.numPosts, description: this.props.data.description, tid: this.props.data.tid})
-            )
-        )
-}
-})
-
-var LectureForumCreate = React.createClass({displayName: "LectureForumCreate",
-    create: function(){
-        var self = this
-        if(self.refs.forumTitle.getValue() == ''){
-            self.refs.forumTitle.setErrorText('This field is compulsory')
-        }
-        if(self.refs.forumDesc.getValue() == ''){
-            self.refs.forumDesc.setErrorText('This field is compulsory')
-        }
-        else{
-            alert('POST Request here')
-            //superagent
-            //    .post(localStorage.getItem('mainUrl') + '/addForum')
-            //    .type('form')
-            //    .send({
-            //        subject: self.refs.forumTitle.getValue(),
-            //        description: self.refs.forumDesc.getValue(),
-            //        tid: 1,
-            //        topicId: 1})
-            //    .timeout(10000)
-            //    .set('token', localStorage.getItem('token'))
-            //    .set('uid', localStorage.getItem('uid'))
-            //    .end(function(err, res){
-            //        if(err){
-            //            if(err.timeout==10000)
-            //                console.log('Unable to process request')
-            //        }
-            //        else{
-            //            self.props.cancel()
-            //        }
-            //    })
-        }
-    },
-    cancel: function(){
-        var self = this
-        this.setState({
-            reload: !self.state.reload
-        })
-        this.props.cancel();
-    },
-    clearErrors: function(){
-        this.refs.forumTitle.setErrorText('')
-        this.refs.forumDesc.setErrorText('')
-    },
-
-    getInitialState: function(){
-        return {
-            reload: false
-        }
-    },
-    render: function(){
-        var containerStyle = {
-                zIndex: '10000',
-                backgroundColor: 'white',
-                height: '70vh',
-                width: '100%'
-            },
-            TextFieldStyle = {
+        var TextFieldStyle = {
                 display: 'block',
                 width: '80vw',
                 margin: '0 auto'
@@ -3802,89 +1774,646 @@ var LectureForumCreate = React.createClass({displayName: "LectureForumCreate",
                 color: 'red'
             }
         return (
-            React.createElement("div", {style: containerStyle}, 
-                React.createElement(Animate, {transitionName: "topicsOpen", transitionAppear: true, transitionLeave: false}, 
-                    React.createElement("div", null, 
-                        React.createElement("p", {style: {fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}, "New Topic"), 
-                        React.createElement(TextField, {
-                            ref: "forumTitle", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Title", 
-                            onFocus: this.clearErrors}), 
+            React.createElement("div", {style: {height: 'calc(100vh - 40px)', overflowY: 'scroll'}}, 
+                React.createElement("p", {style: {fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}, "New Topic"), 
+                React.createElement(TextField, {
+                    ref: "forumTitle", 
+                    style: TextFieldStyle, 
+                    floatingLabelText: "Title", 
+                    onFocus: this.clearErrors}), 
 
-                        React.createElement(TextField, {
-                            ref: "forumDesc", 
-                            style: TextFieldStyle, 
-                            floatingLabelText: "Description", 
-                            multiLine: true, 
-                            onFocus: this.clearErrors}), 
+                React.createElement(TextField, {
+                    ref: "forumDesc", 
+                    style: TextFieldStyle, 
+                    floatingLabelText: "Description", 
+                    multiLine: true, 
+                    onFocus: this.clearErrors}), 
 
-                        React.createElement(FlatButton, {
-                            style: PostStyle, 
-                            onTouchTap: this.create}, 
-                            "POST"
-                        ), 
-                        React.createElement(FlatButton, {onTouchTap: this.cancel, style: CancelStyle}, "Cancel")
-                    )
+                React.createElement(FlatButton, {
+                    style: PostStyle, 
+                    onTouchTap: this.create}, 
+                    "POST"
+                ), 
+                React.createElement(FlatButton, {onTouchTap: this.goBack, style: CancelStyle}, "Cancel")
+            )
+        )
+    }
+})
+
+module.exports = newTopicForum
+
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Loader = require('./loader.js'),
+
+    IconButton = mui.IconButton,
+    ListItem = mui.ListItem,
+    ListDivider = mui.ListDivider,
+    Avatar = mui.Avatar
+
+var NotificationContainer = React.createClass({displayName: "NotificationContainer",
+
+    getInitialState: function(){
+        return {
+            notifs: [{avatar: null}]
+        }
+    },
+    componentDidMount: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/announcement/summary')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err,res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else{
+                    self.setState({
+                        notifs: res.body
+                    })
+                }
+            })
+    },
+    componentWillUpdate: function(){
+        localStorage.setItem('lastSeenNotif', Date.now())
+    },
+    render: function(){
+        var self = this,
+        ContainerStyle = {
+            position: 'absolute',
+            top: '60px',
+            bottom: '0',
+            width: '100vw',
+            boxSizing: 'border-box',
+            left: '0',
+            backgroundColor: 'white',
+            padding: '10px',
+            overflowY: 'scroll',
+            zIndex: '2'
+        },
+        arrowStyle = {
+            position: 'absolute',
+            width: '0',
+            height: '0',
+            right: '25px',
+            top: '44px',
+            border: '8px solid',
+            borderColor: 'transparent transparent #fff transparent'
+        }
+        return (
+            React.createElement("div", {className: "notifContainer"}, 
+                React.createElement("div", {style: arrowStyle}), 
+                React.createElement("div", {style: ContainerStyle}, 
+                
+                    (self.state.notifs[0].avatar == null)
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No announcements available")
+                    : this.state.notifs.map(function(element, index){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(ListItem, {
+                                     leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.uri.slice(8)}), 
+                                     disabled: true, 
+                                     secondaryText: 
+                                        React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
+                                     }, 
+                                    element.name
+                                ), 
+                                React.createElement(ListDivider, null)
+                            )
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"})
                 )
             )
         )
     }
 })
 
-var LectureForumShow = React.createClass({displayName: "LectureForumShow",
-    newForum: function(){
-        this.props.newForum()
-    },
-    fetch: function(){
+var Notifs = React.createClass({displayName: "Notifs",
+    mixins: [material],
+
+    toggleNotif: function(){
         var self = this
         this.setState({
-            loading: true
+            opened: !self.state.opened
         })
+    },
+
+    getInitialState: function() {
+        return {
+            unread: true,
+            lastSeen: localStorage.getItem('lastSeenNotif'),
+            opened: false
+        };
+    },
+    render: function(){
+        var self = this,
+        iconStyle = {
+            position: 'absolute',
+            right: '10px',
+            top: '10px',
+            opacity: '0.9'
+        },
+        UnreadStyle = {
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            borderRadius: '50%',
+            height: '10px',
+            width: '10px',
+            backgroundColor: '#F0592A',
+            display: (this.state.unread) ? 'block' : 'none'
+        }
+        return (
+            React.createElement("div", null, 
+            React.createElement(IconButton, {
+                style: iconStyle, 
+                iconStyle: {color: 'white', fontSize: '20px'}, 
+                iconClassName: "mdi mdi-bell", 
+                onTouchTap: this.toggleNotif}), 
+            React.createElement("div", {style: UnreadStyle}), 
+            
+                this.state.opened ? React.createElement(NotificationContainer, null) : null
+            
+            )
+        )
+    }
+})
+
+module.exports = Notifs
+
+var React = require('react/addons'),
+    mui = require('material-ui'),
+    material = require('./material.js'),
+    superagent = require('superagent'),
+    Loader = require('./loader.js'),
+
+    IconButton = mui.IconButton,
+    CircularProgress = mui.CircularProgress,
+    List = mui.List,
+    ListItem = mui.ListItem,
+    ListDivider = mui.ListDivider,
+    Avatar = mui.Avatar
+
+var Resources = React.createClass({displayName: "Resources",
+
+    getInitialState: function(){
+        return {
+            res: [{data: 'null'}]
+        }
+    },
+    componentDidMount: function(){
+        var self = this
+        self.refs.loader.showLoader()
         superagent
-            .get(localStorage.getItem('mainUrl') + '/forums/' + self.props.data.forumsectionId)
+            .get(localStorage.getItem('mainUrl') + '/resources')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
-            .end(function(err, res){
+            .timeout(10000)
+            .end(function(err,res){
+                self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        this.setState({
-                            offline: true
-                        })
-                    this.refs.lectureLoadError.show()
+                        console.log('Timeout')
                 }
-                else if(res.body[0].data != "null")
+                else{
                     self.setState({
-                        lectureTopics: res.body,
-                        loading: false
+                        res: res.body
                     })
-                else
-                    self.setState({
-                        lectureTopics: ['Nothing to show'],
-                        loading: false
-                    })
+                }
             })
+    },
+
+    render: function(){
+        var self = this
+        return (
+            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll', overflowX: 'hidden'}}, 
+                
+                    (this.state.res[0].data == 'null')
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No resources available")
+                    : this.state.res.map(function(element, index){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(ListItem, {
+                                    disabled: true, 
+                                    secondaryText: 
+                                        React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
+                                     }, 
+                                    element.name
+                                ), 
+                                React.createElement(ListDivider, null)
+                            )
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"})
+            )
+        )
+    }
+})
+
+module.exports = Resources
+
+var React = require('react'),
+    Router = require('react-router'),
+    Route = Router.Route,
+
+    App = require('./app.js'),
+    Login = require('./login.js'),
+    Course = require('./course.js'),
+    Forums = require('./forums.js'),
+    Lectures = require('./lectures.js'),
+    Lecture = require('./lecture.js'),
+    ExpandedTopic = require('./topicExpanded.js'),
+    newForum = require('./newForum.js'),
+    Resources = require('./resources.js'),
+    Loader = require('./loader.js')
+
+var routes = (
+    React.createElement(Route, null, 
+
+        React.createElement(Route, {name: "login", path: "/", handler: Login}), 
+        React.createElement(Route, {name: "loader", path: "/loader", handler: Loader}), 
+
+        React.createElement(Route, {handler: App}, 
+            React.createElement(Route, {path: "course", handler: Course}, 
+                React.createElement(Route, {name: "forums", path: "forums", handler: Forums}), 
+                React.createElement(Route, {name: "lectures", path: "lectures", handler: Lectures}), 
+                React.createElement(Route, {name: "resources", path: "resources", handler: Resources})
+            ), 
+
+            React.createElement(Route, {name: "lecture", path: "course/lectures/:lectureId", handler: Lecture}), 
+            React.createElement(Route, {name: "lectureTopic", path: "course/lectures/:lectureId/topics/:topicId", handler: ExpandedTopic}), 
+            React.createElement(Route, {name: "newTopicForum", path: "course/lectures/:lectureId/newForum", handler: newForum}), 
+
+            React.createElement(Route, {name: "newForum", path: "course/forums/newForum", handler: newForum}), 
+            React.createElement(Route, {name: "generalTopic", path: "course/forums/topics/:topicId", handler: ExpandedTopic}), 
+            React.createElement(Route, {name: "newGeneralForum", path: "course/forums/newForum", handler: newForum})
+
+        )
+    )
+)
+
+Router.run(routes, Router.HashLocation, function(Root){
+    React.render(
+        React.createElement(Root, null),
+        document.body
+    )
+})
+
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Router = require('react-router'),
+    Loader = require('./loader.js'),
+
+    ListItem = mui.ListItem,
+    IconButton = mui.IconButton,
+    ListItem = mui.ListItem,
+    Avatar = mui.Avatar,
+    TextField = mui.TextField
+
+var TopicExpanded = React.createClass({displayName: "TopicExpanded",
+    mixins: [Router.State],
+
+    reply: function(){
+        console.log('Post Reply')
+    },
+
+    componentDidMount: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.getParams().topicId)
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .unset('Content-Type')
+            .timeout(10000)
+            .end(function(err, res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000){
+                        console.log('Timeout')
+                    }
+                }
+                else{
+                    self.setState({
+                        topicComments: res.body
+                    })
+                }
+            })
+    },
+    getInitialState: function(){
+        return {
+            topicComments: [{avatar: null}]
+        }
+    },
+    render: function(){
+        var self = this
+        var expandedStyle = {
+            backgroundColor: 'white',
+            paddingLeft: '10px',
+            padding: '10px',
+            overflowY: 'scroll',
+            height: '70vh'
+        },
+        descStyle = {
+            padding: '10px',
+            paddingTop: '0px',
+            color: '#727272'
+        },
+        FABStyle = {
+            float: 'right',
+            bottom: '20px',
+            right: '30px',
+            backgroundColor: '#F0592A',
+            borderRadius: '50%',
+            boxShadow: '0px 0px 5px #727272'
+        },
+        InputStyle = {
+            bottom: '20px',
+            left: '20px',
+            width: '60vw'
+        }
+        return (
+            React.createElement("div", {style: expandedStyle}, 
+                React.createElement("p", {style: {color: '#378E43'}}, localStorage.getItem('lectureTopicTitle')), 
+
+                React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: localStorage.getItem('lectureTopicDesc')}}), 
+                
+                    (self.state.topicComments[0].avatar == null)
+                        ? React.createElement("div", null, "There are no replies")
+                        : self.state.topicComments.map(function(element){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(ListItem, {disabled: true, 
+                                    leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})}, 
+                                    React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em'}}, element.username), 
+                                    React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
+                                )
+                            )
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"}), 
+
+            React.createElement("div", {style: {position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}, 
+                    React.createElement(TextField, {ref: "replyInput", 
+                        style: InputStyle, 
+                        hintText: "Reply", 
+                        onEnterKeyDown: this.reply}), 
+                    React.createElement(IconButton, {
+                        iconStyle: {color: 'white'}, 
+                        style: FABStyle, 
+                        iconClassName: "mdi mdi-reply", 
+                        onTouchTap: this.reply})
+                )
+            )
+        )
+    }
+})
+
+module.exports = TopicExpanded
+
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Loader = require('./loader.js'),
+
+    ListItem = mui.ListItem
+
+var TopicNormal = React.createClass({displayName: "TopicNormal",
+    mixins: [material],
+
+    handleTouch: function(){
+        this.props.onTouchTap()
+    },
+
+    render: function(){
+        var self = this,
+        styles = {
+            position: 'absolute',
+            top: 'calc(50% - 1.25em)',
+            right: '10px',
+            color: '#378E43'
+        }
+        return (
+        (this.props.text == undefined)
+            ? React.createElement("div", null, "No topics")
+            : React.createElement(ListItem, {
+                onTouchTap: self.handleTouch, 
+                secondaryText: this.props.text.slice(0, 30) + ((this.props.text.length>30) ? '...' : ' ')}, 
+                    React.createElement("p", {style: styles}, this.props.replies)
+                )
+        )
+    }
+})
+
+module.exports = TopicNormal
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/fake_115c6397.js","/")
+},{"../courseList.json":1,"./app.js":2,"./chat.js":3,"./course.js":4,"./forums.js":6,"./gems.js":7,"./lecture.js":8,"./lectures.js":9,"./loader.js":10,"./login.js":11,"./material.js":12,"./newForum.js":13,"./notifs.js":14,"./resources.js":15,"./topicExpanded.js":16,"./topicNormal.js":17,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"react-tap-event-plugin":193,"react-youtube":194,"react/addons":201,"socket.io-client":374,"superagent":424}],6:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Router = require('react-router'),
+    superagent = require('superagent'),
+    TopicNormal = require('./topicNormal.js'),
+    Loader = require('./loader.js'),
+
+    List = mui.List,
+    IconButton = mui.IconButton
+
+var Forums = React.createClass({displayName: "Forums",
+    mixins: [material, Router.Navigation],
+
+    handleTouch: function(topic) {
+        localStorage.setItem('lectureTopicTitle', topic.topic)
+        localStorage.setItem('lectureTopicDesc', topic.description)
+        this.transitionTo('generalTopic', {topicId: topic.tid})
+        console.log(topic)
+    },
+    newForum: function(){
+        localStorage.setItem('topicId', '1')
+        this.transitionTo('newGeneralForum')
     },
 
     getInitialState: function(){
         return {
-            lectureTopics: [],
-            loading: false,
-            offline: false,
-            newForum: this.props.newForum
+            topics: [{data: 'null'}]
         }
     },
-    componentWillMount: function(){
-        this.fetch()
+    componentDidMount: function() {
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/getdiscussions/general')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err, res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else if(res.body[0].data != "null")
+                    self.setState({
+                        topics: res.body
+                    })
+                else
+                    self.setState({
+                        topics: 'Nothing to show'
+                    })
+            })
+    },
+    render: function(){
+        var self = this,
+        FABStyle = {
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            backgroundColor: '#F0592A',
+            borderRadius: '50%',
+            boxShadow: '0px 0px 5px #727272'
+        }
+        return (
+            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
+            React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '100px'}}, 
+                
+                    (this.state.topics[0].data == 'null')
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No forums available")
+                    : self.state.topics.map(function(element, index){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(TopicNormal, {text: element.topic, onTouchTap: self.handleTouch.bind(this, element), replies: element.numPosts})
+                            )
+                        )
+                    })
+
+                
+            ), 
+            React.createElement(Loader, {ref: "loader"}), 
+            React.createElement(IconButton, {
+                onTouchTap: this.newForum, 
+                iconStyle: {color: 'white'}, 
+                style: FABStyle, 
+                iconClassName: "mdi mdi-plus"})
+            )
+        )
+    }
+})
+
+
+module.exports = Forums
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/forums.js","/")
+},{"./loader.js":10,"./material.js":12,"./topicNormal.js":17,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"superagent":424}],7:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Chat = require('./chat.js'),
+    Notifs = require('./notifs.js')
+
+var Gems = React.createClass({displayName: "Gems",
+    mixins: [material],
+
+    render: function(){
+        return (
+            React.createElement("div", null, 
+                React.createElement(Chat, null), 
+                React.createElement(Notifs, null)
+            )
+        )
+    }
+})
+
+module.exports = Gems
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/gems.js","/")
+},{"./chat.js":3,"./material.js":12,"./notifs.js":14,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373}],8:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Router = require('react-router'),
+    Video = require('react-youtube'),
+    Loader = require('./loader.js'),
+
+    TopicNormal = require('./topicNormal.js'),
+
+    Card = mui.Card,
+    CardText = mui.CardText,
+    CardMedia = mui.CardMedia,
+    List = mui.List,
+    IconButton = mui.IconButton
+
+var Lecture = React.createClass({displayName: "Lecture",
+    mixins: [Router.State, Router.Navigation],
+
+    handleTouch: function(topic){
+        localStorage.setItem('lectureTopicTitle', topic.lectureTitle)
+        localStorage.setItem('lectureTopicDesc', topic.description)
+        this.transitionTo('lectureTopic', {lectureId: this.getParams().lectureId, topicId: topic.tid})
+        // console.log(topic)
+    },
+    newForum: function(){
+        localStorage.setItem('topicId', this.getParams().lectureId)
+        this.transitionTo('newTopicForum', {lectureId: this.getParams().lectureId})
+    },
+
+
+    getInitialState: function() {
+        return {
+            topics: [],
+            vurl: localStorage.getItem('vurl')
+        };
+    },
+    componentDidMount: function() {
+        var self = this,
+            lectureId = this.getParams().lectureId
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/' + lectureId)
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .end(function(err, res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000)
+                        console.log('Timeout')
+                }
+                else {
+                    if(res.body[0].data != "null")
+                        self.setState({
+                            topics: res.body
+                        })
+                    else
+                        self.setState({
+                            topics: ['Nothing to show']
+                        })
+                }
+            })
     },
     render: function(){
         var self = this
         var VidOpts = {
-            height: 'auto',
-            width: '100%',
-            playerVars: {
-                autoplay: 1
-            }
+            height: '100%',
+            width: '100%'
         },
         DisTitleStyle = {
             paddingLeft: '20px',
@@ -3906,7 +2435,6 @@ var LectureForumShow = React.createClass({displayName: "LectureForumShow",
         },
         FABStyle = {
             position: 'fixed',
-            zIndex: '9001',
             bottom: '20px',
             right: '20px',
             backgroundColor: '#F0592A',
@@ -3914,99 +2442,84 @@ var LectureForumShow = React.createClass({displayName: "LectureForumShow",
             boxShadow: '0px 0px 5px #727272'
         }
         return (
-            React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                React.createElement(Animate, {transitionName: "cardOpen", transitionAppear: true, transitionLeave: false}, 
-                    React.createElement(Card, {style: {zIndex: '1000'}}, 
-                        React.createElement(CardMedia, null, 
-                            React.createElement(YouTube, {opts: VidOpts, url: self.props.data.vurl})
-                        ), 
-                        React.createElement(CardText, {subtitle: "Instructor", style: CardTitleStyle}, 
-                            React.createElement("p", {style: {lineHeight: '1em'}}, self.props.data.title), 
-                            React.createElement("p", {style: {lineHeight: '0em', fontSize: '0.75em', color: '#B6B6B6'}}, "Instructor")
-                        )
+            React.createElement("div", {style: {height: 'calc(100vh - 40px)', overflowY: 'scroll'}}, 
+                React.createElement(Card, null, 
+                    React.createElement(CardMedia, null, 
+                        React.createElement(Video, {opts: VidOpts, url: self.state.vurl})
                     ), 
+                    React.createElement(CardText, {subtitle: "Instructor", style: CardTitleStyle}, 
+                        React.createElement("p", {style: {lineHeight: '1em'}}, "Title"), 
+                        React.createElement("p", {style: {lineHeight: '0em', fontSize: '0.75em', color: '#B6B6B6'}}, "Instructor")
+                    )
+                ), 
 
-                    React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
-                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle}), 
-                    React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '0'}}, 
-                        
-                            self.state.lectureTopics.map(function(element, index){
-                                return React.createElement(ExpandableListItem, {key: index, data: element})
-                            })
-                        
-                    ), 
+                React.createElement("div", {style: DisTitleStyle}, "Discussions"), 
+                React.createElement(List, {style: {paddingLeft: '20px', paddingBottom: '100px'}}, 
+                    
+                        self.state.topics.map(function(element, index){
+                            return (
+                                React.createElement("div", null, 
+                                    React.createElement(TopicNormal, {text: element.topic, onTouchTap: self.handleTouch.bind(this, element), replies: element.numPosts})
+                                )
+                            )
+                        }), 
 
-                React.createElement(IconButton, {onTouchTap: this.newForum, iconStyle: {color: 'white'}, style: FABStyle, iconClassName: "mdi mdi-border-color"})
-                )
+                    
+                React.createElement(Loader, {ref: "loader"})
+                ), 
+
+                React.createElement(IconButton, {
+                    onTouchTap: this.newForum, 
+                    iconStyle: {color: 'white'}, 
+                    style: FABStyle, 
+                    iconClassName: "mdi mdi-plus"})
             )
         )
     }
 })
 
-module.exports = React.createClass({displayName: "exports",
+module.exports = Lecture
 
-    newForum: function(){
-        this.setState({
-            newForum: true
-        })
-    },
-    cancelNewForum: function(){
-        this.setState({
-            newForum: false
-        })
-    },
-
-
-    getInitialState: function(){
-        return {
-            lectureTopics: [],
-            loading: true,
-            offline: false,
-            newForum: false
-        }
-    },
-    render: function(){
-        var self = this
-        return (
-            React.createElement("div", null, 
-                
-                    this.state.newForum
-                        ? React.createElement(LectureForumCreate, {cancel: self.cancelNewForum})
-                        : React.createElement(LectureForumShow, {data: self.props.data, newForum: self.newForum})
-                
-            )
-        )
-    }
-})
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/lecture.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-youtube":194,"superagent":374}],8:[function(require,module,exports){
+},{"./loader.js":10,"./topicNormal.js":17,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"react-youtube":194,"superagent":424}],9:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react/addons'),
-    Router = require('react-router'),
-    RouteHandler = Router.RouteHandler,
-    Link = Router.Link,
-    mui = require('material-ui'),
+var React = require('react'),
     material = require('./material.js'),
-    Lecture = require('./lecture.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Router = require('react-router'),
+    Loader = require('./loader.js'),
 
-    AppBar = mui.AppBar,
     Card = mui.Card,
     CardText = mui.CardText,
-    Tabs = mui.Tabs,
-    Tab = mui.Tab,
-    Icon = mui.FontIcon,
     List = mui.List,
     ListItem = mui.ListItem,
     ListDivider = mui.ListDivider,
-    Menu = mui.Menu
-
-React.initializeTouchEvents(true)
+    Icon = mui.FontIcon
 
 var expanded = []
+
+var sortByWeeks = function(data) {
+    var newData = [],
+        maxWeek = 0
+
+    data.forEach(function (element) {
+        if (element.week.slice(5) > maxWeek)
+            maxWeek = element.week.slice(5)
+    })
+
+    for (var i = 0; i <= maxWeek; i++) {
+        newData[i] = new Array()
+        expanded[i] = false
+    }
+
+    data.forEach(function (element) {
+        newData[parseInt(element.week.slice(5))].push(element)
+    })
+
+    return newData
+}
 
 var NormalText = React.createClass({displayName: "NormalText",
     handleClick: function(){
@@ -4053,12 +2566,17 @@ var NormalText = React.createClass({displayName: "NormalText",
 })
 
 var CardList = React.createClass({displayName: "CardList",
+    mixins: [Router.Navigation],
+
     handleClick: function(){
         this.props.onTouchTap()
     },
     goToLecture: function(lecture){
-        if(lecture.lid != undefined)
-            this.props.goToLecture(lecture)
+        var lectureId = lecture.forumsectionId
+        if(lectureId != undefined) {
+            localStorage.setItem('vurl', lecture.vurl)
+            this.transitionTo("lecture", {lectureId: lectureId})
+        }
     },
 
     render: function() {
@@ -4100,10 +2618,10 @@ var CardList = React.createClass({displayName: "CardList",
                                         animationFillMode: 'forwards',
                                         opacity: '0'
                                     }, 
-                                      rightIcon: React.createElement(Icon, {className: "mdi mdi-play"}), key: index*2+self.props.data.length}, 
+                                      rightIcon: React.createElement(Icon, {className: "mdi mdi-play"})}, 
                                         self.props.data[index].title
                                     ), 
-                                    React.createElement(ListDivider, {style: {marginLeft: '20vw'}, key: index*3+self.props.data.length})
+                                    React.createElement(ListDivider, {style: {marginLeft: '20vw'}})
                                 )
                             )
                         })
@@ -4114,27 +2632,32 @@ var CardList = React.createClass({displayName: "CardList",
     }
 });
 
-
 var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
-    toggle: function(){
-        this.props.handleToggle(this.props.id)
-    },
-    goToLecture: function(lecture){
-        this.props.goToLecture(lecture)
+    handleTouch: function(){
+        this.props.onTouchTap(this.props.id)
     },
 
+    getInitialState: function() {
+        return {
+            expanded: this.props.expanded
+        };
+    },
     render: function(){
-        var Styles = {
+        var self = this,
+        Styles = {
             backgroundColor: 'white',
-            margin: (this.props.isExpanded) ? '2vh 3vw' : '1vh 5vw',
-            transitionDuration: '0.3s'
+            margin: expanded[this.props.id] ? '2vh 3vw' : '1vh 5vw',
+            transition: '0.3s'
         }
-        var ToRender = expanded[this.props.id] ? CardList : NormalText
         return (
             React.createElement("div", null, 
-                React.createElement(Card, {zDepth: (this.props.isExpanded) ? 2 : 1, rounded: false, style: Styles}, 
+                React.createElement(Card, {zDepth: expanded[this.props.id] ? 2 : 1, rounded: false, style: Styles}, 
                     React.createElement(CardText, {style: {padding: '0vh 3vw'}}, 
-                        React.createElement(ToRender, {data: this.props.data, goToLecture: this.goToLecture, onTouchTap: this.toggle})
+                        
+                            expanded[this.props.id]
+                            ? React.createElement(CardList, {onTouchTap: this.handleTouch, data: this.props.data})
+                            : React.createElement(NormalText, {onTouchTap: this.handleTouch, data: this.props.data})
+                        
                     )
                 )
             )
@@ -4142,45 +2665,55 @@ var ExpandableListItem = React.createClass({displayName: "ExpandableListItem",
     }
 })
 
-module.exports = React.createClass({displayName: "exports",
-    mixins: [Router.Navigation],
+var Lectures = React.createClass({displayName: "Lectures",
+    mixins: [material, Router.Navigation],
 
-    toggleCard: function(cardId){
-        this.state.expanded.forEach(function(element, index){
-            expanded[index] = (index == cardId) ? !expanded[index] : false
+    handleTouch: function(id){
+        var self = this
+        expanded.forEach(function(element, index){
+            expanded[index] = (index == id) ? !expanded[index] : false
         })
-        this.setState({
+        self.setState({
             expanded: expanded
         })
     },
-    goToLecture: function(lecture){
-        this.setState({
-            lectureData: lecture,
-            lecture: true
-        })
-        this.props.goToLecture()
-    },
 
-    getInitialState: function(){
+
+    getInitialState: function() {
         return {
-            expanded: this.props.expanded,
-            lecture: this.props.lecture,
-            lectureData: []
-        }
+            data: [{data: 'null'}],
+            expanded: expanded
+        };
     },
-    componentWillReceiveProps: function(nextProps){
-        this.setState({
-            lecture: nextProps.lecture,
-            data: nextProps.repeatEntity
-        })
+    componentDidMount: function() {
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/lectures/summary')
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .timeout(10000)
+            .end(function(err, res) {
+                self.refs.loader.hideLoader()
+                if(err) {
+                    if(err.timeout == 10000)
+                        console.log('Timeout')
+                }
+                else {
+                    self.setState({
+                        data: sortByWeeks(res.body)
+                    })
+                }
+            })
     },
     render: function(){
         var self = this
         return (
-            React.createElement("div", {style: {height: '70vh', overflowY: 'scroll'}}, 
-                this.state.lecture
-                    ? React.createElement(Lecture, {data: self.state.lectureData})
-                    : this.props.repeatEntity.map(function(element, index) {
+            React.createElement("div", {style: {height: 'calc(99vh - 40px - 110px)', overflowY: 'scroll'}}, 
+                
+                    (this.state.data[0].data == 'null')
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No lectures available")
+                    : self.state.data.map(function(element, index) {
                         return (
                             React.createElement("div", {style: {
                                 animation: 'flyInFromBottom 0.3s ease ' + (index)*0.1 + 's',
@@ -4188,26 +2721,87 @@ module.exports = React.createClass({displayName: "exports",
                                 animationFillMode: 'forwards',
                                 WebkitAnimationFillMode: 'forwards',
                                 opacity: '0'
-                            }, key: index*4}, 
-                                React.createElement(ExpandableListItem, {data: element, goToLecture: self.goToLecture, isExpanded: self.state.expanded[index], handleToggle: self.toggleCard, key: index, id: index})
+                            }, 
+                            key: index}, 
+                            React.createElement(ExpandableListItem, {
+                                data: self.state.data[index], 
+                                id: index, 
+                                onTouchTap: self.handleTouch, 
+                                expanded: self.state.expanded})
                             )
-                            )}
-                )
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"})
             )
         )
     }
 })
 
+module.exports = Lectures
+
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/lectures.js","/")
-},{"./lecture.js":7,"./material.js":10,"buffer":14,"material-ui":50,"oMfpAn":17,"react-router":173,"react/addons":201}],9:[function(require,module,exports){
+},{"./loader.js":10,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"superagent":424}],10:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material  = require('./material.js'),
+    mui = require('material-ui'),
+
+    CircularProgress = mui.CircularProgress
+
+var Loader = React.createClass({displayName: "Loader",
+    mixins: [material],
+
+    showLoader: function(){
+        var self = this
+        this.setState({
+            loading: true
+        })
+    },
+    hideLoader: function(){
+        var self = this
+        this.setState({
+            loading: false
+        })
+    },
+
+    getInitialState: function() {
+        return {
+            loading: false
+        };
+    },
+    render: function(){
+        var self = this,
+        loaderStyle = {
+            position: 'absolute',
+            left: '0',
+            right: '0',
+            margin: '0 auto',
+            display: (this.state.loading) ? 'block' : 'none',
+        }
+        return (
+            React.createElement("div", null, 
+                React.createElement(CircularProgress, {
+                    mode: "indeterminate", 
+                    size: 0.5, 
+                    style: loaderStyle})
+            )
+        )
+    }
+})
+
+module.exports = Loader
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/loader.js","/")
+},{"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373}],11:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     mui = require('material-ui'),
     material = require('./material.js'),
     superagent = require('superagent'),
     Router = require('react-router'),
-    Offline = require('./offline.js'),
     courses = require('../courseList.json'),
 
     Card = mui.Card,
@@ -4225,6 +2819,9 @@ module.exports = React.createClass({displayName: "exports",
         var self = this,
             username = this.state.username,
             password = this.state.password
+
+        localStorage.setItem('username', username)
+        localStorage.setItem('password', password)
         self.setState({
             loading: true
         })
@@ -4241,10 +2838,8 @@ module.exports = React.createClass({displayName: "exports",
                     loading: false
                 })
                 if(err){
-                    if(err.timeout == 10000 || err.status == 106 || err.status == 0) {
-                        self.setState({
-                            offline: true
-                        })
+                    if(err.timeout == 10000) {
+                        console.log('Timeout')
                     }
                     else if(err.status == 403 || err.status == 401){
                         self.refs.ErrorDialog.show()
@@ -4253,7 +2848,7 @@ module.exports = React.createClass({displayName: "exports",
                 else {
                     localStorage.setItem('token', res.body.token);
                     localStorage.setItem('uid', res.body.uid);
-                    self.transitionTo('/course')
+                    self.transitionTo('lectures')
                 }
             })
     },
@@ -4262,23 +2857,17 @@ module.exports = React.createClass({displayName: "exports",
             password: e.target.value
         })
     },
-    goBackDude: function(){
-        this.transitionTo('/courses')
-    },
 
     componentWillMount: function(){
         localStorage.setItem('courseTitle', courses.title)
         localStorage.setItem('mainUrl', courses.main)
         localStorage.setItem('loginUrl', courses.login)
-        localStorage.setItem('lastSeen', Date.now())
-        console.log('Local Storage set')
     },
     getInitialState: function(){
         return {
-            username: '',
-            password: '',
-            loading: false,
-            offline: false
+            username: (localStorage.getItem('username')) ? localStorage.getItem('username') : '',
+            password: (localStorage.getItem('password')) ? localStorage.getItem('password') : '',
+            loading: false
         }
     },
     render: function(){
@@ -4354,15 +2943,10 @@ module.exports = React.createClass({displayName: "exports",
         ];
         return (
             React.createElement("div", null, 
-                
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-
                 React.createElement("div", {style: {backgroundColor: '#EDECEC'}}, 
                     React.createElement(Card, {style: CardStyle}, 
                         React.createElement(CardText, null, 
                             React.createElement("img", {src: "img/logo.svg", style: LogoStyle}), 
-
                             React.createElement(TextField, {
                                 style: TextFieldStyle, 
                                 floatingLabelText: "Username", 
@@ -4388,7 +2972,6 @@ module.exports = React.createClass({displayName: "exports",
 
                             React.createElement("img", {src: "img/facebook.svg", style: FacebookStyle}), 
                             React.createElement("img", {src: "img/twitter.svg", style: TwitterStyle})
-
                         )
                     )
                 ), 
@@ -4398,6 +2981,12 @@ module.exports = React.createClass({displayName: "exports",
                     actions: standardActions, 
                     ref: "ErrorDialog"}, 
                     "Please check username and/or password"
+                ), 
+                React.createElement(Dialog, {
+                    ref: "OfflineDialog", 
+                    title: "Error", 
+                    actions: [{ text: 'Okay' }]}, 
+                    "We're having trouble connecting to our servers. Please check your internet connection or try again later."
                 ), 
 
                 React.createElement("div", {style: SignUpContainer}, 
@@ -4411,7 +3000,7 @@ module.exports = React.createClass({displayName: "exports",
 
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/login.js","/")
-},{"../courseList.json":1,"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-router":173,"superagent":374}],10:[function(require,module,exports){
+},{"../courseList.json":1,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"superagent":424}],12:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react'),
     mui = require('material-ui'),
@@ -4434,17 +3023,115 @@ module.exports = {
 }
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/material.js","/")
-},{"buffer":14,"material-ui":50,"oMfpAn":17,"react":373,"react-tap-event-plugin":193}],11:[function(require,module,exports){
+},{"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-tap-event-plugin":193}],13:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react/addons'),
-    mui = require('material-ui'),
+var React = require('react'),
     material = require('./material.js'),
+    mui = require('material-ui'),
+    Router = require('react-router'),
     superagent = require('superagent'),
-    Offline = require('./offline.js'),
+
+    FlatButton = mui.FlatButton,
+    TextField = mui.TextField
+
+var newTopicForum = React.createClass({displayName: "newTopicForum",
+    mixins: [material, Router.Navigation],
+
+    create: function(){
+        var self = this
+        if(self.refs.forumTitle.getValue() == ''){
+            self.refs.forumTitle.setErrorText('This field is compulsory')
+        }
+        if(self.refs.forumDesc.getValue() == ''){
+            self.refs.forumDesc.setErrorText('This field is compulsory')
+        }
+        else{
+            superagent
+               .post(localStorage.getItem('mainUrl') + '/addForum')
+               .type('form')
+               .send({
+                   subject: self.refs.forumTitle.getValue(),
+                   description: self.refs.forumDesc.getValue(),
+                   topicId: localStorage.getItem('topicId')})
+               .timeout(10000)
+               .set('token', localStorage.getItem('token'))
+               .set('uid', localStorage.getItem('uid'))
+               .end(function(err, res){
+                   if(err){
+                       if(err.timeout==10000)
+                           console.log('Timeout')
+                   }
+                   else{
+                       this.goBack()
+                   }
+               })
+        }
+    },
+    clearErrors: function(){
+        this.refs.forumTitle.setErrorText('')
+        this.refs.forumDesc.setErrorText('')
+    },
+
+    render: function(){
+        var TextFieldStyle = {
+                display: 'block',
+                width: '80vw',
+                margin: '0 auto'
+            },
+            PostStyle = {
+                position: 'absolute',
+                right: '20px',
+                bottom: '20px',
+                fontFamily: 'RobotoLight',
+                backgroundColor: '#378E43',
+                color: 'white',
+            },
+            CancelStyle = {
+                position: 'absolute',
+                left: '20px',
+                bottom: '20px',
+                color: 'red'
+            }
+        return (
+            React.createElement("div", {style: {height: 'calc(100vh - 40px)', overflowY: 'scroll'}}, 
+                React.createElement("p", {style: {fontFamily: 'RobotoRegular', color: '#378E43', paddingLeft: '20px'}}, "New Topic"), 
+                React.createElement(TextField, {
+                    ref: "forumTitle", 
+                    style: TextFieldStyle, 
+                    floatingLabelText: "Title", 
+                    onFocus: this.clearErrors}), 
+
+                React.createElement(TextField, {
+                    ref: "forumDesc", 
+                    style: TextFieldStyle, 
+                    floatingLabelText: "Description", 
+                    multiLine: true, 
+                    onFocus: this.clearErrors}), 
+
+                React.createElement(FlatButton, {
+                    style: PostStyle, 
+                    onTouchTap: this.create}, 
+                    "POST"
+                ), 
+                React.createElement(FlatButton, {onTouchTap: this.goBack, style: CancelStyle}, "Cancel")
+            )
+        )
+    }
+})
+
+module.exports = newTopicForum
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/newForum.js","/")
+},{"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"superagent":424}],14:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Loader = require('./loader.js'),
 
     IconButton = mui.IconButton,
-    CircularProgress = mui.CircularProgress,
-    List = mui.List,
     ListItem = mui.ListItem,
     ListDivider = mui.ListDivider,
     Avatar = mui.Avatar
@@ -4453,186 +3140,148 @@ var NotificationContainer = React.createClass({displayName: "NotificationContain
 
     getInitialState: function(){
         return {
-            notifs: [],
-            loading: true,
-            offline: false
+            notifs: [{avatar: null}]
         }
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
         var self = this
+        self.refs.loader.showLoader()
         superagent
             .get(localStorage.getItem('mainUrl') + '/announcement/summary')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err,res){
+                self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
+                        console.log('Timeout')
                 }
                 else{
                     self.setState({
-                        notifs: res.body,
-                        loading: false
+                        notifs: res.body
                     })
                 }
             })
     },
-
+    componentWillUpdate: function(){
+        localStorage.setItem('lastSeenNotif', Date.now())
+    },
     render: function(){
-        var ContainerStyle = {
+        var self = this,
+        ContainerStyle = {
             position: 'absolute',
             top: '60px',
             bottom: '0',
             width: '100vw',
             boxSizing: 'border-box',
             left: '0',
-            zIndex: '16000',
             backgroundColor: 'white',
             padding: '10px',
-            overflowY: 'scroll'
+            overflowY: 'scroll',
+            zIndex: '2'
         },
-        loaderStyle = {
+        arrowStyle = {
             position: 'absolute',
-            left: '0',
-            right: '0',
-            top: '30vh',
-            margin: '0 auto',
-            display: this.state.loading ? 'block' : 'none'
+            width: '0',
+            height: '0',
+            right: '25px',
+            top: '44px',
+            border: '8px solid',
+            borderColor: 'transparent transparent #fff transparent'
         }
         return (
-            React.createElement("div", {className: "notificationContainer"}, 
+            React.createElement("div", {className: "notifContainer"}, 
+                React.createElement("div", {style: arrowStyle}), 
                 React.createElement("div", {style: ContainerStyle}, 
-                    
-                        this.state.offline ? React.createElement(Offline, null) : null, 
-                    
-                    
-                        this.state.notifs.map(function(element, index){
-                            return (
-                                React.createElement("div", null, 
-                                    React.createElement(ListItem, {
-                                         leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.uri.slice(8)}), 
-                                         disabled: true, 
-                                         secondaryText: 
-                                            React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
-                                         }, 
-                                        element.name
-                                    ), 
-                                    React.createElement(ListDivider, null)
-                                )
+                
+                    (self.state.notifs[0].avatar == null)
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No announcements available")
+                    : this.state.notifs.map(function(element, index){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(ListItem, {
+                                     leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.uri.slice(8)}), 
+                                     disabled: true, 
+                                     secondaryText: 
+                                        React.createElement("p", {dangerouslySetInnerHTML: {__html: element.body_value}})
+                                     }, 
+                                    element.name
+                                ), 
+                                React.createElement(ListDivider, null)
                             )
-                        }), 
-                    
-                    React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"})
                 )
             )
         )
     }
 })
 
-module.exports = React.createClass({displayName: "exports",
-    toggleNotification: function(){
+var Notifs = React.createClass({displayName: "Notifs",
+    mixins: [material],
+
+    toggleNotif: function(){
         var self = this
-        if(this.state.opened)
-            this.props.onOpen()
         this.setState({
-            unread: false,
             opened: !self.state.opened
         })
     },
 
-    getInitialState: function(){
+    getInitialState: function() {
         return {
             unread: true,
-            opened: this.props.opened
-        }
+            lastSeen: localStorage.getItem('lastSeenNotif'),
+            opened: false
+        };
     },
     render: function(){
         var self = this,
-            IconStyle = {
-                position: 'absolute',
-                color: 'white',
-                top: '8px',
-                right: '10px',
-                opacity: '0.9',
-                fontSize: '20px'
-            },
-            UnreadStyle = {
-                position: 'absolute',
-                top: '10px',
-                right: '13px',
-                borderRadius: '50%',
-                height: '10px',
-                width: '10px',
-                backgroundColor: '#F0592A',
-                display: (this.state.unread) ? 'block' : 'none'
-            }
-
+        iconStyle = {
+            position: 'absolute',
+            right: '10px',
+            top: '10px',
+            opacity: '0.9'
+        },
+        UnreadStyle = {
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            borderRadius: '50%',
+            height: '10px',
+            width: '10px',
+            backgroundColor: '#F0592A',
+            display: (this.state.unread) ? 'block' : 'none'
+        }
         return (
             React.createElement("div", null, 
-                React.createElement("div", {style: IconStyle}, 
-                    React.createElement(IconButton, {
-                        iconStyle: {color: 'white', fontSize: '20px'}, 
-                        iconClassName: "mdi mdi-bell", 
-                        onTouchTap: this.toggleNotification}), 
-                    React.createElement("div", {style: UnreadStyle})
-                ), 
-                
-                    this.state.opened ? React.createElement(NotificationContainer, null) : null
-                
+            React.createElement(IconButton, {
+                style: iconStyle, 
+                iconStyle: {color: 'white', fontSize: '20px'}, 
+                iconClassName: "mdi mdi-bell", 
+                onTouchTap: this.toggleNotif}), 
+            React.createElement("div", {style: UnreadStyle}), 
+            
+                this.state.opened ? React.createElement(NotificationContainer, null) : null
+            
             )
         )
     }
 })
 
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/notifications.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],12:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-var React = require('react'),
-    material = require('./material.js'),
-    mui = require('material-ui'),
-
-    Dialog = mui.Dialog
-
-module.exports = React.createClass({displayName: "exports",
-    mixins: [material],
-
-    componentWillMount: function(){
-        var self = this
-        console.log(self.refs.OfflineDialog)
-    },
+module.exports = Notifs
 
 
-    render: function(){
-        var standardActions = [
-            { text: 'Okay' }
-        ]
-        return (
-            React.createElement("div", null, 
-                React.createElement(Dialog, {
-                    ref: "OfflineDialog", 
-                    title: "Error", 
-                    actions: standardActions}, 
-                    "We're having trouble connecting to our servers. Please check your internet connection or try again later."
-                )
-            )
-
-        )
-    }
-})
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/offline.js","/")
-},{"./material.js":10,"buffer":14,"material-ui":50,"oMfpAn":17,"react":373}],13:[function(require,module,exports){
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/notifs.js","/")
+},{"./loader.js":10,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"superagent":424}],15:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var React = require('react/addons'),
     mui = require('material-ui'),
     material = require('./material.js'),
     superagent = require('superagent'),
-    Offline = require('./offline.js'),
+    Loader = require('./loader.js'),
 
     IconButton = mui.IconButton,
     CircularProgress = mui.CircularProgress,
@@ -4641,55 +3290,43 @@ var React = require('react/addons'),
     ListDivider = mui.ListDivider,
     Avatar = mui.Avatar
 
-module.exports = React.createClass({displayName: "exports",
+var Resources = React.createClass({displayName: "Resources",
 
     getInitialState: function(){
         return {
-            notifs: [],
-            loading: true,
-            offline: false
+            res: [{data: 'null'}]
         }
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
         var self = this
+        self.refs.loader.showLoader()
         superagent
             .get(localStorage.getItem('mainUrl') + '/resources')
             .set('token', localStorage.getItem('token'))
             .set('uid', localStorage.getItem('uid'))
             .timeout(10000)
             .end(function(err,res){
+                self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        self.setState({
-                            offline: true,
-                            loading: false
-                        })
+                        console.log('Timeout')
                 }
                 else{
                     self.setState({
-                        notifs: res.body,
-                        loading: false
+                        res: res.body
                     })
                 }
             })
     },
 
     render: function(){
-        var loaderStyle = {
-                position: 'absolute',
-                left: '0',
-                right: '0',
-                top: '30vh',
-                margin: '0 auto',
-                display: this.state.loading ? 'block' : 'none'
-            }
+        var self = this
         return (
             React.createElement("div", {style: {height: '70vh', overflowY: 'scroll', overflowX: 'hidden'}}, 
                 
-                    this.state.offline ? React.createElement(Offline, null) : null, 
-                
-                
-                    this.state.notifs.map(function(element, index){
+                    (this.state.res[0].data == 'null')
+                    ? React.createElement("div", {style: {paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}, "No resources available")
+                    : this.state.res.map(function(element, index){
                         return (
                             React.createElement("div", null, 
                                 React.createElement(ListItem, {
@@ -4704,14 +3341,176 @@ module.exports = React.createClass({displayName: "exports",
                         )
                     }), 
                 
-                React.createElement(CircularProgress, {mode: "indeterminate", size: 0.5, style: loaderStyle})
+                React.createElement(Loader, {ref: "loader"})
             )
         )
     }
 })
 
+module.exports = Resources
+
+
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/resources.js","/")
-},{"./material.js":10,"./offline.js":12,"buffer":14,"material-ui":50,"oMfpAn":17,"react/addons":201,"superagent":374}],14:[function(require,module,exports){
+},{"./loader.js":10,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react/addons":201,"superagent":424}],16:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    superagent = require('superagent'),
+    Router = require('react-router'),
+    Loader = require('./loader.js'),
+
+    ListItem = mui.ListItem,
+    IconButton = mui.IconButton,
+    ListItem = mui.ListItem,
+    Avatar = mui.Avatar,
+    TextField = mui.TextField
+
+var TopicExpanded = React.createClass({displayName: "TopicExpanded",
+    mixins: [Router.State],
+
+    reply: function(){
+        console.log('Post Reply')
+    },
+
+    componentDidMount: function(){
+        var self = this
+        self.refs.loader.showLoader()
+        superagent
+            .get(localStorage.getItem('mainUrl') + '/forums/comments/' + this.getParams().topicId)
+            .set('token', localStorage.getItem('token'))
+            .set('uid', localStorage.getItem('uid'))
+            .unset('Content-Type')
+            .timeout(10000)
+            .end(function(err, res){
+                self.refs.loader.hideLoader()
+                if(err){
+                    if(err.timeout==10000){
+                        console.log('Timeout')
+                    }
+                }
+                else{
+                    self.setState({
+                        topicComments: res.body
+                    })
+                }
+            })
+    },
+    getInitialState: function(){
+        return {
+            topicComments: [{avatar: null}]
+        }
+    },
+    render: function(){
+        var self = this
+        var expandedStyle = {
+            backgroundColor: 'white',
+            paddingLeft: '10px',
+            padding: '10px',
+            overflowY: 'scroll',
+            height: '70vh'
+        },
+        descStyle = {
+            padding: '10px',
+            paddingTop: '0px',
+            color: '#727272'
+        },
+        FABStyle = {
+            float: 'right',
+            bottom: '20px',
+            right: '30px',
+            backgroundColor: '#F0592A',
+            borderRadius: '50%',
+            boxShadow: '0px 0px 5px #727272'
+        },
+        InputStyle = {
+            bottom: '20px',
+            left: '20px',
+            width: '60vw'
+        }
+        return (
+            React.createElement("div", {style: expandedStyle}, 
+                React.createElement("p", {style: {color: '#378E43'}}, localStorage.getItem('lectureTopicTitle')), 
+
+                React.createElement("div", {style: descStyle, dangerouslySetInnerHTML: {__html: localStorage.getItem('lectureTopicDesc')}}), 
+                
+                    (self.state.topicComments[0].avatar == null)
+                        ? React.createElement("div", null, "There are no replies")
+                        : self.state.topicComments.map(function(element){
+                        return (
+                            React.createElement("div", null, 
+                                React.createElement(ListItem, {disabled: true, 
+                                    leftAvatar: React.createElement(Avatar, {src: localStorage.getItem('loginUrl') + "/sites/default/files" + element.avatar.slice(8)})}, 
+                                    React.createElement("div", {style: {color: '#F0592A', fontSize: '0.75em'}}, element.username), 
+                                    React.createElement("div", {style: {color: '#727272'}, dangerouslySetInnerHTML: {__html: element.text}})
+                                )
+                            )
+                        )
+                    }), 
+                
+                React.createElement(Loader, {ref: "loader"}), 
+
+            React.createElement("div", {style: {position: 'fixed', bottom: '0', zIndex: '3', width: '100vw', backgroundColor: 'white'}}, 
+                    React.createElement(TextField, {ref: "replyInput", 
+                        style: InputStyle, 
+                        hintText: "Reply", 
+                        onEnterKeyDown: this.reply}), 
+                    React.createElement(IconButton, {
+                        iconStyle: {color: 'white'}, 
+                        style: FABStyle, 
+                        iconClassName: "mdi mdi-reply", 
+                        onTouchTap: this.reply})
+                )
+            )
+        )
+    }
+})
+
+module.exports = TopicExpanded
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/topicExpanded.js","/")
+},{"./loader.js":10,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373,"react-router":175,"superagent":424}],17:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+var React = require('react'),
+    material = require('./material.js'),
+    mui = require('material-ui'),
+    Loader = require('./loader.js'),
+
+    ListItem = mui.ListItem
+
+var TopicNormal = React.createClass({displayName: "TopicNormal",
+    mixins: [material],
+
+    handleTouch: function(){
+        this.props.onTouchTap()
+    },
+
+    render: function(){
+        var self = this,
+        styles = {
+            position: 'absolute',
+            top: 'calc(50% - 1.25em)',
+            right: '10px',
+            color: '#378E43'
+        }
+        return (
+        (this.props.text == undefined)
+            ? React.createElement("div", null, "No topics")
+            : React.createElement(ListItem, {
+                onTouchTap: self.handleTouch, 
+                secondaryText: this.props.text.slice(0, 30) + ((this.props.text.length>30) ? '...' : ' ')}, 
+                    React.createElement("p", {style: styles}, this.props.replies)
+                )
+        )
+    }
+})
+
+module.exports = TopicNormal
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/topicNormal.js","/")
+},{"./loader.js":10,"./material.js":12,"buffer":18,"material-ui":54,"oMfpAn":21,"react":373}],18:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /*!
  * The buffer module from node.js, for the browser.
@@ -5824,7 +4623,7 @@ function assert (test, message) {
 }
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/buffer/index.js","/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/buffer")
-},{"base64-js":15,"buffer":14,"ieee754":16,"oMfpAn":17}],15:[function(require,module,exports){
+},{"base64-js":19,"buffer":18,"ieee754":20,"oMfpAn":21}],19:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
@@ -5952,7 +4751,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/buffer/node_modules/base64-js/lib/b64.js","/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/buffer/node_modules/base64-js/lib")
-},{"buffer":14,"oMfpAn":17}],16:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],20:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -6040,7 +4839,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 }
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/buffer/node_modules/ieee754/index.js","/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/buffer/node_modules/ieee754")
-},{"buffer":14,"oMfpAn":17}],17:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],21:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // shim for using process in browser
 
@@ -6107,7 +4906,7 @@ process.chdir = function (dir) {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/process/browser.js","/../../node_modules/gulp-browserify/node_modules/browserify/node_modules/process")
-},{"buffer":14,"oMfpAn":17}],18:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],22:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6330,7 +5129,7 @@ var AppBar = React.createClass({
 
 module.exports = AppBar;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/app-bar.js","/../../node_modules/material-ui/lib")
-},{"./icon-button":49,"./mixins/style-propable":69,"./paper":73,"./styles/typography":92,"./svg-icons/navigation/menu":101,"buffer":14,"oMfpAn":17,"react":373}],19:[function(require,module,exports){
+},{"./icon-button":53,"./mixins/style-propable":72,"./paper":76,"./styles/typography":95,"./svg-icons/navigation/menu":103,"buffer":18,"oMfpAn":21,"react":373}],23:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6384,7 +5183,7 @@ var AppCanvas = React.createClass({
 
 module.exports = AppCanvas;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/app-canvas.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],20:[function(require,module,exports){
+},{"./mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],24:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6478,7 +5277,7 @@ var Avatar = React.createClass({
 
 module.exports = Avatar;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/avatar.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/colors":85,"buffer":14,"oMfpAn":17,"react/addons":201}],21:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/colors":88,"buffer":18,"oMfpAn":21,"react/addons":201}],25:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6580,7 +5379,7 @@ var BeforeAfterWrapper = React.createClass({
 
 module.exports = BeforeAfterWrapper;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/before-after-wrapper.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/auto-prefix":84,"buffer":14,"oMfpAn":17,"react":373}],22:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/auto-prefix":87,"buffer":18,"oMfpAn":21,"react":373}],26:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6618,7 +5417,7 @@ var CardActions = React.createClass({
 
 module.exports = CardActions;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/card/card-actions.js","/../../node_modules/material-ui/lib/card")
-},{"buffer":14,"oMfpAn":17,"react":373}],23:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react":373}],27:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6716,7 +5515,7 @@ var CardHeader = React.createClass({
 
 module.exports = CardHeader;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/card/card-header.js","/../../node_modules/material-ui/lib/card")
-},{"../avatar":20,"../mixins/style-propable":69,"../styles":86,"buffer":14,"oMfpAn":17,"react":373}],24:[function(require,module,exports){
+},{"../avatar":24,"../mixins/style-propable":72,"../styles":89,"buffer":18,"oMfpAn":21,"react":373}],28:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6828,7 +5627,7 @@ var CardMedia = React.createClass({
 
 module.exports = CardMedia;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/card/card-media.js","/../../node_modules/material-ui/lib/card")
-},{"../mixins/style-propable":69,"../styles":86,"buffer":14,"oMfpAn":17,"react":373}],25:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles":89,"buffer":18,"oMfpAn":21,"react":373}],29:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6878,7 +5677,7 @@ var CardText = React.createClass({
 
 module.exports = CardText;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/card/card-text.js","/../../node_modules/material-ui/lib/card")
-},{"../mixins/style-propable":69,"../styles":86,"buffer":14,"oMfpAn":17,"react":373}],26:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles":89,"buffer":18,"oMfpAn":21,"react":373}],30:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -6953,7 +5752,7 @@ var CardTitle = React.createClass({
 
 module.exports = CardTitle;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/card/card-title.js","/../../node_modules/material-ui/lib/card")
-},{"../mixins/style-propable":69,"../styles":86,"buffer":14,"oMfpAn":17,"react":373}],27:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles":89,"buffer":18,"oMfpAn":21,"react":373}],31:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -7004,7 +5803,7 @@ var Card = React.createClass({
 
 module.exports = Card;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/card/card.js","/../../node_modules/material-ui/lib/card")
-},{"../mixins/style-propable":69,"../paper":73,"buffer":14,"oMfpAn":17,"react":373}],28:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../paper":76,"buffer":18,"oMfpAn":21,"react":373}],32:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -7164,7 +5963,7 @@ var Checkbox = React.createClass({
 
 module.exports = Checkbox;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/checkbox.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-switch":44,"./mixins/style-propable":69,"./styles/transitions":91,"./svg-icons/toggle/check-box":103,"./svg-icons/toggle/check-box-outline-blank":102,"buffer":14,"oMfpAn":17,"react":373}],29:[function(require,module,exports){
+},{"./enhanced-switch":48,"./mixins/style-propable":72,"./styles/transitions":94,"./svg-icons/toggle/check-box":105,"./svg-icons/toggle/check-box-outline-blank":104,"buffer":18,"oMfpAn":21,"react":373}],33:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -7349,7 +6148,7 @@ var CircularProgress = React.createClass({
 module.exports = CircularProgress;
 //webkitTransitionTimingFunction: "linear",
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/circular-progress.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/auto-prefix":84,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],30:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/auto-prefix":87,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],34:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -7392,7 +6191,7 @@ var ClearFix = React.createClass({
 
 module.exports = ClearFix;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/clearfix.js","/../../node_modules/material-ui/lib")
-},{"./before-after-wrapper":21,"buffer":14,"oMfpAn":17,"react":373}],31:[function(require,module,exports){
+},{"./before-after-wrapper":25,"buffer":18,"oMfpAn":21,"react":373}],35:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -7487,7 +6286,7 @@ var CalendarMonth = React.createClass({
 
 module.exports = CalendarMonth;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/calendar-month.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../clearfix":30,"../utils/date-time":138,"./day-button":38,"buffer":14,"oMfpAn":17,"react":373}],32:[function(require,module,exports){
+},{"../clearfix":34,"../utils/date-time":140,"./day-button":42,"buffer":18,"oMfpAn":21,"react":373}],36:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -7666,7 +6465,7 @@ var CalendarToolbar = React.createClass({
 
 module.exports = CalendarToolbar;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/calendar-toolbar.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../icon-button":49,"../svg-icons/navigation-chevron-left-double":94,"../svg-icons/navigation-chevron-right-double":95,"../svg-icons/navigation/chevron-left":99,"../svg-icons/navigation/chevron-right":100,"../toolbar/toolbar":131,"../toolbar/toolbar-group":128,"../transition-groups/slide-in":134,"../utils/date-time":138,"buffer":14,"oMfpAn":17,"react":373}],33:[function(require,module,exports){
+},{"../icon-button":53,"../svg-icons/navigation-chevron-left-double":97,"../svg-icons/navigation-chevron-right-double":98,"../svg-icons/navigation/chevron-left":101,"../svg-icons/navigation/chevron-right":102,"../toolbar/toolbar":133,"../toolbar/toolbar-group":130,"../transition-groups/slide-in":136,"../utils/date-time":140,"buffer":18,"oMfpAn":21,"react":373}],37:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -7768,7 +6567,7 @@ var CalendarYear = React.createClass({
 
 module.exports = CalendarYear;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/calendar-year.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../mixins/style-propable":69,"../styles/colors":85,"../utils/date-time":138,"./year-button":39,"buffer":14,"oMfpAn":17,"react":373}],34:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/colors":88,"../utils/date-time":140,"./year-button":43,"buffer":18,"oMfpAn":21,"react":373}],38:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -8133,7 +6932,7 @@ var Calendar = React.createClass({
 
 module.exports = Calendar;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/calendar.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../clearfix":30,"../mixins/style-propable":69,"../mixins/window-listenable":71,"../styles/transitions":91,"../transition-groups/slide-in":134,"../utils/date-time":138,"../utils/key-code":143,"./calendar-month":31,"./calendar-toolbar":32,"./calendar-year":33,"./date-display":35,"buffer":14,"oMfpAn":17,"react":373}],35:[function(require,module,exports){
+},{"../clearfix":34,"../mixins/style-propable":72,"../mixins/window-listenable":74,"../styles/transitions":94,"../transition-groups/slide-in":136,"../utils/date-time":140,"../utils/key-code":145,"./calendar-month":35,"./calendar-toolbar":36,"./calendar-year":37,"./date-display":39,"buffer":18,"oMfpAn":21,"react":373}],39:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -8402,7 +7201,7 @@ var DateDisplay = React.createClass({
 
 module.exports = DateDisplay;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/date-display.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../mixins/style-propable":69,"../styles/auto-prefix":84,"../styles/transitions":91,"../transition-groups/slide-in":134,"../utils/date-time":138,"buffer":14,"oMfpAn":17,"react":373}],36:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/auto-prefix":87,"../styles/transitions":94,"../transition-groups/slide-in":136,"../utils/date-time":140,"buffer":18,"oMfpAn":21,"react":373}],40:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -8595,7 +7394,7 @@ var DatePickerDialog = React.createClass({
 
 module.exports = DatePickerDialog;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/date-picker-dialog.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../dialog":40,"../flat-button":46,"../mixins/style-propable":69,"../mixins/window-listenable":71,"../utils/css-event":137,"../utils/key-code":143,"./calendar":34,"buffer":14,"oMfpAn":17,"react":373}],37:[function(require,module,exports){
+},{"../dialog":44,"../flat-button":50,"../mixins/style-propable":72,"../mixins/window-listenable":74,"../utils/css-event":139,"../utils/key-code":145,"./calendar":38,"buffer":18,"oMfpAn":21,"react":373}],41:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -8749,7 +7548,7 @@ module.exports = DatePicker;
 
 //TO DO: open the dialog if input has focus
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/date-picker.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../mixins/style-propable":69,"../mixins/window-listenable":71,"../text-field":115,"../utils/date-time":138,"./date-picker-dialog":36,"buffer":14,"oMfpAn":17,"react":373}],38:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../mixins/window-listenable":74,"../text-field":117,"../utils/date-time":140,"./date-picker-dialog":40,"buffer":18,"oMfpAn":21,"react":373}],42:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -8890,7 +7689,7 @@ var DayButton = React.createClass({
 
 module.exports = DayButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/day-button.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../enhanced-button":43,"../mixins/style-propable":69,"../styles/transitions":91,"../utils/date-time":138,"buffer":14,"oMfpAn":17,"react":373}],39:[function(require,module,exports){
+},{"../enhanced-button":47,"../mixins/style-propable":72,"../styles/transitions":94,"../utils/date-time":140,"buffer":18,"oMfpAn":21,"react":373}],43:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -9021,7 +7820,7 @@ var YearButton = React.createClass({
 
 module.exports = YearButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/date-picker/year-button.js","/../../node_modules/material-ui/lib/date-picker")
-},{"../enhanced-button":43,"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],40:[function(require,module,exports){
+},{"../enhanced-button":47,"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],44:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -9404,7 +8203,7 @@ var Dialog = React.createClass({
 
 module.exports = Dialog;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/dialog.js","/../../node_modules/material-ui/lib")
-},{"./flat-button":46,"./mixins/style-propable":69,"./mixins/window-listenable":71,"./overlay":72,"./paper":73,"./styles/transitions":91,"./utils/css-event":137,"./utils/key-code":143,"buffer":14,"oMfpAn":17,"react":373}],41:[function(require,module,exports){
+},{"./flat-button":50,"./mixins/style-propable":72,"./mixins/window-listenable":74,"./overlay":75,"./paper":76,"./styles/transitions":94,"./utils/css-event":139,"./utils/key-code":145,"buffer":18,"oMfpAn":21,"react":373}],45:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -9541,7 +8340,7 @@ module.exports = DropDownIcon;
 //   console.warn('DropDownIcon has been deprecated. Use IconMenu instead.');
 // }
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/drop-down-icon.js","/../../node_modules/material-ui/lib")
-},{"./font-icon":48,"./menu/menu":60,"./mixins/click-awayable":66,"./mixins/style-propable":69,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],42:[function(require,module,exports){
+},{"./font-icon":52,"./menu/menu":64,"./mixins/click-awayable":69,"./mixins/style-propable":72,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],46:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -9860,7 +8659,7 @@ var DropDownMenu = React.createClass({
 
 module.exports = DropDownMenu;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/drop-down-menu.js","/../../node_modules/material-ui/lib")
-},{"./clearfix":30,"./menu/menu":60,"./mixins/click-awayable":66,"./mixins/style-propable":69,"./paper":73,"./styles/transitions":91,"./svg-icons/navigation/arrow-drop-down":96,"./utils/key-code":143,"buffer":14,"oMfpAn":17,"react":373}],43:[function(require,module,exports){
+},{"./clearfix":34,"./menu/menu":64,"./mixins/click-awayable":69,"./mixins/style-propable":72,"./paper":76,"./styles/transitions":94,"./svg-icons/navigation/arrow-drop-down":99,"./utils/key-code":145,"buffer":18,"oMfpAn":21,"react":373}],47:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -10117,7 +8916,7 @@ EnhancedButton.hasStyleBeenInjected = false;
 
 module.exports = EnhancedButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/enhanced-button.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./ripples/focus-ripple":78,"./ripples/touch-ripple":80,"./styles/colors":85,"./utils/key-code":143,"buffer":14,"oMfpAn":17,"react":373}],44:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./ripples/focus-ripple":81,"./ripples/touch-ripple":83,"./styles/colors":88,"./utils/key-code":145,"buffer":18,"oMfpAn":21,"react":373}],48:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -10530,7 +9329,7 @@ var EnhancedSwitch = React.createClass({
 
 module.exports = EnhancedSwitch;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/enhanced-switch.js","/../../node_modules/material-ui/lib")
-},{"./clearfix":30,"./mixins/style-propable":69,"./mixins/window-listenable":71,"./paper":73,"./ripples/focus-ripple":78,"./ripples/touch-ripple":80,"./styles/transitions":91,"./utils/key-code":143,"./utils/unique-id":146,"buffer":14,"oMfpAn":17,"react":373}],45:[function(require,module,exports){
+},{"./clearfix":34,"./mixins/style-propable":72,"./mixins/window-listenable":74,"./paper":76,"./ripples/focus-ripple":81,"./ripples/touch-ripple":83,"./styles/transitions":94,"./utils/key-code":145,"./utils/unique-id":148,"buffer":18,"oMfpAn":21,"react":373}],49:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -10692,7 +9491,7 @@ var EnhancedTextarea = React.createClass({
 
 module.exports = EnhancedTextarea;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/enhanced-textarea.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/auto-prefix":84,"buffer":14,"oMfpAn":17,"react":373}],46:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/auto-prefix":87,"buffer":18,"oMfpAn":21,"react":373}],50:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -10854,7 +9653,7 @@ var FlatButton = React.createClass({
 
 module.exports = FlatButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/flat-button.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-button":43,"./mixins/style-propable":69,"./styles/transitions":91,"./styles/typography":92,"./utils/color-manipulator":136,"buffer":14,"oMfpAn":17,"react":373}],47:[function(require,module,exports){
+},{"./enhanced-button":47,"./mixins/style-propable":72,"./styles/transitions":94,"./styles/typography":95,"./utils/color-manipulator":138,"buffer":18,"oMfpAn":21,"react":373}],51:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -11102,7 +9901,7 @@ var FloatingActionButton = React.createClass({
 
 module.exports = FloatingActionButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/floating-action-button.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-button":43,"./font-icon":48,"./mixins/style-propable":69,"./paper":73,"./styles/transitions":91,"./utils/children":135,"./utils/color-manipulator":136,"buffer":14,"oMfpAn":17,"react":373}],48:[function(require,module,exports){
+},{"./enhanced-button":47,"./font-icon":52,"./mixins/style-propable":72,"./paper":76,"./styles/transitions":94,"./utils/children":137,"./utils/color-manipulator":138,"buffer":18,"oMfpAn":21,"react":373}],52:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -11183,7 +9982,7 @@ var FontIcon = React.createClass({
 
 module.exports = FontIcon;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/font-icon.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],49:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],53:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -11383,7 +10182,7 @@ var IconButton = React.createClass({
 
 module.exports = IconButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/icon-button.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-button":43,"./font-icon":48,"./mixins/style-propable":69,"./styles/transitions":91,"./tooltip":132,"./utils/children":135,"buffer":14,"oMfpAn":17,"react":373}],50:[function(require,module,exports){
+},{"./enhanced-button":47,"./font-icon":52,"./mixins/style-propable":72,"./styles/transitions":94,"./tooltip":134,"./utils/children":137,"buffer":18,"oMfpAn":21,"react":373}],54:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -11453,7 +10252,7 @@ module.exports = {
   Utils: require('./utils/')
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/index.js","/../../node_modules/material-ui/lib")
-},{"./app-bar":18,"./app-canvas":19,"./avatar":20,"./before-after-wrapper":21,"./card/card":27,"./card/card-actions":22,"./card/card-header":23,"./card/card-media":24,"./card/card-text":25,"./card/card-title":26,"./checkbox":28,"./circular-progress":29,"./clearfix":30,"./date-picker/date-picker":37,"./dialog":40,"./drop-down-icon":41,"./drop-down-menu":42,"./enhanced-button":43,"./flat-button":46,"./floating-action-button":47,"./font-icon":48,"./icon-button":49,"./left-nav":52,"./linear-progress":53,"./lists/list":57,"./lists/list-divider":54,"./lists/list-item":55,"./menu/menu":60,"./menu/menu-item":59,"./menus/icon-menu":62,"./mixins/":68,"./overlay":72,"./paper":73,"./radio-button":75,"./radio-button-group":74,"./raised-button":76,"./ripples/":79,"./select-field":81,"./slider":82,"./snackbar":83,"./styles/":86,"./svg-icon":93,"./svg-icons/navigation/chevron-left":99,"./svg-icons/navigation/chevron-right":100,"./svg-icons/navigation/menu":101,"./table/table":111,"./table/table-footer":106,"./table/table-header":108,"./table/table-header-column":107,"./tabs/tab":112,"./tabs/tabs":114,"./text-field":115,"./theme":116,"./time-picker":123,"./toggle":127,"./toolbar/toolbar":131,"./toolbar/toolbar-group":128,"./toolbar/toolbar-separator":129,"./toolbar/toolbar-title":130,"./tooltip":132,"./utils/":142,"buffer":14,"oMfpAn":17}],51:[function(require,module,exports){
+},{"./app-bar":22,"./app-canvas":23,"./avatar":24,"./before-after-wrapper":25,"./card/card":31,"./card/card-actions":26,"./card/card-header":27,"./card/card-media":28,"./card/card-text":29,"./card/card-title":30,"./checkbox":32,"./circular-progress":33,"./clearfix":34,"./date-picker/date-picker":41,"./dialog":44,"./drop-down-icon":45,"./drop-down-menu":46,"./enhanced-button":47,"./flat-button":50,"./floating-action-button":51,"./font-icon":52,"./icon-button":53,"./left-nav":56,"./linear-progress":57,"./lists/list":61,"./lists/list-divider":58,"./lists/list-item":59,"./menu/menu":64,"./menu/menu-item":63,"./menus/icon-menu":66,"./mixins/":71,"./overlay":75,"./paper":76,"./radio-button":78,"./radio-button-group":77,"./raised-button":79,"./ripples/":82,"./select-field":84,"./slider":85,"./snackbar":86,"./styles/":89,"./svg-icon":96,"./svg-icons/navigation/chevron-left":101,"./svg-icons/navigation/chevron-right":102,"./svg-icons/navigation/menu":103,"./table/table":113,"./table/table-footer":108,"./table/table-header":110,"./table/table-header-column":109,"./tabs/tab":114,"./tabs/tabs":116,"./text-field":117,"./theme":118,"./time-picker":125,"./toggle":129,"./toolbar/toolbar":133,"./toolbar/toolbar-group":130,"./toolbar/toolbar-separator":131,"./toolbar/toolbar-title":132,"./tooltip":134,"./utils/":144,"buffer":18,"oMfpAn":21}],55:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -11502,7 +10301,7 @@ var InkBar = React.createClass({
 module.exports = InkBar;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/ink-bar.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],52:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],56:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -11824,7 +10623,7 @@ var LeftNav = React.createClass({
 
 module.exports = LeftNav;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/left-nav.js","/../../node_modules/material-ui/lib")
-},{"./menu/menu":60,"./mixins/style-propable":69,"./mixins/window-listenable":71,"./overlay":72,"./paper":73,"./styles/auto-prefix":84,"./styles/transitions":91,"./utils/key-code":143,"buffer":14,"oMfpAn":17,"react":373}],53:[function(require,module,exports){
+},{"./menu/menu":64,"./mixins/style-propable":72,"./mixins/window-listenable":74,"./overlay":75,"./paper":76,"./styles/auto-prefix":87,"./styles/transitions":94,"./utils/key-code":145,"buffer":18,"oMfpAn":21,"react":373}],57:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -11978,7 +10777,7 @@ var LinearProgress = React.createClass({
 
 module.exports = LinearProgress;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/linear-progress.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],54:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],58:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -12024,7 +10823,7 @@ var ListDivider = React.createClass({
 
 module.exports = ListDivider;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/lists/list-divider.js","/../../node_modules/material-ui/lib/lists")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react/addons":201}],55:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react/addons":201}],59:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -12450,7 +11249,7 @@ var ListItem = React.createClass({
 
 module.exports = ListItem;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/lists/list-item.js","/../../node_modules/material-ui/lib/lists")
-},{"../enhanced-button":43,"../icon-button":49,"../mixins/style-propable":69,"../styles/colors":85,"../styles/transitions":91,"../styles/typography":92,"../svg-icons/navigation/arrow-drop-down":96,"../svg-icons/navigation/arrow-drop-up":97,"../utils/color-manipulator":136,"./list-nested":56,"buffer":14,"oMfpAn":17,"react/addons":201}],56:[function(require,module,exports){
+},{"../enhanced-button":47,"../icon-button":53,"../mixins/style-propable":72,"../styles/colors":88,"../styles/transitions":94,"../styles/typography":95,"../svg-icons/navigation/arrow-drop-down":99,"../svg-icons/navigation/arrow-drop-up":100,"../utils/color-manipulator":138,"./list-nested":60,"buffer":18,"oMfpAn":21,"react/addons":201}],60:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -12498,7 +11297,7 @@ var ListNested = React.createClass({
 
 module.exports = ListNested;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/lists/list-nested.js","/../../node_modules/material-ui/lib/lists")
-},{"./list":57,"buffer":14,"oMfpAn":17,"react":373}],57:[function(require,module,exports){
+},{"./list":61,"buffer":18,"oMfpAn":21,"react":373}],61:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -12581,7 +11380,7 @@ var List = React.createClass({
 
 module.exports = List;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/lists/list.js","/../../node_modules/material-ui/lib/lists")
-},{"../mixins/style-propable":69,"../paper":73,"../styles/typography":92,"buffer":14,"oMfpAn":17,"react/addons":201}],58:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../paper":76,"../styles/typography":95,"buffer":18,"oMfpAn":21,"react/addons":201}],62:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -12693,7 +11492,7 @@ var LinkMenuItem = React.createClass({
 
 module.exports = LinkMenuItem;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/menu/link-menu-item.js","/../../node_modules/material-ui/lib/menu")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],59:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],63:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -12899,7 +11698,7 @@ var MenuItem = React.createClass({
 
 module.exports = MenuItem;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/menu/menu-item.js","/../../node_modules/material-ui/lib/menu")
-},{"../font-icon":48,"../mixins/style-propable":69,"../toggle":127,"buffer":14,"oMfpAn":17,"react":373}],60:[function(require,module,exports){
+},{"../font-icon":52,"../mixins/style-propable":72,"../toggle":129,"buffer":18,"oMfpAn":21,"react":373}],64:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -13511,7 +12310,7 @@ var Menu = React.createClass({
 
 module.exports = Menu;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/menu/menu.js","/../../node_modules/material-ui/lib/menu")
-},{"../mixins/click-awayable":66,"../mixins/style-propable":69,"../paper":73,"../styles/transitions":91,"../utils/css-event":137,"../utils/key-code":143,"../utils/key-line":144,"./link-menu-item":58,"./menu-item":59,"./subheader-menu-item":61,"buffer":14,"oMfpAn":17,"react":373}],61:[function(require,module,exports){
+},{"../mixins/click-awayable":69,"../mixins/style-propable":72,"../paper":76,"../styles/transitions":94,"../utils/css-event":139,"../utils/key-code":145,"../utils/key-line":146,"./link-menu-item":62,"./menu-item":63,"./subheader-menu-item":65,"buffer":18,"oMfpAn":21,"react":373}],65:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -13586,7 +12385,7 @@ var SubheaderMenuItem = React.createClass({
 
 module.exports = SubheaderMenuItem;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/menu/subheader-menu-item.js","/../../node_modules/material-ui/lib/menu")
-},{"../mixins/style-propable":69,"../styles/typography":92,"buffer":14,"oMfpAn":17,"react":373}],62:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/typography":95,"buffer":18,"oMfpAn":21,"react":373}],66:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -13781,152 +12580,7 @@ var IconMenu = React.createClass({
 
 module.exports = IconMenu;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/menus/icon-menu.js","/../../node_modules/material-ui/lib/menus")
-},{"../menus/menu":64,"../mixins/click-awayable":66,"../mixins/style-propable":69,"../utils/events":140,"buffer":14,"oMfpAn":17,"react/addons":201}],63:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
-
-var React = require('react/addons');
-var StylePropable = require('../mixins/style-propable');
-var Colors = require('../styles/colors');
-var CheckIcon = require('../svg-icons/navigation/check');
-var ListItem = require('../lists/list-item');
-
-var MenuItem = React.createClass({
-  displayName: 'MenuItem',
-
-  mixins: [StylePropable],
-
-  contextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-
-  propTypes: {
-    checked: React.PropTypes.bool,
-    desktop: React.PropTypes.bool,
-    disabled: React.PropTypes.bool,
-    innerDivStyle: React.PropTypes.object,
-    insetChildren: React.PropTypes.bool,
-    focusState: React.PropTypes.oneOf(['none', 'focused', 'keyboard-focused']),
-    leftIcon: React.PropTypes.element,
-    rightIcon: React.PropTypes.element,
-    secondaryText: React.PropTypes.node,
-    value: React.PropTypes.string
-  },
-
-  getDefaultProps: function getDefaultProps() {
-    return {
-      focusState: 'none'
-    };
-  },
-
-  componentDidMount: function componentDidMount() {
-    this._applyFocusState();
-  },
-
-  componentDidUpdate: function componentDidUpdate() {
-    this._applyFocusState();
-  },
-
-  render: function render() {
-    var _props = this.props;
-    var checked = _props.checked;
-    var desktop = _props.desktop;
-    var disabled = _props.disabled;
-    var focusState = _props.focusState;
-    var innerDivStyle = _props.innerDivStyle;
-    var insetChildren = _props.insetChildren;
-    var leftIcon = _props.leftIcon;
-    var rightIcon = _props.rightIcon;
-    var secondaryText = _props.secondaryText;
-    var style = _props.style;
-    var value = _props.value;
-
-    var other = _objectWithoutProperties(_props, ['checked', 'desktop', 'disabled', 'focusState', 'innerDivStyle', 'insetChildren', 'leftIcon', 'rightIcon', 'secondaryText', 'style', 'value']);
-
-    var disabledColor = this.context.muiTheme.palette.disabledColor;
-    var textColor = this.context.muiTheme.palette.textColor;
-    var leftIndent = desktop ? 64 : 72;
-    var sidePadding = desktop ? 24 : 16;
-
-    var styles = {
-      root: {
-        color: disabled ? disabledColor : textColor,
-        lineHeight: desktop ? '32px' : '48px',
-        fontSize: desktop ? 15 : 16,
-        whiteSpace: 'nowrap'
-      },
-
-      innerDivStyle: {
-        paddingLeft: leftIcon || insetChildren || checked ? leftIndent : sidePadding,
-        paddingRight: sidePadding,
-        paddingBottom: 0,
-        paddingTop: 0
-      },
-
-      secondaryText: {
-        float: 'right'
-      },
-
-      leftIconDesktop: {
-        padding: 0,
-        left: 24,
-        top: 4
-      },
-
-      rightIconDesktop: {
-        padding: 0,
-        right: 24,
-        top: 4,
-        fill: Colors.grey600
-      }
-    };
-
-    var secondaryTextIsAnElement = React.isValidElement(secondaryText);
-    var leftIconElement = leftIcon ? leftIcon : checked ? React.createElement(CheckIcon, null) : null;
-
-    var mergedRootStyles = this.mergeStyles(styles.root, style);
-    var mergedInnerDivStyles = this.mergeStyles(styles.innerDivStyle, innerDivStyle);
-    var mergedSecondaryTextStyles = secondaryTextIsAnElement ? this.mergeStyles(styles.secondaryText, secondaryText.props.style) : null;
-    var mergedLeftIconStyles = leftIconElement && desktop ? this.mergeStyles(styles.leftIconDesktop, leftIconElement.props.style) : null;
-    var mergedRightIconStyles = rightIcon && desktop ? this.mergeStyles(styles.rightIconDesktop, rightIcon.props.style) : null;
-
-    var secondaryTextElement = secondaryText ? secondaryTextIsAnElement ? React.cloneElement(secondaryText, { style: mergedSecondaryTextStyles }) : React.createElement(
-      'div',
-      { style: styles.secondaryText },
-      secondaryText
-    ) : null;
-
-    var styledLeftIcon = leftIconElement && desktop ? React.cloneElement(leftIconElement, { style: mergedLeftIconStyles }) : leftIconElement;
-
-    var rightIconElement = rightIcon ? React.cloneElement(rightIcon, { style: mergedRightIconStyles }) : null;
-
-    return React.createElement(
-      ListItem,
-      _extends({}, other, {
-        disabled: disabled,
-        innerDivStyle: mergedInnerDivStyles,
-        insetChildren: insetChildren,
-        leftIcon: styledLeftIcon,
-        ref: 'listItem',
-        rightIcon: rightIconElement,
-        style: mergedRootStyles }),
-      this.props.children,
-      secondaryTextElement
-    );
-  },
-
-  _applyFocusState: function _applyFocusState() {
-    this.refs.listItem.applyFocusState(this.props.focusState);
-  }
-});
-
-module.exports = MenuItem;
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/menus/menu-item.js","/../../node_modules/material-ui/lib/menus")
-},{"../lists/list-item":55,"../mixins/style-propable":69,"../styles/colors":85,"../svg-icons/navigation/check":98,"buffer":14,"oMfpAn":17,"react/addons":201}],64:[function(require,module,exports){
+},{"../menus/menu":67,"../mixins/click-awayable":69,"../mixins/style-propable":72,"../utils/events":142,"buffer":18,"oMfpAn":21,"react/addons":201}],67:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14353,7 +13007,7 @@ var Menu = React.createClass({
 
 module.exports = Menu;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/menus/menu.js","/../../node_modules/material-ui/lib/menus")
-},{"../lists/list":57,"../mixins/controllable":67,"../mixins/style-propable":69,"../paper":73,"../styles/auto-prefix":84,"../styles/transitions":91,"../utils/key-code":143,"buffer":14,"oMfpAn":17,"react/addons":201}],65:[function(require,module,exports){
+},{"../lists/list":61,"../mixins/controllable":70,"../mixins/style-propable":72,"../paper":76,"../styles/auto-prefix":87,"../styles/transitions":94,"../utils/key-code":145,"buffer":18,"oMfpAn":21,"react/addons":201}],68:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14406,7 +13060,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/mixins/classable.js","/../../node_modules/material-ui/lib/mixins")
-},{"buffer":14,"classnames":147,"oMfpAn":17,"react":373}],66:[function(require,module,exports){
+},{"buffer":18,"classnames":149,"oMfpAn":21,"react":373}],69:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14450,7 +13104,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/mixins/click-awayable.js","/../../node_modules/material-ui/lib/mixins")
-},{"../utils/dom":139,"../utils/events":140,"buffer":14,"oMfpAn":17,"react":373}],67:[function(require,module,exports){
+},{"../utils/dom":141,"../utils/events":142,"buffer":18,"oMfpAn":21,"react":373}],70:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14482,7 +13136,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/mixins/controllable.js","/../../node_modules/material-ui/lib/mixins")
-},{"buffer":14,"oMfpAn":17,"react/addons":201}],68:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react/addons":201}],71:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14494,7 +13148,7 @@ module.exports = {
   StyleResizable: require('./style-resizable')
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/mixins/index.js","/../../node_modules/material-ui/lib/mixins")
-},{"./classable":65,"./click-awayable":66,"./style-propable":69,"./style-resizable":70,"./window-listenable":71,"buffer":14,"oMfpAn":17}],69:[function(require,module,exports){
+},{"./classable":68,"./click-awayable":69,"./style-propable":72,"./style-resizable":73,"./window-listenable":74,"buffer":18,"oMfpAn":21}],72:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14535,7 +13189,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/mixins/style-propable.js","/../../node_modules/material-ui/lib/mixins")
-},{"../styles/auto-prefix":84,"../utils/extend":141,"buffer":14,"oMfpAn":17,"react/addons":201}],70:[function(require,module,exports){
+},{"../styles/auto-prefix":87,"../utils/extend":143,"buffer":18,"oMfpAn":21,"react/addons":201}],73:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14586,7 +13240,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/mixins/style-resizable.js","/../../node_modules/material-ui/lib/mixins")
-},{"../utils/events":140,"buffer":14,"oMfpAn":17}],71:[function(require,module,exports){
+},{"../utils/events":142,"buffer":18,"oMfpAn":21}],74:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14614,7 +13268,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/mixins/window-listenable.js","/../../node_modules/material-ui/lib/mixins")
-},{"../utils/events":140,"buffer":14,"oMfpAn":17}],72:[function(require,module,exports){
+},{"../utils/events":142,"buffer":18,"oMfpAn":21}],75:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14726,7 +13380,7 @@ var Overlay = React.createClass({
 
 module.exports = Overlay;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/overlay.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/colors":85,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],73:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/colors":88,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],76:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14807,7 +13461,7 @@ var Paper = React.createClass({
 
 module.exports = Paper;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/paper.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],74:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],77:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -14924,7 +13578,7 @@ var RadioButtonGroup = React.createClass({
 
 module.exports = RadioButtonGroup;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/radio-button-group.js","/../../node_modules/material-ui/lib")
-},{"./radio-button":75,"buffer":14,"oMfpAn":17,"react":373}],75:[function(require,module,exports){
+},{"./radio-button":78,"buffer":18,"oMfpAn":21,"react":373}],78:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -15065,7 +13719,7 @@ var RadioButton = React.createClass({
 
 module.exports = RadioButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/radio-button.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-switch":44,"./mixins/style-propable":69,"./styles/transitions":91,"./svg-icons/toggle/radio-button-checked":104,"./svg-icons/toggle/radio-button-unchecked":105,"buffer":14,"oMfpAn":17,"react":373}],76:[function(require,module,exports){
+},{"./enhanced-switch":48,"./mixins/style-propable":72,"./styles/transitions":94,"./svg-icons/toggle/radio-button-checked":106,"./svg-icons/toggle/radio-button-unchecked":107,"buffer":18,"oMfpAn":21,"react":373}],79:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -15311,7 +13965,7 @@ var RaisedButton = React.createClass({
 
 module.exports = RaisedButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/raised-button.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-button":43,"./mixins/style-propable":69,"./paper":73,"./styles/transitions":91,"./styles/typography":92,"./utils/color-manipulator":136,"buffer":14,"oMfpAn":17,"react":373}],77:[function(require,module,exports){
+},{"./enhanced-button":47,"./mixins/style-propable":72,"./paper":76,"./styles/transitions":94,"./styles/typography":95,"./utils/color-manipulator":138,"buffer":18,"oMfpAn":21,"react":373}],80:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -15371,7 +14025,7 @@ var CircleRipple = React.createClass({
 
 module.exports = CircleRipple;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/ripples/circle-ripple.js","/../../node_modules/material-ui/lib/ripples")
-},{"../mixins/style-propable":69,"../styles/colors":85,"../styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],78:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/colors":88,"../styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],81:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -15466,7 +14120,7 @@ var FocusRipple = React.createClass({
 
 module.exports = FocusRipple;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/ripples/focus-ripple.js","/../../node_modules/material-ui/lib/ripples")
-},{"../mixins/style-propable":69,"../styles/auto-prefix":84,"../styles/colors":85,"../styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],79:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/auto-prefix":87,"../styles/colors":88,"../styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],82:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -15476,7 +14130,7 @@ module.exports = {
   TouchRipple: require('./touch-ripple')
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/ripples/index.js","/../../node_modules/material-ui/lib/ripples")
-},{"./circle-ripple":77,"./focus-ripple":78,"./touch-ripple":80,"buffer":14,"oMfpAn":17}],80:[function(require,module,exports){
+},{"./circle-ripple":80,"./focus-ripple":81,"./touch-ripple":83,"buffer":18,"oMfpAn":21}],83:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -15678,7 +14332,7 @@ var TouchRipple = React.createClass({
 
 module.exports = TouchRipple;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/ripples/touch-ripple.js","/../../node_modules/material-ui/lib/ripples")
-},{"../mixins/style-propable":69,"../utils/dom":139,"./circle-ripple":77,"buffer":14,"oMfpAn":17,"react":373}],81:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../utils/dom":141,"./circle-ripple":80,"buffer":18,"oMfpAn":21,"react":373}],84:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -15823,7 +14477,7 @@ var SelectField = React.createClass({
 
 module.exports = SelectField;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/select-field.js","/../../node_modules/material-ui/lib")
-},{"./drop-down-menu":42,"./mixins/style-propable":69,"./text-field":115,"buffer":14,"oMfpAn":17,"react":373}],82:[function(require,module,exports){
+},{"./drop-down-menu":46,"./mixins/style-propable":72,"./text-field":117,"buffer":18,"oMfpAn":21,"react":373}],85:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -16286,7 +14940,7 @@ var Slider = React.createClass({
 
 module.exports = Slider;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/slider.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./ripples/focus-ripple":78,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373,"react-draggable2":148}],83:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./ripples/focus-ripple":81,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373,"react-draggable2":150}],86:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -16450,7 +15104,7 @@ var Snackbar = React.createClass({
 
 module.exports = Snackbar;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/snackbar.js","/../../node_modules/material-ui/lib")
-},{"./flat-button":46,"./mixins/click-awayable":66,"./mixins/style-propable":69,"./styles/transitions":91,"./utils/css-event":137,"buffer":14,"oMfpAn":17,"react":373}],84:[function(require,module,exports){
+},{"./flat-button":50,"./mixins/click-awayable":69,"./mixins/style-propable":72,"./styles/transitions":94,"./utils/css-event":139,"buffer":18,"oMfpAn":21,"react":373}],87:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -16485,7 +15139,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/auto-prefix.js","/../../node_modules/material-ui/lib/styles")
-},{"../utils/modernizr.custom":145,"buffer":14,"oMfpAn":17}],85:[function(require,module,exports){
+},{"../utils/modernizr.custom":147,"buffer":18,"oMfpAn":21}],88:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // To include this file in your project:
 // let mui = require('mui');
@@ -16783,7 +15437,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/colors.js","/../../node_modules/material-ui/lib/styles")
-},{"buffer":14,"oMfpAn":17}],86:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],89:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -16796,7 +15450,7 @@ module.exports = {
   Typography: require('./typography')
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/index.js","/../../node_modules/material-ui/lib/styles")
-},{"./auto-prefix":84,"./colors":85,"./spacing":87,"./theme-manager":88,"./transitions":91,"./typography":92,"buffer":14,"oMfpAn":17}],87:[function(require,module,exports){
+},{"./auto-prefix":87,"./colors":88,"./spacing":90,"./theme-manager":91,"./transitions":94,"./typography":95,"buffer":18,"oMfpAn":21}],90:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 "use strict";
 
@@ -16815,7 +15469,7 @@ module.exports = {
   desktopToolbarHeight: 56
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/spacing.js","/../../node_modules/material-ui/lib/styles")
-},{"buffer":14,"oMfpAn":17}],88:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],91:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -16866,7 +15520,7 @@ var ThemeManager = function ThemeManager() {
 
 module.exports = ThemeManager;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/theme-manager.js","/../../node_modules/material-ui/lib/styles")
-},{"../utils/extend":141,"./themes/dark-theme":89,"./themes/light-theme":90,"buffer":14,"oMfpAn":17}],89:[function(require,module,exports){
+},{"../utils/extend":143,"./themes/dark-theme":92,"./themes/light-theme":93,"buffer":18,"oMfpAn":21}],92:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -16929,7 +15583,7 @@ var DarkTheme = {
 
 module.exports = DarkTheme;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/themes/dark-theme.js","/../../node_modules/material-ui/lib/styles/themes")
-},{"../../utils/color-manipulator":136,"../colors":85,"buffer":14,"oMfpAn":17}],90:[function(require,module,exports){
+},{"../../utils/color-manipulator":138,"../colors":88,"buffer":18,"oMfpAn":21}],93:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17148,7 +15802,7 @@ var LightTheme = {
 
 module.exports = LightTheme;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/themes/light-theme.js","/../../node_modules/material-ui/lib/styles/themes")
-},{"../../utils/color-manipulator":136,"../colors":85,"../spacing":87,"buffer":14,"oMfpAn":17}],91:[function(require,module,exports){
+},{"../../utils/color-manipulator":138,"../colors":88,"../spacing":90,"buffer":18,"oMfpAn":21}],94:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17186,7 +15840,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/transitions.js","/../../node_modules/material-ui/lib/styles")
-},{"./auto-prefix":84,"buffer":14,"oMfpAn":17}],92:[function(require,module,exports){
+},{"./auto-prefix":87,"buffer":18,"oMfpAn":21}],95:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17216,7 +15870,7 @@ var Typography = function Typography() {
 
 module.exports = new Typography();
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/styles/typography.js","/../../node_modules/material-ui/lib/styles")
-},{"./colors":85,"buffer":14,"oMfpAn":17}],93:[function(require,module,exports){
+},{"./colors":88,"buffer":18,"oMfpAn":21}],96:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17308,7 +15962,7 @@ var SvgIcon = React.createClass({
 
 module.exports = SvgIcon;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icon.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react/addons":201}],94:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react/addons":201}],97:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17331,7 +15985,7 @@ var NavigationChevronLeftDouble = React.createClass({
 
 module.exports = NavigationChevronLeftDouble;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation-chevron-left-double.js","/../../node_modules/material-ui/lib/svg-icons")
-},{"../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],95:[function(require,module,exports){
+},{"../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],98:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17354,7 +16008,7 @@ var NavigationChevronRightDouble = React.createClass({
 
 module.exports = NavigationChevronRightDouble;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation-chevron-right-double.js","/../../node_modules/material-ui/lib/svg-icons")
-},{"../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],96:[function(require,module,exports){
+},{"../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],99:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17376,7 +16030,7 @@ var NavigationArrowDropDown = React.createClass({
 
 module.exports = NavigationArrowDropDown;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation/arrow-drop-down.js","/../../node_modules/material-ui/lib/svg-icons/navigation")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],97:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],100:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17398,29 +16052,7 @@ var NavigationArrowDropUp = React.createClass({
 
 module.exports = NavigationArrowDropUp;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation/arrow-drop-up.js","/../../node_modules/material-ui/lib/svg-icons/navigation")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],98:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-'use strict';
-
-var React = require('react');
-var SvgIcon = require('../../svg-icon');
-
-var NavigationCheck = React.createClass({
-  displayName: 'NavigationCheck',
-
-  render: function render() {
-    return React.createElement(
-      SvgIcon,
-      this.props,
-      React.createElement('path', { d: 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z' })
-    );
-  }
-
-});
-
-module.exports = NavigationCheck;
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation/check.js","/../../node_modules/material-ui/lib/svg-icons/navigation")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],99:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],101:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17442,7 +16074,7 @@ var NavigationChevronLeft = React.createClass({
 
 module.exports = NavigationChevronLeft;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation/chevron-left.js","/../../node_modules/material-ui/lib/svg-icons/navigation")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],100:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],102:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17464,7 +16096,7 @@ var NavigationChevronRight = React.createClass({
 
 module.exports = NavigationChevronRight;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation/chevron-right.js","/../../node_modules/material-ui/lib/svg-icons/navigation")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],101:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],103:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17486,7 +16118,7 @@ var NavigationMenu = React.createClass({
 
 module.exports = NavigationMenu;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/navigation/menu.js","/../../node_modules/material-ui/lib/svg-icons/navigation")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],102:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],104:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17508,7 +16140,7 @@ var ToggleCheckBoxOutlineBlank = React.createClass({
 
 module.exports = ToggleCheckBoxOutlineBlank;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/toggle/check-box-outline-blank.js","/../../node_modules/material-ui/lib/svg-icons/toggle")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],103:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],105:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17530,7 +16162,7 @@ var ToggleCheckBox = React.createClass({
 
 module.exports = ToggleCheckBox;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/toggle/check-box.js","/../../node_modules/material-ui/lib/svg-icons/toggle")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],104:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],106:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17552,7 +16184,7 @@ var ToggleRadioButtonChecked = React.createClass({
 
 module.exports = ToggleRadioButtonChecked;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/toggle/radio-button-checked.js","/../../node_modules/material-ui/lib/svg-icons/toggle")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],105:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],107:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17574,7 +16206,7 @@ var ToggleRadioButtonUnchecked = React.createClass({
 
 module.exports = ToggleRadioButtonUnchecked;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/svg-icons/toggle/radio-button-unchecked.js","/../../node_modules/material-ui/lib/svg-icons/toggle")
-},{"../../svg-icon":93,"buffer":14,"oMfpAn":17,"react":373}],106:[function(require,module,exports){
+},{"../../svg-icon":96,"buffer":18,"oMfpAn":21,"react":373}],108:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17667,7 +16299,7 @@ var TableFooter = React.createClass({
 
 module.exports = TableFooter;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/table/table-footer.js","/../../node_modules/material-ui/lib/table")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],107:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],109:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17771,7 +16403,7 @@ var TableHeaderColumn = React.createClass({
 
 module.exports = TableHeaderColumn;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/table/table-header-column.js","/../../node_modules/material-ui/lib/table")
-},{"../mixins/style-propable":69,"../tooltip":132,"buffer":14,"oMfpAn":17,"react":373}],108:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../tooltip":134,"buffer":18,"oMfpAn":21,"react":373}],110:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -17918,7 +16550,7 @@ var TableHeader = React.createClass({
 
 module.exports = TableHeader;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/table/table-header.js","/../../node_modules/material-ui/lib/table")
-},{"../checkbox":28,"../mixins/style-propable":69,"./table-header-column":107,"buffer":14,"oMfpAn":17,"react":373}],109:[function(require,module,exports){
+},{"../checkbox":32,"../mixins/style-propable":72,"./table-header-column":109,"buffer":18,"oMfpAn":21,"react":373}],111:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -18022,7 +16654,7 @@ var TableRowColumn = React.createClass({
 
 module.exports = TableRowColumn;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/table/table-row-column.js","/../../node_modules/material-ui/lib/table")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],110:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],112:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -18211,7 +16843,7 @@ var TableRow = React.createClass({
 
 module.exports = TableRow;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/table/table-row.js","/../../node_modules/material-ui/lib/table")
-},{"../checkbox":28,"../mixins/style-propable":69,"./table-row-column":109,"buffer":14,"oMfpAn":17,"react":373}],111:[function(require,module,exports){
+},{"../checkbox":32,"../mixins/style-propable":72,"./table-row-column":111,"buffer":18,"oMfpAn":21,"react":373}],113:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -18614,7 +17246,7 @@ var Table = React.createClass({
 
 module.exports = Table;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/table/table.js","/../../node_modules/material-ui/lib/table")
-},{"../mixins/click-awayable":66,"../mixins/style-propable":69,"./table-footer":106,"./table-header":108,"./table-row":110,"buffer":14,"oMfpAn":17,"react":373}],112:[function(require,module,exports){
+},{"../mixins/click-awayable":69,"../mixins/style-propable":72,"./table-footer":108,"./table-header":110,"./table-row":112,"buffer":18,"oMfpAn":21,"react":373}],114:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -18672,7 +17304,7 @@ var Tab = React.createClass({
 module.exports = Tab;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/tabs/tab.js","/../../node_modules/material-ui/lib/tabs")
-},{"../mixins/style-propable":69,"../styles/colors.js":85,"buffer":14,"oMfpAn":17,"react":373}],113:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/colors.js":88,"buffer":18,"oMfpAn":21,"react":373}],115:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -18705,7 +17337,7 @@ var TabTemplate = React.createClass({
 
 module.exports = TabTemplate;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/tabs/tabTemplate.js","/../../node_modules/material-ui/lib/tabs")
-},{"buffer":14,"oMfpAn":17,"react":373}],114:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react":373}],116:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -18863,7 +17495,7 @@ var Tabs = React.createClass({
 
 module.exports = Tabs;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/tabs/tabs.js","/../../node_modules/material-ui/lib/tabs")
-},{"../ink-bar":51,"../mixins/style-propable":69,"../utils/events":140,"./tabTemplate":113,"buffer":14,"oMfpAn":17,"react/addons":201}],115:[function(require,module,exports){
+},{"../ink-bar":55,"../mixins/style-propable":72,"../utils/events":142,"./tabTemplate":115,"buffer":18,"oMfpAn":21,"react/addons":201}],117:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -19248,7 +17880,7 @@ var TextField = React.createClass({
 
 module.exports = TextField;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/text-field.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-textarea":45,"./mixins/style-propable":69,"./styles/transitions":91,"./utils/color-manipulator":136,"./utils/unique-id":146,"buffer":14,"oMfpAn":17,"react":373}],116:[function(require,module,exports){
+},{"./enhanced-textarea":49,"./mixins/style-propable":72,"./styles/transitions":94,"./utils/color-manipulator":138,"./utils/unique-id":148,"buffer":18,"oMfpAn":21,"react":373}],118:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -19318,7 +17950,7 @@ function theme(customTheme) {
 module.exports = Theme;
 module.exports.theme = theme;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/theme.js","/../../node_modules/material-ui/lib")
-},{"./styles/theme-manager":88,"buffer":14,"oMfpAn":17,"react":373}],117:[function(require,module,exports){
+},{"./styles/theme-manager":91,"buffer":18,"oMfpAn":21,"react":373}],119:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -19428,7 +18060,7 @@ var ClockButton = React.createClass({
 
 module.exports = ClockButton;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/clock-button.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../enhanced-button":43,"../mixins/style-propable":69,"../styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],118:[function(require,module,exports){
+},{"../enhanced-button":47,"../mixins/style-propable":72,"../styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],120:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -19625,7 +18257,7 @@ var ClockHours = React.createClass({
 
 module.exports = ClockHours;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/clock-hours.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../mixins/style-propable":69,"./clock-number":120,"./clock-pointer":121,"buffer":14,"oMfpAn":17,"react":373}],119:[function(require,module,exports){
+},{"../mixins/style-propable":72,"./clock-number":122,"./clock-pointer":123,"buffer":18,"oMfpAn":21,"react":373}],121:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -19796,7 +18428,7 @@ var ClockMinutes = React.createClass({
 
 module.exports = ClockMinutes;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/clock-minutes.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../mixins/style-propable":69,"./clock-number":120,"./clock-pointer":121,"buffer":14,"oMfpAn":17,"react":373}],120:[function(require,module,exports){
+},{"../mixins/style-propable":72,"./clock-number":122,"./clock-pointer":123,"buffer":18,"oMfpAn":21,"react":373}],122:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -19897,7 +18529,7 @@ var ClockNumber = React.createClass({
 
 module.exports = ClockNumber;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/clock-number.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],121:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],123:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20012,7 +18644,7 @@ var ClockPointer = React.createClass({
 
 module.exports = ClockPointer;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/clock-pointer.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],122:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],124:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20186,13 +18818,13 @@ var Clock = React.createClass({
 
 module.exports = Clock;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/clock.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../mixins/style-propable":69,"./clock-button":117,"./clock-hours":118,"./clock-minutes":119,"./time-display":124,"buffer":14,"oMfpAn":17,"react":373}],123:[function(require,module,exports){
+},{"../mixins/style-propable":72,"./clock-button":119,"./clock-hours":120,"./clock-minutes":121,"./time-display":126,"buffer":18,"oMfpAn":21,"react":373}],125:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
 module.exports = require('./time-picker');
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/index.js","/../../node_modules/material-ui/lib/time-picker")
-},{"./time-picker":126,"buffer":14,"oMfpAn":17}],124:[function(require,module,exports){
+},{"./time-picker":128,"buffer":18,"oMfpAn":21}],126:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20346,7 +18978,7 @@ var TimeDisplay = React.createClass({
 
 module.exports = TimeDisplay;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/time-display.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],125:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],127:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20480,7 +19112,7 @@ var TimePickerDialog = React.createClass({
 
 module.exports = TimePickerDialog;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/time-picker-dialog.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../dialog":40,"../flat-button":46,"../mixins/style-propable":69,"../mixins/window-listenable":71,"../utils/key-code":143,"./clock":122,"buffer":14,"oMfpAn":17,"react":373}],126:[function(require,module,exports){
+},{"../dialog":44,"../flat-button":50,"../mixins/style-propable":72,"../mixins/window-listenable":74,"../utils/key-code":145,"./clock":124,"buffer":18,"oMfpAn":21,"react":373}],128:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20621,7 +19253,7 @@ var TimePicker = React.createClass({
 
 module.exports = TimePicker;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/time-picker/time-picker.js","/../../node_modules/material-ui/lib/time-picker")
-},{"../mixins/style-propable":69,"../mixins/window-listenable":71,"../text-field":115,"./time-picker-dialog":125,"buffer":14,"oMfpAn":17,"react":373}],127:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../mixins/window-listenable":74,"../text-field":117,"./time-picker-dialog":127,"buffer":18,"oMfpAn":21,"react":373}],129:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20790,7 +19422,7 @@ var Toggle = React.createClass({
 
 module.exports = Toggle;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/toggle.js","/../../node_modules/material-ui/lib")
-},{"./enhanced-switch":44,"./mixins/style-propable":69,"./paper":73,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],128:[function(require,module,exports){
+},{"./enhanced-switch":48,"./mixins/style-propable":72,"./paper":76,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],130:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20951,7 +19583,7 @@ var ToolbarGroup = React.createClass({
 
 module.exports = ToolbarGroup;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/toolbar/toolbar-group.js","/../../node_modules/material-ui/lib/toolbar")
-},{"../mixins/style-propable":69,"../styles/colors":85,"buffer":14,"oMfpAn":17,"react":373}],129:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/colors":88,"buffer":18,"oMfpAn":21,"react":373}],131:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -20993,7 +19625,7 @@ var ToolbarSeparator = React.createClass({
 
 module.exports = ToolbarSeparator;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/toolbar/toolbar-separator.js","/../../node_modules/material-ui/lib/toolbar")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],130:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],132:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21047,7 +19679,7 @@ var ToolbarTitle = React.createClass({
 
 module.exports = ToolbarTitle;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/toolbar/toolbar-title.js","/../../node_modules/material-ui/lib/toolbar")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],131:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],133:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21095,7 +19727,7 @@ var Toolbar = React.createClass({
 
 module.exports = Toolbar;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/toolbar/toolbar.js","/../../node_modules/material-ui/lib/toolbar")
-},{"../mixins/style-propable":69,"buffer":14,"oMfpAn":17,"react":373}],132:[function(require,module,exports){
+},{"../mixins/style-propable":72,"buffer":18,"oMfpAn":21,"react":373}],134:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21245,7 +19877,7 @@ var Tooltip = React.createClass({
 
 module.exports = Tooltip;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/tooltip.js","/../../node_modules/material-ui/lib")
-},{"./mixins/style-propable":69,"./styles/colors":85,"./styles/transitions":91,"buffer":14,"oMfpAn":17,"react":373}],133:[function(require,module,exports){
+},{"./mixins/style-propable":72,"./styles/colors":88,"./styles/transitions":94,"buffer":18,"oMfpAn":21,"react":373}],135:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21325,7 +19957,7 @@ var SlideInChild = React.createClass({
 
 module.exports = SlideInChild;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/transition-groups/slide-in-child.js","/../../node_modules/material-ui/lib/transition-groups")
-},{"../mixins/style-propable":69,"../styles/auto-prefix":84,"../styles/transitions":91,"buffer":14,"oMfpAn":17,"react/addons":201}],134:[function(require,module,exports){
+},{"../mixins/style-propable":72,"../styles/auto-prefix":87,"../styles/transitions":94,"buffer":18,"oMfpAn":21,"react/addons":201}],136:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21397,7 +20029,7 @@ var SlideIn = React.createClass({
 
 module.exports = SlideIn;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/transition-groups/slide-in.js","/../../node_modules/material-ui/lib/transition-groups")
-},{"../mixins/style-propable":69,"./slide-in-child":133,"buffer":14,"oMfpAn":17,"react/addons":201}],135:[function(require,module,exports){
+},{"../mixins/style-propable":72,"./slide-in-child":135,"buffer":18,"oMfpAn":21,"react/addons":201}],137:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21419,7 +20051,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/children.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17,"react":373}],136:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react":373}],138:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21596,7 +20228,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/color-manipulator.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],137:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],139:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21651,7 +20283,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/css-event.js","/../../node_modules/material-ui/lib/utils")
-},{"./events":140,"buffer":14,"oMfpAn":17}],138:[function(require,module,exports){
+},{"./events":142,"buffer":18,"oMfpAn":21}],140:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21850,7 +20482,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/date-time.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],139:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],141:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21926,7 +20558,7 @@ module.exports = {
 
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/dom.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],140:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],142:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -21969,7 +20601,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/events.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],141:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],143:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -22021,7 +20653,7 @@ var extend = function extend(base, override) {
 
 module.exports = extend;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/extend.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],142:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],144:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -22036,7 +20668,7 @@ module.exports = {
   UniqueId: require('./unique-id')
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/index.js","/../../node_modules/material-ui/lib/utils")
-},{"./color-manipulator":136,"./css-event":137,"./dom":139,"./events":140,"./extend":141,"./key-code":143,"./key-line":144,"./unique-id":146,"buffer":14,"oMfpAn":17}],143:[function(require,module,exports){
+},{"./color-manipulator":138,"./css-event":139,"./dom":141,"./events":142,"./extend":143,"./key-code":145,"./key-line":146,"./unique-id":148,"buffer":18,"oMfpAn":21}],145:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 "use strict";
 
@@ -22051,7 +20683,7 @@ module.exports = {
   UP: 38
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/key-code.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],144:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],146:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 "use strict";
 
@@ -22069,7 +20701,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/key-line.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],145:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],147:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /* Modernizr 2.8.3 (Custom Build) | MIT & BSD
  * Build: http://modernizr.com/download/#-borderradius-boxshadow-opacity-csstransforms-csstransforms3d-csstransitions-prefixed-teststyles-testprop-testallprops-prefixes-domprefixes
@@ -22330,7 +20962,7 @@ module.exports = (function (window, document, undefined) {
     return Modernizr;
 })(window, window.document);
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/modernizr.custom.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],146:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],148:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 "use strict";
 
@@ -22342,7 +20974,7 @@ module.exports = {
   }
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/lib/utils/unique-id.js","/../../node_modules/material-ui/lib/utils")
-},{"buffer":14,"oMfpAn":17}],147:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],149:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /*!
   Copyright (c) 2015 Jed Watson.
@@ -22389,7 +21021,7 @@ if (typeof define !== 'undefined' && define.amd) {
 }
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/node_modules/classnames/index.js","/../../node_modules/material-ui/node_modules/classnames")
-},{"buffer":14,"oMfpAn":17}],148:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],150:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23062,7 +21694,7 @@ module.exports = React.createClass({
 });
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/material-ui/node_modules/react-draggable2/lib/draggable.js","/../../node_modules/material-ui/node_modules/react-draggable2/lib")
-},{"buffer":14,"oMfpAn":17,"react/addons":201}],149:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react/addons":201}],151:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Represents a cancellation caused by navigating away
@@ -23074,7 +21706,7 @@ function Cancellation() {}
 
 module.exports = Cancellation;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/Cancellation.js","/../../node_modules/react-router/lib")
-},{"buffer":14,"oMfpAn":17}],150:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],152:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23107,7 +21739,7 @@ var History = {
 
 module.exports = History;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/History.js","/../../node_modules/react-router/lib")
-},{"buffer":14,"oMfpAn":17,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351}],151:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351}],153:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23185,7 +21817,7 @@ var Match = (function () {
 
 module.exports = Match;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/Match.js","/../../node_modules/react-router/lib")
-},{"./PathUtils":153,"buffer":14,"oMfpAn":17}],152:[function(require,module,exports){
+},{"./PathUtils":155,"buffer":18,"oMfpAn":21}],154:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23258,7 +21890,7 @@ var Navigation = {
 
 module.exports = Navigation;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/Navigation.js","/../../node_modules/react-router/lib")
-},{"./PropTypes":154,"buffer":14,"oMfpAn":17}],153:[function(require,module,exports){
+},{"./PropTypes":156,"buffer":18,"oMfpAn":21}],155:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23414,7 +22046,7 @@ var PathUtils = {
 
 module.exports = PathUtils;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/PathUtils.js","/../../node_modules/react-router/lib")
-},{"buffer":14,"oMfpAn":17,"object-assign":182,"qs":183,"react/lib/invariant":351}],154:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"object-assign":184,"qs":185,"react/lib/invariant":351}],156:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23448,7 +22080,7 @@ var PropTypes = assign({}, ReactPropTypes, {
 
 module.exports = PropTypes;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/PropTypes.js","/../../node_modules/react-router/lib")
-},{"./Route":156,"buffer":14,"oMfpAn":17,"react":373,"react/lib/Object.assign":229}],155:[function(require,module,exports){
+},{"./Route":158,"buffer":18,"oMfpAn":21,"react":373,"react/lib/Object.assign":229}],157:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Encapsulates a redirect to the given route.
@@ -23463,7 +22095,7 @@ function Redirect(to, params, query) {
 
 module.exports = Redirect;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/Redirect.js","/../../node_modules/react-router/lib")
-},{"buffer":14,"oMfpAn":17}],156:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],158:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23666,7 +22298,7 @@ var Route = (function () {
 
 module.exports = Route;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/Route.js","/../../node_modules/react-router/lib")
-},{"./PathUtils":153,"buffer":14,"oMfpAn":17,"react/lib/Object.assign":229,"react/lib/invariant":351,"react/lib/warning":372}],157:[function(require,module,exports){
+},{"./PathUtils":155,"buffer":18,"oMfpAn":21,"react/lib/Object.assign":229,"react/lib/invariant":351,"react/lib/warning":372}],159:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23744,7 +22376,7 @@ var ScrollHistory = {
 
 module.exports = ScrollHistory;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/ScrollHistory.js","/../../node_modules/react-router/lib")
-},{"./getWindowScrollPosition":172,"buffer":14,"oMfpAn":17,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351}],158:[function(require,module,exports){
+},{"./getWindowScrollPosition":174,"buffer":18,"oMfpAn":21,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351}],160:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23821,7 +22453,7 @@ var State = {
 
 module.exports = State;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/State.js","/../../node_modules/react-router/lib")
-},{"./PropTypes":154,"buffer":14,"oMfpAn":17}],159:[function(require,module,exports){
+},{"./PropTypes":156,"buffer":18,"oMfpAn":21}],161:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /* jshint -W058 */
 
@@ -23899,7 +22531,7 @@ Transition.to = function (transition, routes, params, query, callback) {
 
 module.exports = Transition;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/Transition.js","/../../node_modules/react-router/lib")
-},{"./Cancellation":149,"./Redirect":155,"buffer":14,"oMfpAn":17}],160:[function(require,module,exports){
+},{"./Cancellation":151,"./Redirect":157,"buffer":18,"oMfpAn":21}],162:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Actions that modify the URL.
@@ -23927,7 +22559,7 @@ var LocationActions = {
 
 module.exports = LocationActions;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/actions/LocationActions.js","/../../node_modules/react-router/lib/actions")
-},{"buffer":14,"oMfpAn":17}],161:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],163:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -23959,7 +22591,7 @@ var ImitateBrowserBehavior = {
 
 module.exports = ImitateBrowserBehavior;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/behaviors/ImitateBrowserBehavior.js","/../../node_modules/react-router/lib/behaviors")
-},{"../actions/LocationActions":160,"buffer":14,"oMfpAn":17}],162:[function(require,module,exports){
+},{"../actions/LocationActions":162,"buffer":18,"oMfpAn":21}],164:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * A scroll behavior that always scrolls to the top of the page
@@ -23977,7 +22609,7 @@ var ScrollToTopBehavior = {
 
 module.exports = ScrollToTopBehavior;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/behaviors/ScrollToTopBehavior.js","/../../node_modules/react-router/lib/behaviors")
-},{"buffer":14,"oMfpAn":17}],163:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],165:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -24018,7 +22650,7 @@ var ContextWrapper = (function (_React$Component) {
 
 module.exports = ContextWrapper;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/components/ContextWrapper.js","/../../node_modules/react-router/lib/components")
-},{"buffer":14,"oMfpAn":17,"react":373}],164:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react":373}],166:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -24068,7 +22700,7 @@ DefaultRoute.defaultProps = {
 
 module.exports = DefaultRoute;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/components/DefaultRoute.js","/../../node_modules/react-router/lib/components")
-},{"../PropTypes":154,"./Route":168,"./RouteHandler":169,"buffer":14,"oMfpAn":17}],165:[function(require,module,exports){
+},{"../PropTypes":156,"./Route":170,"./RouteHandler":171,"buffer":18,"oMfpAn":21}],167:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -24206,7 +22838,7 @@ Link.defaultProps = {
 
 module.exports = Link;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/components/Link.js","/../../node_modules/react-router/lib/components")
-},{"../PropTypes":154,"buffer":14,"oMfpAn":17,"react":373,"react/lib/Object.assign":229}],166:[function(require,module,exports){
+},{"../PropTypes":156,"buffer":18,"oMfpAn":21,"react":373,"react/lib/Object.assign":229}],168:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -24257,7 +22889,7 @@ NotFoundRoute.defaultProps = {
 
 module.exports = NotFoundRoute;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/components/NotFoundRoute.js","/../../node_modules/react-router/lib/components")
-},{"../PropTypes":154,"./Route":168,"./RouteHandler":169,"buffer":14,"oMfpAn":17}],167:[function(require,module,exports){
+},{"../PropTypes":156,"./Route":170,"./RouteHandler":171,"buffer":18,"oMfpAn":21}],169:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -24303,7 +22935,7 @@ Redirect.defaultProps = {};
 
 module.exports = Redirect;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/components/Redirect.js","/../../node_modules/react-router/lib/components")
-},{"../PropTypes":154,"./Route":168,"buffer":14,"oMfpAn":17}],168:[function(require,module,exports){
+},{"../PropTypes":156,"./Route":170,"buffer":18,"oMfpAn":21}],170:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -24397,7 +23029,7 @@ Route.defaultProps = {
 
 module.exports = Route;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/components/Route.js","/../../node_modules/react-router/lib/components")
-},{"../PropTypes":154,"./RouteHandler":169,"buffer":14,"oMfpAn":17,"react":373,"react/lib/invariant":351}],169:[function(require,module,exports){
+},{"../PropTypes":156,"./RouteHandler":171,"buffer":18,"oMfpAn":21,"react":373,"react/lib/invariant":351}],171:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -24508,7 +23140,7 @@ RouteHandler.childContextTypes = {
 
 module.exports = RouteHandler;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/components/RouteHandler.js","/../../node_modules/react-router/lib/components")
-},{"../PropTypes":154,"./ContextWrapper":163,"buffer":14,"oMfpAn":17,"react":373,"react/lib/Object.assign":229}],170:[function(require,module,exports){
+},{"../PropTypes":156,"./ContextWrapper":165,"buffer":18,"oMfpAn":21,"react":373,"react/lib/Object.assign":229}],172:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /* jshint -W058 */
 'use strict';
@@ -25025,7 +23657,7 @@ function createRouter(options) {
 
 module.exports = createRouter;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/createRouter.js","/../../node_modules/react-router/lib")
-},{"./Cancellation":149,"./History":150,"./Match":151,"./PathUtils":153,"./PropTypes":154,"./Redirect":155,"./Route":156,"./ScrollHistory":157,"./Transition":159,"./actions/LocationActions":160,"./behaviors/ImitateBrowserBehavior":161,"./createRoutesFromReactChildren":171,"./isReactChildren":174,"./locations/HashLocation":175,"./locations/HistoryLocation":176,"./locations/RefreshLocation":177,"./locations/StaticLocation":178,"./supportsHistory":181,"buffer":14,"oMfpAn":17,"react":373,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351,"react/lib/warning":372}],171:[function(require,module,exports){
+},{"./Cancellation":151,"./History":152,"./Match":153,"./PathUtils":155,"./PropTypes":156,"./Redirect":157,"./Route":158,"./ScrollHistory":159,"./Transition":161,"./actions/LocationActions":162,"./behaviors/ImitateBrowserBehavior":163,"./createRoutesFromReactChildren":173,"./isReactChildren":176,"./locations/HashLocation":177,"./locations/HistoryLocation":178,"./locations/RefreshLocation":179,"./locations/StaticLocation":180,"./supportsHistory":183,"buffer":18,"oMfpAn":21,"react":373,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351,"react/lib/warning":372}],173:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /* jshint -W084 */
 'use strict';
@@ -25109,7 +23741,7 @@ function createRoutesFromReactChildren(children) {
 
 module.exports = createRoutesFromReactChildren;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/createRoutesFromReactChildren.js","/../../node_modules/react-router/lib")
-},{"./Route":156,"./components/DefaultRoute":164,"./components/NotFoundRoute":166,"./components/Redirect":167,"buffer":14,"oMfpAn":17,"react":373,"react/lib/Object.assign":229,"react/lib/warning":372}],172:[function(require,module,exports){
+},{"./Route":158,"./components/DefaultRoute":166,"./components/NotFoundRoute":168,"./components/Redirect":169,"buffer":18,"oMfpAn":21,"react":373,"react/lib/Object.assign":229,"react/lib/warning":372}],174:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25130,7 +23762,7 @@ function getWindowScrollPosition() {
 
 module.exports = getWindowScrollPosition;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/getWindowScrollPosition.js","/../../node_modules/react-router/lib")
-},{"buffer":14,"oMfpAn":17,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351}],173:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react/lib/ExecutionEnvironment":222,"react/lib/invariant":351}],175:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25164,7 +23796,7 @@ exports.createRoutesFromReactChildren = require('./createRoutesFromReactChildren
 exports.create = require('./createRouter');
 exports.run = require('./runRouter');
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/index.js","/../../node_modules/react-router/lib")
-},{"./History":150,"./Navigation":152,"./Route":156,"./State":158,"./behaviors/ImitateBrowserBehavior":161,"./behaviors/ScrollToTopBehavior":162,"./components/DefaultRoute":164,"./components/Link":165,"./components/NotFoundRoute":166,"./components/Redirect":167,"./components/Route":168,"./components/RouteHandler":169,"./createRouter":170,"./createRoutesFromReactChildren":171,"./locations/HashLocation":175,"./locations/HistoryLocation":176,"./locations/RefreshLocation":177,"./locations/StaticLocation":178,"./locations/TestLocation":179,"./runRouter":180,"buffer":14,"oMfpAn":17}],174:[function(require,module,exports){
+},{"./History":152,"./Navigation":154,"./Route":158,"./State":160,"./behaviors/ImitateBrowserBehavior":163,"./behaviors/ScrollToTopBehavior":164,"./components/DefaultRoute":166,"./components/Link":167,"./components/NotFoundRoute":168,"./components/Redirect":169,"./components/Route":170,"./components/RouteHandler":171,"./createRouter":172,"./createRoutesFromReactChildren":173,"./locations/HashLocation":177,"./locations/HistoryLocation":178,"./locations/RefreshLocation":179,"./locations/StaticLocation":180,"./locations/TestLocation":181,"./runRouter":182,"buffer":18,"oMfpAn":21}],176:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25180,7 +23812,7 @@ function isReactChildren(object) {
 
 module.exports = isReactChildren;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/isReactChildren.js","/../../node_modules/react-router/lib")
-},{"buffer":14,"oMfpAn":17,"react":373}],175:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react":373}],177:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25294,7 +23926,7 @@ var HashLocation = {
 
 module.exports = HashLocation;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/locations/HashLocation.js","/../../node_modules/react-router/lib/locations")
-},{"../History":150,"../actions/LocationActions":160,"buffer":14,"oMfpAn":17}],176:[function(require,module,exports){
+},{"../History":152,"../actions/LocationActions":162,"buffer":18,"oMfpAn":21}],178:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25383,7 +24015,7 @@ var HistoryLocation = {
 
 module.exports = HistoryLocation;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/locations/HistoryLocation.js","/../../node_modules/react-router/lib/locations")
-},{"../History":150,"../actions/LocationActions":160,"buffer":14,"oMfpAn":17}],177:[function(require,module,exports){
+},{"../History":152,"../actions/LocationActions":162,"buffer":18,"oMfpAn":21}],179:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25417,7 +24049,7 @@ var RefreshLocation = {
 
 module.exports = RefreshLocation;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/locations/RefreshLocation.js","/../../node_modules/react-router/lib/locations")
-},{"../History":150,"./HistoryLocation":176,"buffer":14,"oMfpAn":17}],178:[function(require,module,exports){
+},{"../History":152,"./HistoryLocation":178,"buffer":18,"oMfpAn":21}],180:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25469,7 +24101,7 @@ StaticLocation.prototype.pop = throwCannotModify;
 
 module.exports = StaticLocation;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/locations/StaticLocation.js","/../../node_modules/react-router/lib/locations")
-},{"buffer":14,"oMfpAn":17,"react/lib/invariant":351}],179:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react/lib/invariant":351}],181:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25566,7 +24198,7 @@ var TestLocation = (function () {
 
 module.exports = TestLocation;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/locations/TestLocation.js","/../../node_modules/react-router/lib/locations")
-},{"../History":150,"../actions/LocationActions":160,"buffer":14,"oMfpAn":17,"react/lib/invariant":351}],180:[function(require,module,exports){
+},{"../History":152,"../actions/LocationActions":162,"buffer":18,"oMfpAn":21,"react/lib/invariant":351}],182:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25619,7 +24251,7 @@ function runRouter(routes, location, callback) {
 
 module.exports = runRouter;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/runRouter.js","/../../node_modules/react-router/lib")
-},{"./createRouter":170,"buffer":14,"oMfpAn":17}],181:[function(require,module,exports){
+},{"./createRouter":172,"buffer":18,"oMfpAn":21}],183:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25638,7 +24270,7 @@ function supportsHistory() {
 
 module.exports = supportsHistory;
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/lib/supportsHistory.js","/../../node_modules/react-router/lib")
-},{"buffer":14,"oMfpAn":17}],182:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],184:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 
@@ -25668,12 +24300,12 @@ module.exports = Object.assign || function (target, source) {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/node_modules/object-assign/index.js","/../../node_modules/react-router/node_modules/object-assign")
-},{"buffer":14,"oMfpAn":17}],183:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],185:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = require('./lib/');
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/node_modules/qs/index.js","/../../node_modules/react-router/node_modules/qs")
-},{"./lib/":184,"buffer":14,"oMfpAn":17}],184:[function(require,module,exports){
+},{"./lib/":186,"buffer":18,"oMfpAn":21}],186:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -25692,7 +24324,7 @@ module.exports = {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/node_modules/qs/lib/index.js","/../../node_modules/react-router/node_modules/qs/lib")
-},{"./parse":185,"./stringify":186,"buffer":14,"oMfpAn":17}],185:[function(require,module,exports){
+},{"./parse":187,"./stringify":188,"buffer":18,"oMfpAn":21}],187:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -25857,7 +24489,7 @@ module.exports = function (str, options) {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/node_modules/qs/lib/parse.js","/../../node_modules/react-router/node_modules/qs/lib")
-},{"./utils":187,"buffer":14,"oMfpAn":17}],186:[function(require,module,exports){
+},{"./utils":189,"buffer":18,"oMfpAn":21}],188:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -25958,7 +24590,7 @@ module.exports = function (obj, options) {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/node_modules/qs/lib/stringify.js","/../../node_modules/react-router/node_modules/qs/lib")
-},{"./utils":187,"buffer":14,"oMfpAn":17}],187:[function(require,module,exports){
+},{"./utils":189,"buffer":18,"oMfpAn":21}],189:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 // Load modules
 
@@ -26094,659 +24726,7 @@ exports.isBuffer = function (obj) {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-router/node_modules/qs/lib/utils.js","/../../node_modules/react-router/node_modules/qs/lib")
-},{"buffer":14,"oMfpAn":17}],188:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-/*
- * Swipe 2.0.0
- * Brad Birdsall
- * https://github.com/thebird/Swipe
- * Copyright 2013-2015, MIT License
- *
-*/
-
-(function (root, factory) {
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = factory();
-    } else {
-        root.Swipe = factory();
-    }
-}(this, function () {
-  'use strict';
-
-  return function Swipe (container, options) {
-    // utilities
-    var noop = function() {}; // simple no operation function
-    var offloadFn = function(fn) { setTimeout(fn || noop, 0); }; // offload a functions execution
-
-    // check browser capabilities
-    var browser = {
-      addEventListener: !!window.addEventListener,
-      touch: ('ontouchstart' in window) || window.DocumentTouch && document instanceof window.DocumentTouch,
-      transitions: (function(temp) {
-        var props = ['transitionProperty', 'WebkitTransition', 'MozTransition', 'OTransition', 'msTransition'];
-        for ( var i in props ) if (temp.style[ props[i] ] !== undefined) return true;
-        return false;
-      })(document.createElement('swipe'))
-    };
-
-    // quit if no root element
-    if (!container) return;
-    var element = container.children[0];
-    var slides, slidePos, width, length;
-    options = options || {};
-    var index = parseInt(options.startSlide, 10) || 0;
-    var speed = options.speed || 300;
-    options.continuous = options.continuous !== undefined ? options.continuous : true;
-
-    function setup() {
-
-      // cache slides
-      slides = element.children;
-      length = slides.length;
-
-      // set continuous to false if only one slide
-      if (slides.length < 2) options.continuous = false;
-
-      //special case if two slides
-      if (browser.transitions && options.continuous && slides.length < 3) {
-        element.appendChild(slides[0].cloneNode(true));
-        element.appendChild(element.children[1].cloneNode(true));
-        slides = element.children;
-      }
-
-      // create an array to store current positions of each slide
-      slidePos = new Array(slides.length);
-
-      // determine width of each slide
-      width = container.getBoundingClientRect().width || container.offsetWidth;
-
-      element.style.width = (slides.length * width) + 'px';
-
-      // stack elements
-      var pos = slides.length;
-      while(pos--) {
-
-        var slide = slides[pos];
-
-        slide.style.width = width + 'px';
-        slide.setAttribute('data-index', pos);
-
-        if (browser.transitions) {
-          slide.style.left = (pos * -width) + 'px';
-          move(pos, index > pos ? -width : (index < pos ? width : 0), 0);
-        }
-
-      }
-
-      // reposition elements before and after index
-      if (options.continuous && browser.transitions) {
-        move(circle(index-1), -width, 0);
-        move(circle(index+1), width, 0);
-      }
-
-      if (!browser.transitions) element.style.left = (index * -width) + 'px';
-
-      container.style.visibility = 'visible';
-
-    }
-
-    function prev() {
-
-      if (options.continuous) slide(index-1);
-      else if (index) slide(index-1);
-
-    }
-
-    function next() {
-
-      if (options.continuous) slide(index+1);
-      else if (index < slides.length - 1) slide(index+1);
-
-    }
-
-    function circle(index) {
-
-      // a simple positive modulo using slides.length
-      return (slides.length + (index % slides.length)) % slides.length;
-
-    }
-
-    function slide(to, slideSpeed) {
-
-      // do nothing if already on requested slide
-      if (index == to) return;
-
-      if (browser.transitions) {
-
-        var direction = Math.abs(index-to) / (index-to); // 1: backward, -1: forward
-
-        // get the actual position of the slide
-        if (options.continuous) {
-          var natural_direction = direction;
-          direction = -slidePos[circle(to)] / width;
-
-          // if going forward but to < index, use to = slides.length + to
-          // if going backward but to > index, use to = -slides.length + to
-          if (direction !== natural_direction) to =  -direction * slides.length + to;
-
-        }
-
-        var diff = Math.abs(index-to) - 1;
-
-        // move all the slides between index and to in the right direction
-        while (diff--) move( circle((to > index ? to : index) - diff - 1), width * direction, 0);
-
-        to = circle(to);
-
-        move(index, width * direction, slideSpeed || speed);
-        move(to, 0, slideSpeed || speed);
-
-        if (options.continuous) move(circle(to - direction), -(width * direction), 0); // we need to get the next in place
-
-      } else {
-
-        to = circle(to);
-        animate(index * -width, to * -width, slideSpeed || speed);
-        //no fallback for a circular continuous if the browser does not accept transitions
-      }
-
-      index = to;
-      offloadFn(options.callback && options.callback(index, slides[index]));
-    }
-
-    function move(index, dist, speed) {
-
-      translate(index, dist, speed);
-      slidePos[index] = dist;
-
-    }
-
-    function translate(index, dist, speed) {
-
-      var slide = slides[index];
-      var style = slide && slide.style;
-
-      if (!style) return;
-
-      style.webkitTransitionDuration =
-      style.MozTransitionDuration =
-      style.msTransitionDuration =
-      style.OTransitionDuration =
-      style.transitionDuration = speed + 'ms';
-
-      style.webkitTransform = 'translate(' + dist + 'px,0)' + 'translateZ(0)';
-      style.msTransform =
-      style.MozTransform =
-      style.OTransform = 'translateX(' + dist + 'px)';
-
-    }
-
-    function animate(from, to, speed) {
-
-      // if not an animation, just reposition
-      if (!speed) {
-
-        element.style.left = to + 'px';
-        return;
-
-      }
-
-      var start = +new Date();
-
-      var timer = setInterval(function() {
-
-        var timeElap = +new Date() - start;
-
-        if (timeElap > speed) {
-
-          element.style.left = to + 'px';
-
-          if (delay) begin();
-
-          options.transitionEnd && options.transitionEnd.call(event, index, slides[index]);
-
-          clearInterval(timer);
-          return;
-
-        }
-
-        element.style.left = (( (to - from) * (Math.floor((timeElap / speed) * 100) / 100) ) + from) + 'px';
-
-      }, 4);
-
-    }
-
-    // setup auto slideshow
-    var delay = options.auto || 0;
-    var interval;
-
-    function begin() {
-
-      interval = setTimeout(next, delay);
-
-    }
-
-    function stop() {
-
-      delay = 0;
-      clearTimeout(interval);
-
-    }
-
-
-    // setup initial vars
-    var start = {};
-    var delta = {};
-    var isScrolling;
-
-    // setup event capturing
-    var events = {
-
-      handleEvent: function(event) {
-
-        switch (event.type) {
-          case 'touchstart': this.start(event); break;
-          case 'touchmove': this.move(event); break;
-          case 'touchend': offloadFn(this.end(event)); break;
-          case 'webkitTransitionEnd':
-          case 'msTransitionEnd':
-          case 'oTransitionEnd':
-          case 'otransitionend':
-          case 'transitionend': offloadFn(this.transitionEnd(event)); break;
-          case 'resize': offloadFn(setup); break;
-        }
-
-        if (options.stopPropagation) event.stopPropagation();
-
-      },
-      start: function(event) {
-
-        var touches = event.touches[0];
-
-        // measure start values
-        start = {
-
-          // get initial touch coords
-          x: touches.pageX,
-          y: touches.pageY,
-
-          // store time to determine touch duration
-          time: +new Date()
-
-        };
-
-        // used for testing first move event
-        isScrolling = undefined;
-
-        // reset delta and end measurements
-        delta = {};
-
-        // attach touchmove and touchend listeners
-        element.addEventListener('touchmove', this, false);
-        element.addEventListener('touchend', this, false);
-
-      },
-      move: function(event) {
-
-        // ensure swiping with one touch and not pinching
-        if ( event.touches.length > 1 || event.scale && event.scale !== 1) return;
-
-        if (options.disableScroll) event.preventDefault();
-
-        var touches = event.touches[0];
-
-        // measure change in x and y
-        delta = {
-          x: touches.pageX - start.x,
-          y: touches.pageY - start.y
-        };
-
-        // determine if scrolling test has run - one time test
-        if ( typeof isScrolling == 'undefined') {
-          isScrolling = !!( isScrolling || Math.abs(delta.x) < Math.abs(delta.y) );
-        }
-
-        // if user is not trying to scroll vertically
-        if (!isScrolling) {
-
-          // prevent native scrolling
-          event.preventDefault();
-
-          // stop slideshow
-          stop();
-
-          // increase resistance if first or last slide
-          if (options.continuous) { // we don't add resistance at the end
-
-            translate(circle(index-1), delta.x + slidePos[circle(index-1)], 0);
-            translate(index, delta.x + slidePos[index], 0);
-            translate(circle(index+1), delta.x + slidePos[circle(index+1)], 0);
-
-          } else {
-
-            delta.x =
-              delta.x /
-                ( (!index && delta.x > 0 ||         // if first slide and sliding left
-                  index == slides.length - 1 &&     // or if last slide and sliding right
-                  delta.x < 0                       // and if sliding at all
-                ) ?
-                ( Math.abs(delta.x) / width + 1 )      // determine resistance level
-                : 1 );                                 // no resistance if false
-
-            // translate 1:1
-            translate(index-1, delta.x + slidePos[index-1], 0);
-            translate(index, delta.x + slidePos[index], 0);
-            translate(index+1, delta.x + slidePos[index+1], 0);
-          }
-
-        }
-
-      },
-      end: function(event) {
-
-        // measure duration
-        var duration = +new Date() - start.time;
-
-        // determine if slide attempt triggers next/prev slide
-        var isValidSlide =
-              Number(duration) < 250 &&         // if slide duration is less than 250ms
-              Math.abs(delta.x) > 20 ||         // and if slide amt is greater than 20px
-              Math.abs(delta.x) > width/2;      // or if slide amt is greater than half the width
-
-        // determine if slide attempt is past start and end
-        var isPastBounds =
-              !index && delta.x > 0 ||                      // if first slide and slide amt is greater than 0
-              index == slides.length - 1 && delta.x < 0;    // or if last slide and slide amt is less than 0
-
-        if (options.continuous) isPastBounds = false;
-
-        // determine direction of swipe (true:right, false:left)
-        var direction = delta.x < 0;
-
-        // if not scrolling vertically
-        if (!isScrolling) {
-
-          if (isValidSlide && !isPastBounds) {
-
-            if (direction) {
-
-              if (options.continuous) { // we need to get the next in this direction in place
-
-                move(circle(index-1), -width, 0);
-                move(circle(index+2), width, 0);
-
-              } else {
-                move(index-1, -width, 0);
-              }
-
-              move(index, slidePos[index]-width, speed);
-              move(circle(index+1), slidePos[circle(index+1)]-width, speed);
-              index = circle(index+1);
-
-            } else {
-              if (options.continuous) { // we need to get the next in this direction in place
-
-                move(circle(index+1), width, 0);
-                move(circle(index-2), -width, 0);
-
-              } else {
-                move(index+1, width, 0);
-              }
-
-              move(index, slidePos[index]+width, speed);
-              move(circle(index-1), slidePos[circle(index-1)]+width, speed);
-              index = circle(index-1);
-
-            }
-
-            options.callback && options.callback(index, slides[index]);
-
-          } else {
-
-            if (options.continuous) {
-
-              move(circle(index-1), -width, speed);
-              move(index, 0, speed);
-              move(circle(index+1), width, speed);
-
-            } else {
-
-              move(index-1, -width, speed);
-              move(index, 0, speed);
-              move(index+1, width, speed);
-            }
-
-          }
-
-        }
-
-        // kill touchmove and touchend event listeners until touchstart called again
-        element.removeEventListener('touchmove', events, false);
-        element.removeEventListener('touchend', events, false);
-
-      },
-      transitionEnd: function(event) {
-
-        if (parseInt(event.target.getAttribute('data-index'), 10) == index) {
-
-          if (delay) begin();
-
-          options.transitionEnd && options.transitionEnd.call(event, index, slides[index]);
-
-        }
-
-      }
-
-    };
-
-    // trigger setup
-    setup();
-
-    // start auto slideshow if applicable
-    if (delay) begin();
-
-
-    // add event listeners
-    if (browser.addEventListener) {
-
-      // set touchstart event on element
-      if (browser.touch) element.addEventListener('touchstart', events, false);
-
-      if (browser.transitions) {
-        element.addEventListener('webkitTransitionEnd', events, false);
-        element.addEventListener('msTransitionEnd', events, false);
-        element.addEventListener('oTransitionEnd', events, false);
-        element.addEventListener('otransitionend', events, false);
-        element.addEventListener('transitionend', events, false);
-      }
-
-      // set resize event on window
-      window.addEventListener('resize', events, false);
-
-    } else {
-
-      window.onresize = function () { setup(); }; // to play nice with old IE
-
-    }
-
-    // expose the Swipe API
-    return {
-      setup: function() {
-
-        setup();
-
-      },
-      slide: function(to, speed) {
-
-        // cancel slideshow
-        stop();
-
-        slide(to, speed);
-
-      },
-      prev: function() {
-
-        // cancel slideshow
-        stop();
-
-        prev();
-
-      },
-      next: function() {
-
-        // cancel slideshow
-        stop();
-
-        next();
-
-      },
-      stop: function() {
-
-        // cancel slideshow
-        stop();
-
-      },
-      getPos: function() {
-
-        // return current index position
-        return index;
-
-      },
-      getNumSlides: function() {
-
-        // return total number of slides
-        return length;
-      },
-      kill: function() {
-
-        // cancel slideshow
-        stop();
-
-        // reset element
-        element.style.width = '';
-        element.style.left = '';
-
-        // reset slides
-        var pos = slides.length;
-        while(pos--) {
-
-          var slide = slides[pos];
-          slide.style.width = '';
-          slide.style.left = '';
-
-          if (browser.transitions) translate(pos, 0, 0);
-        }
-
-        // removed event listeners
-        if (browser.addEventListener) {
-
-          // remove current event listeners
-          element.removeEventListener('touchstart', events, false);
-          element.removeEventListener('webkitTransitionEnd', events, false);
-          element.removeEventListener('msTransitionEnd', events, false);
-          element.removeEventListener('oTransitionEnd', events, false);
-          element.removeEventListener('otransitionend', events, false);
-          element.removeEventListener('transitionend', events, false);
-          window.removeEventListener('resize', events, false);
-
-        } else {
-          window.onresize = null;
-        }
-      }
-    };
-  };
-}));
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-swipe/node_modules/swipe-js-iso/swipe.js","/../../node_modules/react-swipe/node_modules/swipe-js-iso")
-},{"buffer":14,"oMfpAn":17}],189:[function(require,module,exports){
-(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
-(function (root, factory) {
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = factory(
-      require('react/addons'),
-      require('swipe-js-iso')
-    );
-  } else {
-    root.ReactSwipe = factory(
-      root.React,
-      root.Swipe
-    );
-  }
-})(this, function (React, Swipe) {
-  var styles = {
-    container: {
-      overflow: 'hidden',
-      visibility: 'hidden',
-      position: 'relative'
-    },
-
-    wrapper: {
-      overflow: 'hidden',
-      position: 'relative'
-    },
-
-    child: {
-      float: 'left',
-      width: '100%',
-      position: 'relative'
-    }
-  };
-
-  var ReactSwipe = React.createClass({
-    // https://github.com/thebird/Swipe#config-options
-    propTypes: {
-      startSlide      : React.PropTypes.number,
-      slideToIndex    : React.PropTypes.number,
-      shouldUpdate    : React.PropTypes.func,
-      speed           : React.PropTypes.number,
-      auto            : React.PropTypes.number,
-      continuous      : React.PropTypes.bool,
-      disableScroll   : React.PropTypes.bool,
-      stopPropagation : React.PropTypes.bool,
-      callback        : React.PropTypes.func,
-      transitionEnd   : React.PropTypes.func
-    },
-
-    componentDidMount: function () {
-      if (this.isMounted()) {
-        this.swipe = Swipe(React.findDOMNode(this), this.props);
-      }
-    },
-
-    componentDidUpdate: function () {
-      if (this.props.slideToIndex || this.props.slideToIndex === 0) {
-        this.swipe.slide(this.props.slideToIndex);
-      }
-    },
-
-    componentWillUnmount: function () {
-      this.swipe.kill();
-      delete this.swipe;
-    },
-
-    shouldComponentUpdate: function (nextProps) {
-      return (
-        (this.props.slideToIndex !== nextProps.slideToIndex) ||
-        (typeof this.props.shouldUpdate !== 'undefined') && this.props.shouldUpdate(nextProps)
-      );
-    },
-
-    render: function() {
-      return React.createElement('div', React.__spread({}, this.props, {style: styles.container}),
-        React.createElement('div', {style: styles.wrapper},
-          React.Children.map(this.props.children, function (child) {
-            return React.addons.cloneWithProps(child, {style: styles.child});
-          })
-        )
-      );
-    }
-  });
-
-  return ReactSwipe;
-});
-
-}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-swipe/react-swipe.js","/../../node_modules/react-swipe")
-},{"buffer":14,"oMfpAn":17,"react/addons":201,"swipe-js-iso":188}],190:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],190:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014, Facebook, Inc.
@@ -27059,7 +25039,7 @@ var ResponderEventPlugin = {
 module.exports = ResponderEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-tap-event-plugin/src/ResponderEventPlugin.js","/../../node_modules/react-tap-event-plugin/src")
-},{"buffer":14,"oMfpAn":17,"react/lib/EventConstants":216,"react/lib/EventPluginUtils":220,"react/lib/EventPropagators":221,"react/lib/SyntheticEvent":309,"react/lib/accumulateInto":319,"react/lib/keyOf":358}],191:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"react/lib/EventConstants":216,"react/lib/EventPluginUtils":220,"react/lib/EventPropagators":221,"react/lib/SyntheticEvent":309,"react/lib/accumulateInto":319,"react/lib/keyOf":358}],191:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014 Facebook, Inc.
@@ -27229,7 +25209,7 @@ var TapEventPlugin = {
 module.exports = TapEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-tap-event-plugin/src/TapEventPlugin.js","/../../node_modules/react-tap-event-plugin/src")
-},{"./TouchEventUtils":192,"buffer":14,"oMfpAn":17,"react/lib/EventConstants":216,"react/lib/EventPluginUtils":220,"react/lib/EventPropagators":221,"react/lib/SyntheticUIEvent":315,"react/lib/ViewportMetrics":318,"react/lib/keyOf":358}],192:[function(require,module,exports){
+},{"./TouchEventUtils":192,"buffer":18,"oMfpAn":21,"react/lib/EventConstants":216,"react/lib/EventPluginUtils":220,"react/lib/EventPropagators":221,"react/lib/SyntheticUIEvent":315,"react/lib/ViewportMetrics":318,"react/lib/keyOf":358}],192:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2014 Facebook, Inc.
@@ -27275,7 +25255,7 @@ var TouchEventUtils = {
 module.exports = TouchEventUtils;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-tap-event-plugin/src/TouchEventUtils.js","/../../node_modules/react-tap-event-plugin/src")
-},{"buffer":14,"oMfpAn":17}],193:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],193:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = function injectTapEventPlugin () {
   var React = require("react");
@@ -27288,7 +25268,7 @@ module.exports = function injectTapEventPlugin () {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-tap-event-plugin/src/injectTapEventPlugin.js","/../../node_modules/react-tap-event-plugin/src")
-},{"./ResponderEventPlugin.js":190,"./TapEventPlugin.js":191,"buffer":14,"oMfpAn":17,"react":373,"react/lib/EventPluginHub":218}],194:[function(require,module,exports){
+},{"./ResponderEventPlugin.js":190,"./TapEventPlugin.js":191,"buffer":18,"oMfpAn":21,"react":373,"react/lib/EventPluginHub":218}],194:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Module dependencies
@@ -27524,7 +25504,7 @@ var YouTube = (function (_React$Component) {
 exports['default'] = YouTube;
 module.exports = exports['default'];
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-youtube/dist/YouTube.js","/../../node_modules/react-youtube/dist")
-},{"./lib/createPlayer":195,"buffer":14,"oMfpAn":17,"random-global":198,"random-string":199,"react":373}],195:[function(require,module,exports){
+},{"./lib/createPlayer":195,"buffer":18,"oMfpAn":21,"random-global":198,"random-string":199,"react":373}],195:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Module dependencies
@@ -27578,7 +25558,7 @@ var createPlayer = function createPlayer(containerId, props, cb) {
 exports['default'] = createPlayer;
 module.exports = exports['default'];
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-youtube/dist/lib/createPlayer.js","/../../node_modules/react-youtube/dist/lib")
-},{"buffer":14,"get-youtube-id":196,"oMfpAn":17,"object-assign":197,"youtube-iframe":200}],196:[function(require,module,exports){
+},{"buffer":18,"get-youtube-id":196,"oMfpAn":21,"object-assign":197,"youtube-iframe":200}],196:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 
 (function (root, factory) {
@@ -27627,7 +25607,7 @@ module.exports = exports['default'];
 }));
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-youtube/node_modules/get-youtube-id/index.js","/../../node_modules/react-youtube/node_modules/get-youtube-id")
-},{"buffer":14,"oMfpAn":17}],197:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],197:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 'use strict';
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
@@ -27670,7 +25650,7 @@ module.exports = Object.assign || function (target, source) {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-youtube/node_modules/object-assign/index.js","/../../node_modules/react-youtube/node_modules/object-assign")
-},{"buffer":14,"oMfpAn":17}],198:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],198:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Module dependencies
@@ -27699,7 +25679,7 @@ function globalize(variable) {
 }
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-youtube/node_modules/random-global/index.js","/../../node_modules/react-youtube/node_modules/random-global")
-},{"buffer":14,"oMfpAn":17,"random-string":199}],199:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21,"random-string":199}],199:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /*
  * random-string
@@ -27747,7 +25727,7 @@ module.exports = function randomString(opts) {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-youtube/node_modules/random-string/lib/random-string.js","/../../node_modules/react-youtube/node_modules/random-string/lib")
-},{"buffer":14,"oMfpAn":17}],200:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],200:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 (function(window) {
 	var YouTubeIframeLoader = {
@@ -27801,12 +25781,12 @@ module.exports = function randomString(opts) {
 }(window));
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react-youtube/node_modules/youtube-iframe/index.js","/../../node_modules/react-youtube/node_modules/youtube-iframe")
-},{"buffer":14,"oMfpAn":17}],201:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],201:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = require('./lib/ReactWithAddons');
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/addons.js","/../../node_modules/react")
-},{"./lib/ReactWithAddons":301,"buffer":14,"oMfpAn":17}],202:[function(require,module,exports){
+},{"./lib/ReactWithAddons":301,"buffer":18,"oMfpAn":21}],202:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -27835,7 +25815,7 @@ var AutoFocusMixin = {
 module.exports = AutoFocusMixin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/AutoFocusMixin.js","/../../node_modules/react/lib")
-},{"./focusNode":335,"buffer":14,"oMfpAn":17}],203:[function(require,module,exports){
+},{"./focusNode":335,"buffer":18,"oMfpAn":21}],203:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015 Facebook, Inc.
@@ -28332,7 +26312,7 @@ var BeforeInputEventPlugin = {
 module.exports = BeforeInputEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/BeforeInputEventPlugin.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPropagators":221,"./ExecutionEnvironment":222,"./FallbackCompositionState":223,"./SyntheticCompositionEvent":307,"./SyntheticInputEvent":311,"./keyOf":358,"buffer":14,"oMfpAn":17}],204:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPropagators":221,"./ExecutionEnvironment":222,"./FallbackCompositionState":223,"./SyntheticCompositionEvent":307,"./SyntheticInputEvent":311,"./keyOf":358,"buffer":18,"oMfpAn":21}],204:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28366,7 +26346,7 @@ var CSSCore = {
    * @return {DOMElement} the element passed in
    */
   addClass: function(element, className) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !/\s/.test(className),
       'CSSCore.addClass takes only a single class name. "%s" contains ' +
       'multiple classes.', className
@@ -28390,7 +26370,7 @@ var CSSCore = {
    * @return {DOMElement} the element passed in
    */
   removeClass: function(element, className) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !/\s/.test(className),
       'CSSCore.removeClass takes only a single class name. "%s" contains ' +
       'multiple classes.', className
@@ -28429,7 +26409,7 @@ var CSSCore = {
    * @return {boolean} true if the element has the class, false if not
    */
   hasClass: function(element, className) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !/\s/.test(className),
       'CSS.hasClass takes only a single class name.'
     ) : invariant(!/\s/.test(className)));
@@ -28444,7 +26424,7 @@ var CSSCore = {
 module.exports = CSSCore;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/CSSCore.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],205:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],205:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28571,7 +26551,7 @@ var CSSProperty = {
 module.exports = CSSProperty;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/CSSProperty.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],206:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],206:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28608,7 +26588,7 @@ if (ExecutionEnvironment.canUseDOM) {
   }
 }
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   // 'msTransform' is correct, but the other prefixes should be capitalized
   var badVendoredStyleNamePattern = /^(?:webkit|moz|o)[A-Z]/;
 
@@ -28624,7 +26604,7 @@ if ("production" !== "production") {
     }
 
     warnedStyleNames[name] = true;
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       false,
       'Unsupported style property %s. Did you mean %s?',
       name,
@@ -28638,7 +26618,7 @@ if ("production" !== "production") {
     }
 
     warnedStyleNames[name] = true;
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       false,
       'Unsupported vendor-prefixed style property %s. Did you mean %s?',
       name,
@@ -28652,7 +26632,7 @@ if ("production" !== "production") {
     }
 
     warnedStyleValues[value] = true;
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       false,
       'Style property values shouldn\'t contain a semicolon. ' +
       'Try "%s: %s" instead.',
@@ -28700,7 +26680,7 @@ var CSSPropertyOperations = {
         continue;
       }
       var styleValue = styles[styleName];
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         warnValidStyle(styleName, styleValue);
       }
       if (styleValue != null) {
@@ -28724,7 +26704,7 @@ var CSSPropertyOperations = {
       if (!styles.hasOwnProperty(styleName)) {
         continue;
       }
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         warnValidStyle(styleName, styles[styleName]);
       }
       var styleValue = dangerousStyleValue(styleName, styles[styleName]);
@@ -28753,7 +26733,7 @@ var CSSPropertyOperations = {
 module.exports = CSSPropertyOperations;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/CSSPropertyOperations.js","/../../node_modules/react/lib")
-},{"./CSSProperty":205,"./ExecutionEnvironment":222,"./camelizeStyleName":322,"./dangerousStyleValue":329,"./hyphenateStyleName":349,"./memoizeStringOnly":360,"./warning":372,"buffer":14,"oMfpAn":17}],207:[function(require,module,exports){
+},{"./CSSProperty":205,"./ExecutionEnvironment":222,"./camelizeStyleName":322,"./dangerousStyleValue":329,"./hyphenateStyleName":349,"./memoizeStringOnly":360,"./warning":372,"buffer":18,"oMfpAn":21}],207:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -28815,7 +26795,7 @@ assign(CallbackQueue.prototype, {
     var callbacks = this._callbacks;
     var contexts = this._contexts;
     if (callbacks) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         callbacks.length === contexts.length,
         'Mismatched list of contexts in callback queue'
       ) : invariant(callbacks.length === contexts.length));
@@ -28853,7 +26833,7 @@ PooledClass.addPoolingTo(CallbackQueue);
 module.exports = CallbackQueue;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/CallbackQueue.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./PooledClass":230,"./invariant":351,"buffer":14,"oMfpAn":17}],208:[function(require,module,exports){
+},{"./Object.assign":229,"./PooledClass":230,"./invariant":351,"buffer":18,"oMfpAn":21}],208:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29237,7 +27217,7 @@ var ChangeEventPlugin = {
 module.exports = ChangeEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ChangeEventPlugin.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPluginHub":218,"./EventPropagators":221,"./ExecutionEnvironment":222,"./ReactUpdates":300,"./SyntheticEvent":309,"./isEventSupported":352,"./isTextInputElement":354,"./keyOf":358,"buffer":14,"oMfpAn":17}],209:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPluginHub":218,"./EventPropagators":221,"./ExecutionEnvironment":222,"./ReactUpdates":300,"./SyntheticEvent":309,"./isEventSupported":352,"./isTextInputElement":354,"./keyOf":358,"buffer":18,"oMfpAn":21}],209:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29264,7 +27244,7 @@ var ClientReactRootIndex = {
 module.exports = ClientReactRootIndex;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ClientReactRootIndex.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],210:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],210:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29337,7 +27317,7 @@ var DOMChildrenOperations = {
         var updatedChild = update.parentNode.childNodes[updatedIndex];
         var parentID = update.parentID;
 
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           updatedChild,
           'processUpdates(): Unable to find child %s of element. This ' +
           'probably means the DOM was unexpectedly mutated (e.g., by the ' +
@@ -29402,7 +27382,7 @@ var DOMChildrenOperations = {
 module.exports = DOMChildrenOperations;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/DOMChildrenOperations.js","/../../node_modules/react/lib")
-},{"./Danger":213,"./ReactMultiChildUpdateTypes":279,"./invariant":351,"./setTextContent":366,"buffer":14,"oMfpAn":17}],211:[function(require,module,exports){
+},{"./Danger":213,"./ReactMultiChildUpdateTypes":279,"./invariant":351,"./setTextContent":366,"buffer":18,"oMfpAn":21}],211:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29477,7 +27457,7 @@ var DOMPropertyInjection = {
     }
 
     for (var propName in Properties) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         !DOMProperty.isStandardName.hasOwnProperty(propName),
         'injectDOMPropertyConfig(...): You\'re trying to inject DOM property ' +
         '\'%s\' which has already been injected. You may be accidentally ' +
@@ -29526,21 +27506,21 @@ var DOMPropertyInjection = {
       DOMProperty.hasOverloadedBooleanValue[propName] =
         checkMask(propConfig, DOMPropertyInjection.HAS_OVERLOADED_BOOLEAN_VALUE);
 
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         !DOMProperty.mustUseAttribute[propName] ||
           !DOMProperty.mustUseProperty[propName],
         'DOMProperty: Cannot require using both attribute and property: %s',
         propName
       ) : invariant(!DOMProperty.mustUseAttribute[propName] ||
         !DOMProperty.mustUseProperty[propName]));
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         DOMProperty.mustUseProperty[propName] ||
           !DOMProperty.hasSideEffects[propName],
         'DOMProperty: Properties that have side effects must use property: %s',
         propName
       ) : invariant(DOMProperty.mustUseProperty[propName] ||
         !DOMProperty.hasSideEffects[propName]));
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         !!DOMProperty.hasBooleanValue[propName] +
           !!DOMProperty.hasNumericValue[propName] +
           !!DOMProperty.hasOverloadedBooleanValue[propName] <= 1,
@@ -29701,7 +27681,7 @@ var DOMProperty = {
 module.exports = DOMProperty;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/DOMProperty.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],212:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],212:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29730,7 +27710,7 @@ function shouldIgnoreValue(name, value) {
     (DOMProperty.hasOverloadedBooleanValue[name] && value === false);
 }
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   var reactProps = {
     children: true,
     dangerouslySetInnerHTML: true,
@@ -29759,7 +27739,7 @@ if ("production" !== "production") {
 
     // For now, only warn when we have a suggested correction. This prevents
     // logging too much when using transferPropsTo.
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       standardName == null,
       'Unknown DOM property %s. Did you mean %s?',
       name,
@@ -29809,7 +27789,7 @@ var DOMPropertyOperations = {
         return '';
       }
       return name + '=' + quoteAttributeValueForBrowser(value);
-    } else if ("production" !== "production") {
+    } else if ("production" !== process.env.NODE_ENV) {
       warnUnknownProperty(name);
     }
     return null;
@@ -29851,7 +27831,7 @@ var DOMPropertyOperations = {
       } else {
         node.setAttribute(name, '' + value);
       }
-    } else if ("production" !== "production") {
+    } else if ("production" !== process.env.NODE_ENV) {
       warnUnknownProperty(name);
     }
   },
@@ -29883,7 +27863,7 @@ var DOMPropertyOperations = {
       }
     } else if (DOMProperty.isCustomAttribute(name)) {
       node.removeAttribute(name);
-    } else if ("production" !== "production") {
+    } else if ("production" !== process.env.NODE_ENV) {
       warnUnknownProperty(name);
     }
   }
@@ -29893,7 +27873,7 @@ var DOMPropertyOperations = {
 module.exports = DOMPropertyOperations;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/DOMPropertyOperations.js","/../../node_modules/react/lib")
-},{"./DOMProperty":211,"./quoteAttributeValueForBrowser":364,"./warning":372,"buffer":14,"oMfpAn":17}],213:[function(require,module,exports){
+},{"./DOMProperty":211,"./quoteAttributeValueForBrowser":364,"./warning":372,"buffer":18,"oMfpAn":21}],213:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -29948,7 +27928,7 @@ var Danger = {
    * @internal
    */
   dangerouslyRenderMarkup: function(markupList) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       ExecutionEnvironment.canUseDOM,
       'dangerouslyRenderMarkup(...): Cannot render markup in a worker ' +
       'thread. Make sure `window` and `document` are available globally ' +
@@ -29959,7 +27939,7 @@ var Danger = {
     var markupByNodeName = {};
     // Group markup by `nodeName` if a wrap is necessary, else by '*'.
     for (var i = 0; i < markupList.length; i++) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         markupList[i],
         'dangerouslyRenderMarkup(...): Missing markup.'
       ) : invariant(markupList[i]));
@@ -30009,7 +27989,7 @@ var Danger = {
           resultIndex = +renderNode.getAttribute(RESULT_INDEX_ATTR);
           renderNode.removeAttribute(RESULT_INDEX_ATTR);
 
-          ("production" !== "production" ? invariant(
+          ("production" !== process.env.NODE_ENV ? invariant(
             !resultList.hasOwnProperty(resultIndex),
             'Danger: Assigning to an already-occupied result index.'
           ) : invariant(!resultList.hasOwnProperty(resultIndex)));
@@ -30020,7 +28000,7 @@ var Danger = {
           // we're done.
           resultListAssignmentCount += 1;
 
-        } else if ("production" !== "production") {
+        } else if ("production" !== process.env.NODE_ENV) {
           console.error(
             'Danger: Discarding unexpected node:',
             renderNode
@@ -30031,12 +28011,12 @@ var Danger = {
 
     // Although resultList was populated out of order, it should now be a dense
     // array.
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       resultListAssignmentCount === resultList.length,
       'Danger: Did not assign to every index of resultList.'
     ) : invariant(resultListAssignmentCount === resultList.length));
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       resultList.length === markupList.length,
       'Danger: Expected markup to render %s nodes, but rendered %s.',
       markupList.length,
@@ -30055,15 +28035,15 @@ var Danger = {
    * @internal
    */
   dangerouslyReplaceNodeWithMarkup: function(oldChild, markup) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       ExecutionEnvironment.canUseDOM,
       'dangerouslyReplaceNodeWithMarkup(...): Cannot render markup in a ' +
       'worker thread. Make sure `window` and `document` are available ' +
       'globally before requiring React when unit testing or use ' +
       'React.renderToString for server rendering.'
     ) : invariant(ExecutionEnvironment.canUseDOM));
-    ("production" !== "production" ? invariant(markup, 'dangerouslyReplaceNodeWithMarkup(...): Missing markup.') : invariant(markup));
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(markup, 'dangerouslyReplaceNodeWithMarkup(...): Missing markup.') : invariant(markup));
+    ("production" !== process.env.NODE_ENV ? invariant(
       oldChild.tagName.toLowerCase() !== 'html',
       'dangerouslyReplaceNodeWithMarkup(...): Cannot replace markup of the ' +
       '<html> node. This is because browser quirks make this unreliable ' +
@@ -30080,7 +28060,7 @@ var Danger = {
 module.exports = Danger;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/Danger.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"./createNodesFromMarkup":327,"./emptyFunction":330,"./getMarkupWrap":343,"./invariant":351,"buffer":14,"oMfpAn":17}],214:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"./createNodesFromMarkup":327,"./emptyFunction":330,"./getMarkupWrap":343,"./invariant":351,"buffer":18,"oMfpAn":21}],214:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30121,7 +28101,7 @@ var DefaultEventPluginOrder = [
 module.exports = DefaultEventPluginOrder;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/DefaultEventPluginOrder.js","/../../node_modules/react/lib")
-},{"./keyOf":358,"buffer":14,"oMfpAn":17}],215:[function(require,module,exports){
+},{"./keyOf":358,"buffer":18,"oMfpAn":21}],215:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30263,7 +28243,7 @@ var EnterLeaveEventPlugin = {
 module.exports = EnterLeaveEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/EnterLeaveEventPlugin.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPropagators":221,"./ReactMount":277,"./SyntheticMouseEvent":313,"./keyOf":358,"buffer":14,"oMfpAn":17}],216:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPropagators":221,"./ReactMount":277,"./SyntheticMouseEvent":313,"./keyOf":358,"buffer":18,"oMfpAn":21}],216:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30337,7 +28317,7 @@ var EventConstants = {
 module.exports = EventConstants;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/EventConstants.js","/../../node_modules/react/lib")
-},{"./keyMirror":357,"buffer":14,"oMfpAn":17}],217:[function(require,module,exports){
+},{"./keyMirror":357,"buffer":18,"oMfpAn":21}],217:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30401,7 +28381,7 @@ var EventListener = {
    */
   capture: function(target, eventType, callback) {
     if (!target.addEventListener) {
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         console.error(
           'Attempted to listen to events during the capture phase on a ' +
           'browser that does not support the capture phase. Your application ' +
@@ -30427,7 +28407,7 @@ var EventListener = {
 module.exports = EventListener;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/EventListener.js","/../../node_modules/react/lib")
-},{"./emptyFunction":330,"buffer":14,"oMfpAn":17}],218:[function(require,module,exports){
+},{"./emptyFunction":330,"buffer":18,"oMfpAn":21}],218:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30493,7 +28473,7 @@ function validateInstanceHandle() {
     InstanceHandle &&
     InstanceHandle.traverseTwoPhase &&
     InstanceHandle.traverseEnterLeave;
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     valid,
     'InstanceHandle not injected before use!'
   ) : invariant(valid));
@@ -30540,13 +28520,13 @@ var EventPluginHub = {
      */
     injectInstanceHandle: function(InjectedInstanceHandle) {
       InstanceHandle = InjectedInstanceHandle;
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         validateInstanceHandle();
       }
     },
 
     getInstanceHandle: function() {
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         validateInstanceHandle();
       }
       return InstanceHandle;
@@ -30577,7 +28557,7 @@ var EventPluginHub = {
    * @param {?function} listener The callback to store.
    */
   putListener: function(id, registrationName, listener) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !listener || typeof listener === 'function',
       'Expected %s listener to be a function, instead got type %s',
       registrationName, typeof listener
@@ -30682,7 +28662,7 @@ var EventPluginHub = {
     var processingEventQueue = eventQueue;
     eventQueue = null;
     forEachAccumulated(processingEventQueue, executeDispatchesAndRelease);
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !eventQueue,
       'processEventQueue(): Additional events were enqueued while processing ' +
       'an event queue. Support for this has not yet been implemented.'
@@ -30705,7 +28685,7 @@ var EventPluginHub = {
 module.exports = EventPluginHub;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/EventPluginHub.js","/../../node_modules/react/lib")
-},{"./EventPluginRegistry":219,"./EventPluginUtils":220,"./accumulateInto":319,"./forEachAccumulated":336,"./invariant":351,"buffer":14,"oMfpAn":17}],219:[function(require,module,exports){
+},{"./EventPluginRegistry":219,"./EventPluginUtils":220,"./accumulateInto":319,"./forEachAccumulated":336,"./invariant":351,"buffer":18,"oMfpAn":21}],219:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -30746,7 +28726,7 @@ function recomputePluginOrdering() {
   for (var pluginName in namesToPlugins) {
     var PluginModule = namesToPlugins[pluginName];
     var pluginIndex = EventPluginOrder.indexOf(pluginName);
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       pluginIndex > -1,
       'EventPluginRegistry: Cannot inject event plugins that do not exist in ' +
       'the plugin ordering, `%s`.',
@@ -30755,7 +28735,7 @@ function recomputePluginOrdering() {
     if (EventPluginRegistry.plugins[pluginIndex]) {
       continue;
     }
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       PluginModule.extractEvents,
       'EventPluginRegistry: Event plugins must implement an `extractEvents` ' +
       'method, but `%s` does not.',
@@ -30764,7 +28744,7 @@ function recomputePluginOrdering() {
     EventPluginRegistry.plugins[pluginIndex] = PluginModule;
     var publishedEvents = PluginModule.eventTypes;
     for (var eventName in publishedEvents) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         publishEventForPlugin(
           publishedEvents[eventName],
           PluginModule,
@@ -30791,7 +28771,7 @@ function recomputePluginOrdering() {
  * @private
  */
 function publishEventForPlugin(dispatchConfig, PluginModule, eventName) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     !EventPluginRegistry.eventNameDispatchConfigs.hasOwnProperty(eventName),
     'EventPluginHub: More than one plugin attempted to publish the same ' +
     'event name, `%s`.',
@@ -30832,7 +28812,7 @@ function publishEventForPlugin(dispatchConfig, PluginModule, eventName) {
  * @private
  */
 function publishRegistrationName(registrationName, PluginModule, eventName) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     !EventPluginRegistry.registrationNameModules[registrationName],
     'EventPluginHub: More than one plugin attempted to publish the same ' +
     'registration name, `%s`.',
@@ -30880,7 +28860,7 @@ var EventPluginRegistry = {
    * @see {EventPluginHub.injection.injectEventPluginOrder}
    */
   injectEventPluginOrder: function(InjectedEventPluginOrder) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !EventPluginOrder,
       'EventPluginRegistry: Cannot inject event plugin ordering more than ' +
       'once. You are likely trying to load more than one copy of React.'
@@ -30909,7 +28889,7 @@ var EventPluginRegistry = {
       var PluginModule = injectedNamesToPlugins[pluginName];
       if (!namesToPlugins.hasOwnProperty(pluginName) ||
           namesToPlugins[pluginName] !== PluginModule) {
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           !namesToPlugins[pluginName],
           'EventPluginRegistry: Cannot inject two different event plugins ' +
           'using the same name, `%s`.',
@@ -30985,7 +28965,7 @@ var EventPluginRegistry = {
 module.exports = EventPluginRegistry;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/EventPluginRegistry.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],220:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],220:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31016,8 +28996,8 @@ var injection = {
   Mount: null,
   injectMount: function(InjectedMount) {
     injection.Mount = InjectedMount;
-    if ("production" !== "production") {
-      ("production" !== "production" ? invariant(
+    if ("production" !== process.env.NODE_ENV) {
+      ("production" !== process.env.NODE_ENV ? invariant(
         InjectedMount && InjectedMount.getNode,
         'EventPluginUtils.injection.injectMount(...): Injected Mount module ' +
         'is missing getNode.'
@@ -31045,7 +29025,7 @@ function isStartish(topLevelType) {
 
 
 var validateEventDispatches;
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   validateEventDispatches = function(event) {
     var dispatchListeners = event._dispatchListeners;
     var dispatchIDs = event._dispatchIDs;
@@ -31057,7 +29037,7 @@ if ("production" !== "production") {
       dispatchListeners.length :
       dispatchListeners ? 1 : 0;
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       idsIsArr === listenersIsArr && IDsLen === listenersLen,
       'EventPluginUtils: Invalid `event`.'
     ) : invariant(idsIsArr === listenersIsArr && IDsLen === listenersLen));
@@ -31072,7 +29052,7 @@ if ("production" !== "production") {
 function forEachEventDispatch(event, cb) {
   var dispatchListeners = event._dispatchListeners;
   var dispatchIDs = event._dispatchIDs;
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     validateEventDispatches(event);
   }
   if (Array.isArray(dispatchListeners)) {
@@ -31120,7 +29100,7 @@ function executeDispatchesInOrder(event, cb) {
 function executeDispatchesInOrderStopAtTrueImpl(event) {
   var dispatchListeners = event._dispatchListeners;
   var dispatchIDs = event._dispatchIDs;
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     validateEventDispatches(event);
   }
   if (Array.isArray(dispatchListeners)) {
@@ -31161,12 +29141,12 @@ function executeDispatchesInOrderStopAtTrue(event) {
  * @return The return value of executing the single dispatch.
  */
 function executeDirectDispatch(event) {
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     validateEventDispatches(event);
   }
   var dispatchListener = event._dispatchListeners;
   var dispatchID = event._dispatchIDs;
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     !Array.isArray(dispatchListener),
     'executeDirectDispatch(...): Invalid `event`.'
   ) : invariant(!Array.isArray(dispatchListener)));
@@ -31206,7 +29186,7 @@ var EventPluginUtils = {
 module.exports = EventPluginUtils;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/EventPluginUtils.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./invariant":351,"buffer":14,"oMfpAn":17}],221:[function(require,module,exports){
+},{"./EventConstants":216,"./invariant":351,"buffer":18,"oMfpAn":21}],221:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31247,7 +29227,7 @@ function listenerAtPhase(id, event, propagationPhase) {
  * "dispatch" object that pairs the event with the listener.
  */
 function accumulateDirectionalDispatches(domID, upwards, event) {
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     if (!domID) {
       throw new Error('Dispatching id must not be null');
     }
@@ -31348,7 +29328,7 @@ var EventPropagators = {
 module.exports = EventPropagators;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/EventPropagators.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPluginHub":218,"./accumulateInto":319,"./forEachAccumulated":336,"buffer":14,"oMfpAn":17}],222:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPluginHub":218,"./accumulateInto":319,"./forEachAccumulated":336,"buffer":18,"oMfpAn":21}],222:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31394,7 +29374,7 @@ var ExecutionEnvironment = {
 module.exports = ExecutionEnvironment;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ExecutionEnvironment.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],223:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],223:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31487,7 +29467,7 @@ PooledClass.addPoolingTo(FallbackCompositionState);
 module.exports = FallbackCompositionState;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/FallbackCompositionState.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./PooledClass":230,"./getTextContentAccessor":346,"buffer":14,"oMfpAn":17}],224:[function(require,module,exports){
+},{"./Object.assign":229,"./PooledClass":230,"./getTextContentAccessor":346,"buffer":18,"oMfpAn":21}],224:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31700,7 +29680,7 @@ var HTMLDOMPropertyConfig = {
 module.exports = HTMLDOMPropertyConfig;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/HTMLDOMPropertyConfig.js","/../../node_modules/react/lib")
-},{"./DOMProperty":211,"./ExecutionEnvironment":222,"buffer":14,"oMfpAn":17}],225:[function(require,module,exports){
+},{"./DOMProperty":211,"./ExecutionEnvironment":222,"buffer":18,"oMfpAn":21}],225:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31743,7 +29723,7 @@ var LinkedStateMixin = {
 module.exports = LinkedStateMixin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/LinkedStateMixin.js","/../../node_modules/react/lib")
-},{"./ReactLink":275,"./ReactStateSetters":294,"buffer":14,"oMfpAn":17}],226:[function(require,module,exports){
+},{"./ReactLink":275,"./ReactStateSetters":294,"buffer":18,"oMfpAn":21}],226:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -31774,7 +29754,7 @@ var hasReadOnlyValue = {
 };
 
 function _assertSingleLink(input) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     input.props.checkedLink == null || input.props.valueLink == null,
     'Cannot provide a checkedLink and a valueLink. If you want to use ' +
     'checkedLink, you probably don\'t want to use valueLink and vice versa.'
@@ -31782,7 +29762,7 @@ function _assertSingleLink(input) {
 }
 function _assertValueLink(input) {
   _assertSingleLink(input);
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     input.props.value == null && input.props.onChange == null,
     'Cannot provide a valueLink and a value or onChange event. If you want ' +
     'to use value or onChange, you probably don\'t want to use valueLink.'
@@ -31791,7 +29771,7 @@ function _assertValueLink(input) {
 
 function _assertCheckedLink(input) {
   _assertSingleLink(input);
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     input.props.checked == null && input.props.onChange == null,
     'Cannot provide a checkedLink and a checked property or onChange event. ' +
     'If you want to use checked or onChange, you probably don\'t want to ' +
@@ -31899,7 +29879,7 @@ var LinkedValueUtils = {
 module.exports = LinkedValueUtils;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/LinkedValueUtils.js","/../../node_modules/react/lib")
-},{"./ReactPropTypes":286,"./invariant":351,"buffer":14,"oMfpAn":17}],227:[function(require,module,exports){
+},{"./ReactPropTypes":286,"./invariant":351,"buffer":18,"oMfpAn":21}],227:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -31926,11 +29906,11 @@ function remove(event) {
 
 var LocalEventTrapMixin = {
   trapBubbledEvent:function(topLevelType, handlerBaseName) {
-    ("production" !== "production" ? invariant(this.isMounted(), 'Must be mounted to trap events') : invariant(this.isMounted()));
+    ("production" !== process.env.NODE_ENV ? invariant(this.isMounted(), 'Must be mounted to trap events') : invariant(this.isMounted()));
     // If a component renders to null or if another component fatals and causes
     // the state of the tree to be corrupted, `node` here can be null.
     var node = this.getDOMNode();
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       node,
       'LocalEventTrapMixin.trapBubbledEvent(...): Requires node to be rendered.'
     ) : invariant(node));
@@ -31956,7 +29936,7 @@ var LocalEventTrapMixin = {
 module.exports = LocalEventTrapMixin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/LocalEventTrapMixin.js","/../../node_modules/react/lib")
-},{"./ReactBrowserEventEmitter":233,"./accumulateInto":319,"./forEachAccumulated":336,"./invariant":351,"buffer":14,"oMfpAn":17}],228:[function(require,module,exports){
+},{"./ReactBrowserEventEmitter":233,"./accumulateInto":319,"./forEachAccumulated":336,"./invariant":351,"buffer":18,"oMfpAn":21}],228:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32016,7 +29996,7 @@ var MobileSafariClickEventPlugin = {
 module.exports = MobileSafariClickEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/MobileSafariClickEventPlugin.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./emptyFunction":330,"buffer":14,"oMfpAn":17}],229:[function(require,module,exports){
+},{"./EventConstants":216,"./emptyFunction":330,"buffer":18,"oMfpAn":21}],229:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -32067,7 +30047,7 @@ function assign(target, sources) {
 module.exports = assign;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/Object.assign.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],230:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],230:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32137,7 +30117,7 @@ var fiveArgumentPooler = function(a1, a2, a3, a4, a5) {
 
 var standardReleaser = function(instance) {
   var Klass = this;
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     instance instanceof Klass,
     'Trying to release an instance into a pool of a different type.'
   ) : invariant(instance instanceof Klass));
@@ -32183,7 +30163,7 @@ var PooledClass = {
 module.exports = PooledClass;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/PooledClass.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],231:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],231:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32228,7 +30208,7 @@ var createElement = ReactElement.createElement;
 var createFactory = ReactElement.createFactory;
 var cloneElement = ReactElement.cloneElement;
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   createElement = ReactElementValidator.createElement;
   createFactory = ReactElementValidator.createFactory;
   cloneElement = ReactElementValidator.cloneElement;
@@ -32285,7 +30265,7 @@ if (
   });
 }
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   var ExecutionEnvironment = require("./ExecutionEnvironment");
   if (ExecutionEnvironment.canUseDOM && window.top === window.self) {
 
@@ -32335,7 +30315,7 @@ React.version = '0.13.3';
 module.exports = React;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/React.js","/../../node_modules/react/lib")
-},{"./EventPluginUtils":220,"./ExecutionEnvironment":222,"./Object.assign":229,"./ReactChildren":237,"./ReactClass":238,"./ReactComponent":239,"./ReactContext":244,"./ReactCurrentOwner":245,"./ReactDOM":246,"./ReactDOMTextComponent":257,"./ReactDefaultInjection":260,"./ReactElement":263,"./ReactElementValidator":264,"./ReactInstanceHandles":272,"./ReactMount":277,"./ReactPerf":282,"./ReactPropTypes":286,"./ReactReconciler":289,"./ReactServerRendering":292,"./findDOMNode":333,"./onlyChild":361,"buffer":14,"oMfpAn":17}],232:[function(require,module,exports){
+},{"./EventPluginUtils":220,"./ExecutionEnvironment":222,"./Object.assign":229,"./ReactChildren":237,"./ReactClass":238,"./ReactComponent":239,"./ReactContext":244,"./ReactCurrentOwner":245,"./ReactDOM":246,"./ReactDOMTextComponent":257,"./ReactDefaultInjection":260,"./ReactElement":263,"./ReactElementValidator":264,"./ReactInstanceHandles":272,"./ReactMount":277,"./ReactPerf":282,"./ReactPropTypes":286,"./ReactReconciler":289,"./ReactServerRendering":292,"./findDOMNode":333,"./onlyChild":361,"buffer":18,"oMfpAn":21}],232:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32368,7 +30348,7 @@ var ReactBrowserComponentMixin = {
 module.exports = ReactBrowserComponentMixin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactBrowserComponentMixin.js","/../../node_modules/react/lib")
-},{"./findDOMNode":333,"buffer":14,"oMfpAn":17}],233:[function(require,module,exports){
+},{"./findDOMNode":333,"buffer":18,"oMfpAn":21}],233:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32723,7 +30703,7 @@ var ReactBrowserEventEmitter = assign({}, ReactEventEmitterMixin, {
 module.exports = ReactBrowserEventEmitter;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactBrowserEventEmitter.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPluginHub":218,"./EventPluginRegistry":219,"./Object.assign":229,"./ReactEventEmitterMixin":267,"./ViewportMetrics":318,"./isEventSupported":352,"buffer":14,"oMfpAn":17}],234:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPluginHub":218,"./EventPluginRegistry":219,"./Object.assign":229,"./ReactEventEmitterMixin":267,"./ViewportMetrics":318,"./isEventSupported":352,"buffer":18,"oMfpAn":21}],234:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32795,7 +30775,7 @@ var ReactCSSTransitionGroup = React.createClass({
 module.exports = ReactCSSTransitionGroup;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactCSSTransitionGroup.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./React":231,"./ReactCSSTransitionGroupChild":235,"./ReactTransitionGroup":298,"buffer":14,"oMfpAn":17}],235:[function(require,module,exports){
+},{"./Object.assign":229,"./React":231,"./ReactCSSTransitionGroupChild":235,"./ReactTransitionGroup":298,"buffer":18,"oMfpAn":21}],235:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -32829,9 +30809,9 @@ var NO_EVENT_TIMEOUT = 5000;
 var noEventListener = null;
 
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   noEventListener = function() {
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       false,
       'transition(): tried to perform an animation without ' +
       'an animationend or transitionend event after timeout (' +
@@ -32855,7 +30835,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
       if (e && e.target !== node) {
         return;
       }
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         clearTimeout(noEventTimeout);
       }
 
@@ -32878,7 +30858,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
     // Need to do this to actually trigger a transition.
     this.queueClass(activeClassName);
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       noEventTimeout = setTimeout(noEventListener, NO_EVENT_TIMEOUT);
     }
   },
@@ -32943,7 +30923,7 @@ var ReactCSSTransitionGroupChild = React.createClass({
 module.exports = ReactCSSTransitionGroupChild;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactCSSTransitionGroupChild.js","/../../node_modules/react/lib")
-},{"./CSSCore":204,"./React":231,"./ReactTransitionEvents":297,"./onlyChild":361,"./warning":372,"buffer":14,"oMfpAn":17}],236:[function(require,module,exports){
+},{"./CSSCore":204,"./React":231,"./ReactTransitionEvents":297,"./onlyChild":361,"./warning":372,"buffer":18,"oMfpAn":21}],236:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -33072,7 +31052,7 @@ var ReactChildReconciler = {
 module.exports = ReactChildReconciler;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactChildReconciler.js","/../../node_modules/react/lib")
-},{"./ReactReconciler":289,"./flattenChildren":334,"./instantiateReactComponent":350,"./shouldUpdateReactComponent":368,"buffer":14,"oMfpAn":17}],237:[function(require,module,exports){
+},{"./ReactReconciler":289,"./flattenChildren":334,"./instantiateReactComponent":350,"./shouldUpdateReactComponent":368,"buffer":18,"oMfpAn":21}],237:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -33158,8 +31138,8 @@ function mapSingleChildIntoContext(traverseContext, child, name, i) {
   var mapResult = mapBookKeeping.mapResult;
 
   var keyUnique = !mapResult.hasOwnProperty(name);
-  if ("production" !== "production") {
-    ("production" !== "production" ? warning(
+  if ("production" !== process.env.NODE_ENV) {
+    ("production" !== process.env.NODE_ENV ? warning(
       keyUnique,
       'ReactChildren.map(...): Encountered two children with the same key, ' +
       '`%s`. Child keys must be unique; when two children share a key, only ' +
@@ -33225,7 +31205,7 @@ var ReactChildren = {
 module.exports = ReactChildren;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactChildren.js","/../../node_modules/react/lib")
-},{"./PooledClass":230,"./ReactFragment":269,"./traverseAllChildren":370,"./warning":372,"buffer":14,"oMfpAn":17}],238:[function(require,module,exports){
+},{"./PooledClass":230,"./ReactFragment":269,"./traverseAllChildren":370,"./warning":372,"buffer":18,"oMfpAn":21}],238:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -33556,7 +31536,7 @@ var RESERVED_SPEC_KEYS = {
     }
   },
   childContextTypes: function(Constructor, childContextTypes) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       validateTypeDef(
         Constructor,
         childContextTypes,
@@ -33570,7 +31550,7 @@ var RESERVED_SPEC_KEYS = {
     );
   },
   contextTypes: function(Constructor, contextTypes) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       validateTypeDef(
         Constructor,
         contextTypes,
@@ -33598,7 +31578,7 @@ var RESERVED_SPEC_KEYS = {
     }
   },
   propTypes: function(Constructor, propTypes) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       validateTypeDef(
         Constructor,
         propTypes,
@@ -33621,7 +31601,7 @@ function validateTypeDef(Constructor, typeDef, location) {
     if (typeDef.hasOwnProperty(propName)) {
       // use a warning instead of an invariant so components
       // don't show up in prod but not in __DEV__
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         typeof typeDef[propName] === 'function',
         '%s: %s type `%s` is invalid; it must be a function, usually from ' +
         'React.PropTypes.',
@@ -33640,7 +31620,7 @@ function validateMethodOverride(proto, name) {
 
   // Disallow overriding of base class methods unless explicitly allowed.
   if (ReactClassMixin.hasOwnProperty(name)) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       specPolicy === SpecPolicy.OVERRIDE_BASE,
       'ReactClassInterface: You are attempting to override ' +
       '`%s` from your class specification. Ensure that your method names ' +
@@ -33651,7 +31631,7 @@ function validateMethodOverride(proto, name) {
 
   // Disallow defining methods more than once unless explicitly allowed.
   if (proto.hasOwnProperty(name)) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       specPolicy === SpecPolicy.DEFINE_MANY ||
       specPolicy === SpecPolicy.DEFINE_MANY_MERGED,
       'ReactClassInterface: You are attempting to define ' +
@@ -33672,12 +31652,12 @@ function mixSpecIntoComponent(Constructor, spec) {
     return;
   }
 
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     typeof spec !== 'function',
     'ReactClass: You\'re attempting to ' +
     'use a component class as a mixin. Instead, just use a regular object.'
   ) : invariant(typeof spec !== 'function'));
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     !ReactElement.isValidElement(spec),
     'ReactClass: You\'re attempting to ' +
     'use a component as a mixin. Instead, just use a regular object.'
@@ -33734,7 +31714,7 @@ function mixSpecIntoComponent(Constructor, spec) {
           var specPolicy = ReactClassInterface[name];
 
           // These cases should already be caught by validateMethodOverride
-          ("production" !== "production" ? invariant(
+          ("production" !== process.env.NODE_ENV ? invariant(
             isReactClassMethod && (
               (specPolicy === SpecPolicy.DEFINE_MANY_MERGED || specPolicy === SpecPolicy.DEFINE_MANY)
             ),
@@ -33755,7 +31735,7 @@ function mixSpecIntoComponent(Constructor, spec) {
           }
         } else {
           proto[name] = property;
-          if ("production" !== "production") {
+          if ("production" !== process.env.NODE_ENV) {
             // Add verbose displayName to the function, which helps when looking
             // at profiling tools.
             if (typeof property === 'function' && spec.displayName) {
@@ -33779,7 +31759,7 @@ function mixStaticSpecIntoComponent(Constructor, statics) {
     }
 
     var isReserved = name in RESERVED_SPEC_KEYS;
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !isReserved,
       'ReactClass: You are attempting to define a reserved ' +
       'property, `%s`, that shouldn\'t be on the "statics" key. Define it ' +
@@ -33789,7 +31769,7 @@ function mixStaticSpecIntoComponent(Constructor, statics) {
     ) : invariant(!isReserved));
 
     var isInherited = name in Constructor;
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !isInherited,
       'ReactClass: You are attempting to define ' +
       '`%s` on your component more than once. This conflict may be ' +
@@ -33808,14 +31788,14 @@ function mixStaticSpecIntoComponent(Constructor, statics) {
  * @return {object} one after it has been mutated to contain everything in two.
  */
 function mergeIntoWithNoDuplicateKeys(one, two) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     one && two && typeof one === 'object' && typeof two === 'object',
     'mergeIntoWithNoDuplicateKeys(): Cannot merge non-objects.'
   ) : invariant(one && two && typeof one === 'object' && typeof two === 'object'));
 
   for (var key in two) {
     if (two.hasOwnProperty(key)) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         one[key] === undefined,
         'mergeIntoWithNoDuplicateKeys(): ' +
         'Tried to merge two objects with the same key: `%s`. This conflict ' +
@@ -33878,7 +31858,7 @@ function createChainedFunction(one, two) {
  */
 function bindAutoBindMethod(component, method) {
   var boundMethod = method.bind(component);
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     boundMethod.__reactBoundContext = component;
     boundMethod.__reactBoundMethod = method;
     boundMethod.__reactBoundArguments = null;
@@ -33890,14 +31870,14 @@ function bindAutoBindMethod(component, method) {
       // ignore the value of "this" that the user is trying to use, so
       // let's warn.
       if (newThis !== component && newThis !== null) {
-        ("production" !== "production" ? warning(
+        ("production" !== process.env.NODE_ENV ? warning(
           false,
           'bind(): React component methods may only be bound to the ' +
           'component instance. See %s',
           componentName
         ) : null);
       } else if (!args.length) {
-        ("production" !== "production" ? warning(
+        ("production" !== process.env.NODE_ENV ? warning(
           false,
           'bind(): You are binding a component method to the component. ' +
           'React does this for you automatically in a high-performance ' +
@@ -33941,7 +31921,7 @@ var typeDeprecationDescriptor = {
   enumerable: false,
   get: function() {
     var displayName = this.displayName || this.name || 'Component';
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       false,
       '%s.type is deprecated. Use %s directly to access the class.',
       displayName,
@@ -33978,10 +31958,10 @@ var ReactClassMixin = {
    * @final
    */
   isMounted: function() {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       var owner = ReactCurrentOwner.current;
       if (owner !== null) {
-        ("production" !== "production" ? warning(
+        ("production" !== process.env.NODE_ENV ? warning(
           owner._warnedAboutRefsInRender,
           '%s is accessing isMounted inside its render() function. ' +
           'render() should be a pure function of props and state. It should ' +
@@ -34059,8 +32039,8 @@ var ReactClass = {
       // This constructor is overridden by mocks. The argument is used
       // by mocks to assert on what gets mounted.
 
-      if ("production" !== "production") {
-        ("production" !== "production" ? warning(
+      if ("production" !== process.env.NODE_ENV) {
+        ("production" !== process.env.NODE_ENV ? warning(
           this instanceof Constructor,
           'Something is calling a React component directly. Use a factory or ' +
           'JSX instead. See: https://fb.me/react-legacyfactory'
@@ -34080,7 +32060,7 @@ var ReactClass = {
       // getInitialState and componentWillMount methods for initialization.
 
       var initialState = this.getInitialState ? this.getInitialState() : null;
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         // We allow auto-mocks to proceed as if they're returning null.
         if (typeof initialState === 'undefined' &&
             this.getInitialState._isMockFunction) {
@@ -34089,7 +32069,7 @@ var ReactClass = {
           initialState = null;
         }
       }
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         typeof initialState === 'object' && !Array.isArray(initialState),
         '%s.getInitialState(): must return an object or null',
         Constructor.displayName || 'ReactCompositeComponent'
@@ -34111,7 +32091,7 @@ var ReactClass = {
       Constructor.defaultProps = Constructor.getDefaultProps();
     }
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       // This is a tag to indicate that the use of these method names is ok,
       // since it's used with createClass. If it's not, then it's likely a
       // mistake so we'll warn you to use the static property, property
@@ -34124,13 +32104,13 @@ var ReactClass = {
       }
     }
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       Constructor.prototype.render,
       'createClass(...): Class specification must implement a `render` method.'
     ) : invariant(Constructor.prototype.render));
 
-    if ("production" !== "production") {
-      ("production" !== "production" ? warning(
+    if ("production" !== process.env.NODE_ENV) {
+      ("production" !== process.env.NODE_ENV ? warning(
         !Constructor.prototype.componentShouldUpdate,
         '%s has a method called ' +
         'componentShouldUpdate(). Did you mean shouldComponentUpdate()? ' +
@@ -34149,7 +32129,7 @@ var ReactClass = {
 
     // Legacy hook
     Constructor.type = Constructor;
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       try {
         Object.defineProperty(Constructor, 'type', typeDeprecationDescriptor);
       } catch (x) {
@@ -34171,7 +32151,7 @@ var ReactClass = {
 module.exports = ReactClass;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactClass.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./ReactComponent":239,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactErrorUtils":266,"./ReactInstanceMap":273,"./ReactLifeCycle":274,"./ReactPropTypeLocationNames":284,"./ReactPropTypeLocations":285,"./ReactUpdateQueue":299,"./invariant":351,"./keyMirror":357,"./keyOf":358,"./warning":372,"buffer":14,"oMfpAn":17}],239:[function(require,module,exports){
+},{"./Object.assign":229,"./ReactComponent":239,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactErrorUtils":266,"./ReactInstanceMap":273,"./ReactLifeCycle":274,"./ReactPropTypeLocationNames":284,"./ReactPropTypeLocations":285,"./ReactUpdateQueue":299,"./invariant":351,"./keyMirror":357,"./keyOf":358,"./warning":372,"buffer":18,"oMfpAn":21}],239:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34225,7 +32205,7 @@ function ReactComponent(props, context) {
  * @protected
  */
 ReactComponent.prototype.setState = function(partialState, callback) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     typeof partialState === 'object' ||
     typeof partialState === 'function' ||
     partialState == null,
@@ -34234,8 +32214,8 @@ ReactComponent.prototype.setState = function(partialState, callback) {
   ) : invariant(typeof partialState === 'object' ||
   typeof partialState === 'function' ||
   partialState == null));
-  if ("production" !== "production") {
-    ("production" !== "production" ? warning(
+  if ("production" !== process.env.NODE_ENV) {
+    ("production" !== process.env.NODE_ENV ? warning(
       partialState != null,
       'setState(...): You passed an undefined or null state object; ' +
       'instead, use forceUpdate().'
@@ -34273,7 +32253,7 @@ ReactComponent.prototype.forceUpdate = function(callback) {
  * we would like to deprecate them, we're not going to move them over to this
  * modern base class. Instead, we define a getter that warns if it's accessed.
  */
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   var deprecatedAPIs = {
     getDOMNode: [
       'getDOMNode',
@@ -34302,7 +32282,7 @@ if ("production" !== "production") {
     try {
       Object.defineProperty(ReactComponent.prototype, methodName, {
         get: function() {
-          ("production" !== "production" ? warning(
+          ("production" !== process.env.NODE_ENV ? warning(
             false,
             '%s(...) is deprecated in plain JavaScript React classes. %s',
             info[0],
@@ -34325,7 +32305,7 @@ if ("production" !== "production") {
 module.exports = ReactComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactComponent.js","/../../node_modules/react/lib")
-},{"./ReactUpdateQueue":299,"./invariant":351,"./warning":372,"buffer":14,"oMfpAn":17}],240:[function(require,module,exports){
+},{"./ReactUpdateQueue":299,"./invariant":351,"./warning":372,"buffer":18,"oMfpAn":21}],240:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34374,7 +32354,7 @@ var ReactComponentBrowserEnvironment = {
 module.exports = ReactComponentBrowserEnvironment;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactComponentBrowserEnvironment.js","/../../node_modules/react/lib")
-},{"./ReactDOMIDOperations":250,"./ReactMount":277,"buffer":14,"oMfpAn":17}],241:[function(require,module,exports){
+},{"./ReactDOMIDOperations":250,"./ReactMount":277,"buffer":18,"oMfpAn":21}],241:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -34416,7 +32396,7 @@ var ReactComponentEnvironment = {
 
   injection: {
     injectEnvironment: function(environment) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         !injected,
         'ReactCompositeComponent: injectEnvironment() can only be called once.'
       ) : invariant(!injected));
@@ -34435,7 +32415,7 @@ var ReactComponentEnvironment = {
 module.exports = ReactComponentEnvironment;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactComponentEnvironment.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],242:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],242:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34486,7 +32466,7 @@ var ReactComponentWithPureRenderMixin = {
 module.exports = ReactComponentWithPureRenderMixin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactComponentWithPureRenderMixin.js","/../../node_modules/react/lib")
-},{"./shallowEqual":367,"buffer":14,"oMfpAn":17}],243:[function(require,module,exports){
+},{"./shallowEqual":367,"buffer":18,"oMfpAn":21}],243:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -34624,10 +32604,10 @@ var ReactCompositeComponentMixin = {
     // Initialize the public class
     var inst = new Component(publicProps, publicContext);
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       // This will throw later in _renderValidatedComponent, but add an early
       // warning now to help debugging
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         inst.render != null,
         '%s(...): No `render` method found on the returned component ' +
         'instance: you may have forgotten to define `render` in your ' +
@@ -34648,15 +32628,15 @@ var ReactCompositeComponentMixin = {
     // Store a reference from the instance back to the internal representation
     ReactInstanceMap.set(inst, this);
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       this._warnIfContextsDiffer(this._currentElement._context, context);
     }
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       // Since plain JS classes are defined without any special initialization
       // logic, we can not catch common errors early. Therefore, we have to
       // catch them here, at initialization time, instead.
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         !inst.getInitialState ||
         inst.getInitialState.isReactClassApproved,
         'getInitialState was defined on %s, a plain JavaScript class. ' +
@@ -34664,7 +32644,7 @@ var ReactCompositeComponentMixin = {
         'Did you mean to define a state property instead?',
         this.getName() || 'a component'
       ) : null);
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         !inst.getDefaultProps ||
         inst.getDefaultProps.isReactClassApproved,
         'getDefaultProps was defined on %s, a plain JavaScript class. ' +
@@ -34672,19 +32652,19 @@ var ReactCompositeComponentMixin = {
         'Use a static property to define defaultProps instead.',
         this.getName() || 'a component'
       ) : null);
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         !inst.propTypes,
         'propTypes was defined as an instance property on %s. Use a static ' +
         'property to define propTypes instead.',
         this.getName() || 'a component'
       ) : null);
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         !inst.contextTypes,
         'contextTypes was defined as an instance property on %s. Use a ' +
         'static property to define contextTypes instead.',
         this.getName() || 'a component'
       ) : null);
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         typeof inst.componentShouldUpdate !== 'function',
         '%s has a method called ' +
         'componentShouldUpdate(). Did you mean shouldComponentUpdate()? ' +
@@ -34698,7 +32678,7 @@ var ReactCompositeComponentMixin = {
     if (initialState === undefined) {
       inst.state = initialState = null;
     }
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       typeof initialState === 'object' && !Array.isArray(initialState),
       '%s.state: must be set to an object or null',
       this.getName() || 'ReactCompositeComponent'
@@ -34848,7 +32828,7 @@ var ReactCompositeComponentMixin = {
    */
   _processContext: function(context) {
     var maskedContext = this._maskContext(context);
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       var Component = ReactNativeComponent.getComponentClassForElement(
         this._currentElement
       );
@@ -34872,13 +32852,13 @@ var ReactCompositeComponentMixin = {
     var inst = this._instance;
     var childContext = inst.getChildContext && inst.getChildContext();
     if (childContext) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         typeof inst.constructor.childContextTypes === 'object',
         '%s.getChildContext(): childContextTypes must be defined in order to ' +
         'use getChildContext().',
         this.getName() || 'ReactCompositeComponent'
       ) : invariant(typeof inst.constructor.childContextTypes === 'object'));
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         this._checkPropTypes(
           inst.constructor.childContextTypes,
           childContext,
@@ -34886,7 +32866,7 @@ var ReactCompositeComponentMixin = {
         );
       }
       for (var name in childContext) {
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           name in inst.constructor.childContextTypes,
           '%s.getChildContext(): key "%s" is not defined in childContextTypes.',
           this.getName() || 'ReactCompositeComponent',
@@ -34915,7 +32895,7 @@ var ReactCompositeComponentMixin = {
    * @private
    */
   _processProps: function(newProps) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       var Component = ReactNativeComponent.getComponentClassForElement(
         this._currentElement
       );
@@ -34948,7 +32928,7 @@ var ReactCompositeComponentMixin = {
         try {
           // This is intentionally an invariant that gets caught. It's the same
           // behavior as without this statement except with a better message.
-          ("production" !== "production" ? invariant(
+          ("production" !== process.env.NODE_ENV ? invariant(
             typeof propTypes[propName] === 'function',
             '%s: %s type `%s` is invalid; it must be a function, usually ' +
             'from React.PropTypes.',
@@ -34968,14 +32948,14 @@ var ReactCompositeComponentMixin = {
 
           if (location === ReactPropTypeLocations.prop) {
             // Preface gives us something to blacklist in warning module
-            ("production" !== "production" ? warning(
+            ("production" !== process.env.NODE_ENV ? warning(
               false,
               'Failed Composite propType: %s%s',
               error.message,
               addendum
             ) : null);
           } else {
-            ("production" !== "production" ? warning(
+            ("production" !== process.env.NODE_ENV ? warning(
               false,
               'Failed Context Types: %s%s',
               error.message,
@@ -35020,7 +33000,7 @@ var ReactCompositeComponentMixin = {
     }
 
     if (this._pendingStateQueue !== null || this._pendingForceUpdate) {
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         ReactElementValidator.checkAndWarnForMutatedProps(
           this._currentElement
         );
@@ -35047,7 +33027,7 @@ var ReactCompositeComponentMixin = {
     var displayName = this.getName() || 'ReactCompositeComponent';
     for (var i = 0; i < parentKeys.length; i++) {
       var key = parentKeys[i];
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         ownerBasedContext[key] === parentBasedContext[key],
         'owner-based and parent-based contexts differ '  +
         '(values: `%s` vs `%s`) for key (%s) while mounting %s ' +
@@ -35092,7 +33072,7 @@ var ReactCompositeComponentMixin = {
       nextContext = this._processContext(nextParentElement._context);
       nextProps = this._processProps(nextParentElement.props);
 
-      if ("production" !== "production") {
+      if ("production" !== process.env.NODE_ENV) {
         if (nextUnmaskedContext != null) {
           this._warnIfContextsDiffer(
             nextParentElement._context,
@@ -35117,8 +33097,8 @@ var ReactCompositeComponentMixin = {
       !inst.shouldComponentUpdate ||
       inst.shouldComponentUpdate(nextProps, nextState, nextContext);
 
-    if ("production" !== "production") {
-      ("production" !== "production" ? warning(
+    if ("production" !== process.env.NODE_ENV) {
+      ("production" !== process.env.NODE_ENV ? warning(
         typeof shouldUpdate !== 'undefined',
         '%s.shouldComponentUpdate(): Returned undefined instead of a ' +
         'boolean value. Make sure to return true or false.',
@@ -35277,7 +33257,7 @@ var ReactCompositeComponentMixin = {
   _renderValidatedComponentWithoutOwnerOrContext: function() {
     var inst = this._instance;
     var renderedComponent = inst.render();
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       // We allow auto-mocks to proceed as if they're returning null.
       if (typeof renderedComponent === 'undefined' &&
           inst.render._isMockFunction) {
@@ -35308,7 +33288,7 @@ var ReactCompositeComponentMixin = {
       ReactContext.current = previousContext;
       ReactCurrentOwner.current = null;
     }
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       // TODO: An `isValidNode` function would probably be more appropriate
       renderedComponent === null || renderedComponent === false ||
       ReactElement.isValidElement(renderedComponent),
@@ -35399,7 +33379,7 @@ var ReactCompositeComponent = {
 module.exports = ReactCompositeComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactCompositeComponent.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./ReactComponentEnvironment":241,"./ReactContext":244,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactElementValidator":264,"./ReactInstanceMap":273,"./ReactLifeCycle":274,"./ReactNativeComponent":280,"./ReactPerf":282,"./ReactPropTypeLocationNames":284,"./ReactPropTypeLocations":285,"./ReactReconciler":289,"./ReactUpdates":300,"./emptyObject":331,"./invariant":351,"./shouldUpdateReactComponent":368,"./warning":372,"buffer":14,"oMfpAn":17}],244:[function(require,module,exports){
+},{"./Object.assign":229,"./ReactComponentEnvironment":241,"./ReactContext":244,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactElementValidator":264,"./ReactInstanceMap":273,"./ReactLifeCycle":274,"./ReactNativeComponent":280,"./ReactPerf":282,"./ReactPropTypeLocationNames":284,"./ReactPropTypeLocations":285,"./ReactReconciler":289,"./ReactUpdates":300,"./emptyObject":331,"./invariant":351,"./shouldUpdateReactComponent":368,"./warning":372,"buffer":18,"oMfpAn":21}],244:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35451,8 +33431,8 @@ var ReactContext = {
    * @return {ReactComponent|array<ReactComponent>}
    */
   withContext: function(newContext, scopedCallback) {
-    if ("production" !== "production") {
-      ("production" !== "production" ? warning(
+    if ("production" !== process.env.NODE_ENV) {
+      ("production" !== process.env.NODE_ENV ? warning(
         didWarn,
         'withContext is deprecated and will be removed in a future version. ' +
         'Use a wrapper component with getChildContext instead.'
@@ -35477,7 +33457,7 @@ var ReactContext = {
 module.exports = ReactContext;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactContext.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./emptyObject":331,"./warning":372,"buffer":14,"oMfpAn":17}],245:[function(require,module,exports){
+},{"./Object.assign":229,"./emptyObject":331,"./warning":372,"buffer":18,"oMfpAn":21}],245:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35513,7 +33493,7 @@ var ReactCurrentOwner = {
 module.exports = ReactCurrentOwner;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactCurrentOwner.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],246:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],246:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35541,7 +33521,7 @@ var mapObject = require("./mapObject");
  * @private
  */
 function createDOMFactory(tag) {
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     return ReactElementValidator.createFactory(tag);
   }
   return ReactElement.createFactory(tag);
@@ -35692,7 +33672,7 @@ var ReactDOM = mapObject({
 module.exports = ReactDOM;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOM.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./ReactElementValidator":264,"./mapObject":359,"buffer":14,"oMfpAn":17}],247:[function(require,module,exports){
+},{"./ReactElement":263,"./ReactElementValidator":264,"./mapObject":359,"buffer":18,"oMfpAn":21}],247:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35758,7 +33738,7 @@ var ReactDOMButton = ReactClass.createClass({
 module.exports = ReactDOMButton;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMButton.js","/../../node_modules/react/lib")
-},{"./AutoFocusMixin":202,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./keyMirror":357,"buffer":14,"oMfpAn":17}],248:[function(require,module,exports){
+},{"./AutoFocusMixin":202,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./keyMirror":357,"buffer":18,"oMfpAn":21}],248:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -35818,11 +33798,11 @@ function assertValidProps(props) {
   }
   // Note the use of `==` which checks for null or undefined.
   if (props.dangerouslySetInnerHTML != null) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       props.children == null,
       'Can only set one of `children` or `props.dangerouslySetInnerHTML`.'
     ) : invariant(props.children == null));
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       typeof props.dangerouslySetInnerHTML === 'object' &&
       '__html' in props.dangerouslySetInnerHTML,
       '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. ' +
@@ -35831,13 +33811,13 @@ function assertValidProps(props) {
     ) : invariant(typeof props.dangerouslySetInnerHTML === 'object' &&
     '__html' in props.dangerouslySetInnerHTML));
   }
-  if ("production" !== "production") {
-    ("production" !== "production" ? warning(
+  if ("production" !== process.env.NODE_ENV) {
+    ("production" !== process.env.NODE_ENV ? warning(
       props.innerHTML == null,
       'Directly setting property `innerHTML` is not permitted. ' +
       'For more information, lookup documentation on `dangerouslySetInnerHTML`.'
     ) : null);
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       !props.contentEditable || props.children == null,
       'A component is `contentEditable` and contains `children` managed by ' +
       'React. It is now your responsibility to guarantee that none of ' +
@@ -35845,7 +33825,7 @@ function assertValidProps(props) {
       'probably not intentional.'
     ) : null);
   }
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     props.style == null || typeof props.style === 'object',
     'The `style` prop expects a mapping from style properties to values, ' +
     'not a string. For example, style={{marginRight: spacing + \'em\'}} when ' +
@@ -35854,10 +33834,10 @@ function assertValidProps(props) {
 }
 
 function putListener(id, registrationName, listener, transaction) {
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     // IE8 has no API for event capturing and the `onScroll` event doesn't
     // bubble.
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       registrationName !== 'onScroll' || isEventSupported('scroll', true),
       'This browser doesn\'t support the `onScroll` event'
     ) : null);
@@ -35908,7 +33888,7 @@ var hasOwnProperty = {}.hasOwnProperty;
 
 function validateDangerousTag(tag) {
   if (!hasOwnProperty.call(validatedTagCache, tag)) {
-    ("production" !== "production" ? invariant(VALID_TAG_REGEX.test(tag), 'Invalid tag: %s', tag) : invariant(VALID_TAG_REGEX.test(tag)));
+    ("production" !== process.env.NODE_ENV ? invariant(VALID_TAG_REGEX.test(tag), 'Invalid tag: %s', tag) : invariant(VALID_TAG_REGEX.test(tag)));
     validatedTagCache[tag] = true;
   }
 }
@@ -36268,7 +34248,7 @@ ReactDOMComponent.injection = {
 module.exports = ReactDOMComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMComponent.js","/../../node_modules/react/lib")
-},{"./CSSPropertyOperations":206,"./DOMProperty":211,"./DOMPropertyOperations":212,"./Object.assign":229,"./ReactBrowserEventEmitter":233,"./ReactComponentBrowserEnvironment":240,"./ReactMount":277,"./ReactMultiChild":278,"./ReactPerf":282,"./escapeTextContentForBrowser":332,"./invariant":351,"./isEventSupported":352,"./keyOf":358,"./warning":372,"buffer":14,"oMfpAn":17}],249:[function(require,module,exports){
+},{"./CSSPropertyOperations":206,"./DOMProperty":211,"./DOMPropertyOperations":212,"./Object.assign":229,"./ReactBrowserEventEmitter":233,"./ReactComponentBrowserEnvironment":240,"./ReactMount":277,"./ReactMultiChild":278,"./ReactPerf":282,"./escapeTextContentForBrowser":332,"./invariant":351,"./isEventSupported":352,"./keyOf":358,"./warning":372,"buffer":18,"oMfpAn":21}],249:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36319,7 +34299,7 @@ var ReactDOMForm = ReactClass.createClass({
 module.exports = ReactDOMForm;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMForm.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./LocalEventTrapMixin":227,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"buffer":14,"oMfpAn":17}],250:[function(require,module,exports){
+},{"./EventConstants":216,"./LocalEventTrapMixin":227,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"buffer":18,"oMfpAn":21}],250:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36375,7 +34355,7 @@ var ReactDOMIDOperations = {
    */
   updatePropertyByID: function(id, name, value) {
     var node = ReactMount.getNode(id);
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !INVALID_PROPERTY_ERRORS.hasOwnProperty(name),
       'updatePropertyByID(...): %s',
       INVALID_PROPERTY_ERRORS[name]
@@ -36401,7 +34381,7 @@ var ReactDOMIDOperations = {
    */
   deletePropertyByID: function(id, name, value) {
     var node = ReactMount.getNode(id);
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !INVALID_PROPERTY_ERRORS.hasOwnProperty(name),
       'updatePropertyByID(...): %s',
       INVALID_PROPERTY_ERRORS[name]
@@ -36487,7 +34467,7 @@ ReactPerf.measureMethods(ReactDOMIDOperations, 'ReactDOMIDOperations', {
 module.exports = ReactDOMIDOperations;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMIDOperations.js","/../../node_modules/react/lib")
-},{"./CSSPropertyOperations":206,"./DOMChildrenOperations":210,"./DOMPropertyOperations":212,"./ReactMount":277,"./ReactPerf":282,"./invariant":351,"./setInnerHTML":365,"buffer":14,"oMfpAn":17}],251:[function(require,module,exports){
+},{"./CSSPropertyOperations":206,"./DOMChildrenOperations":210,"./DOMPropertyOperations":212,"./ReactMount":277,"./ReactPerf":282,"./invariant":351,"./setInnerHTML":365,"buffer":18,"oMfpAn":21}],251:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36534,7 +34514,7 @@ var ReactDOMIframe = ReactClass.createClass({
 module.exports = ReactDOMIframe;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMIframe.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./LocalEventTrapMixin":227,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"buffer":14,"oMfpAn":17}],252:[function(require,module,exports){
+},{"./EventConstants":216,"./LocalEventTrapMixin":227,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"buffer":18,"oMfpAn":21}],252:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36582,7 +34562,7 @@ var ReactDOMImg = ReactClass.createClass({
 module.exports = ReactDOMImg;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMImg.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./LocalEventTrapMixin":227,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"buffer":14,"oMfpAn":17}],253:[function(require,module,exports){
+},{"./EventConstants":216,"./LocalEventTrapMixin":227,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"buffer":18,"oMfpAn":21}],253:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36733,13 +34713,13 @@ var ReactDOMInput = ReactClass.createClass({
           continue;
         }
         var otherID = ReactMount.getID(otherNode);
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           otherID,
           'ReactDOMInput: Mixing React and non-React radio inputs with the ' +
           'same `name` is not supported.'
         ) : invariant(otherID));
         var otherInstance = instancesByReactID[otherID];
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           otherInstance,
           'ReactDOMInput: Unknown radio button ID %s.',
           otherID
@@ -36759,7 +34739,7 @@ var ReactDOMInput = ReactClass.createClass({
 module.exports = ReactDOMInput;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMInput.js","/../../node_modules/react/lib")
-},{"./AutoFocusMixin":202,"./DOMPropertyOperations":212,"./LinkedValueUtils":226,"./Object.assign":229,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./ReactMount":277,"./ReactUpdates":300,"./invariant":351,"buffer":14,"oMfpAn":17}],254:[function(require,module,exports){
+},{"./AutoFocusMixin":202,"./DOMPropertyOperations":212,"./LinkedValueUtils":226,"./Object.assign":229,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./ReactMount":277,"./ReactUpdates":300,"./invariant":351,"buffer":18,"oMfpAn":21}],254:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36793,8 +34773,8 @@ var ReactDOMOption = ReactClass.createClass({
 
   componentWillMount: function() {
     // TODO (yungsters): Remove support for `selected` in <option>.
-    if ("production" !== "production") {
-      ("production" !== "production" ? warning(
+    if ("production" !== process.env.NODE_ENV) {
+      ("production" !== process.env.NODE_ENV ? warning(
         this.props.selected == null,
         'Use the `defaultValue` or `value` props on <select> instead of ' +
         'setting `selected` on <option>.'
@@ -36811,7 +34791,7 @@ var ReactDOMOption = ReactClass.createClass({
 module.exports = ReactDOMOption;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMOption.js","/../../node_modules/react/lib")
-},{"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./warning":372,"buffer":14,"oMfpAn":17}],255:[function(require,module,exports){
+},{"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./warning":372,"buffer":18,"oMfpAn":21}],255:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -36991,7 +34971,7 @@ var ReactDOMSelect = ReactClass.createClass({
 module.exports = ReactDOMSelect;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMSelect.js","/../../node_modules/react/lib")
-},{"./AutoFocusMixin":202,"./LinkedValueUtils":226,"./Object.assign":229,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./ReactUpdates":300,"buffer":14,"oMfpAn":17}],256:[function(require,module,exports){
+},{"./AutoFocusMixin":202,"./LinkedValueUtils":226,"./Object.assign":229,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./ReactUpdates":300,"buffer":18,"oMfpAn":21}],256:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37206,7 +35186,7 @@ var ReactDOMSelection = {
 module.exports = ReactDOMSelection;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMSelection.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"./getNodeForCharacterOffset":344,"./getTextContentAccessor":346,"buffer":14,"oMfpAn":17}],257:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"./getNodeForCharacterOffset":344,"./getTextContentAccessor":346,"buffer":18,"oMfpAn":21}],257:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37325,7 +35305,7 @@ assign(ReactDOMTextComponent.prototype, {
 module.exports = ReactDOMTextComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMTextComponent.js","/../../node_modules/react/lib")
-},{"./DOMPropertyOperations":212,"./Object.assign":229,"./ReactComponentBrowserEnvironment":240,"./ReactDOMComponent":248,"./escapeTextContentForBrowser":332,"buffer":14,"oMfpAn":17}],258:[function(require,module,exports){
+},{"./DOMPropertyOperations":212,"./Object.assign":229,"./ReactComponentBrowserEnvironment":240,"./ReactDOMComponent":248,"./escapeTextContentForBrowser":332,"buffer":18,"oMfpAn":21}],258:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37388,19 +35368,19 @@ var ReactDOMTextarea = ReactClass.createClass({
     // TODO (yungsters): Remove support for children content in <textarea>.
     var children = this.props.children;
     if (children != null) {
-      if ("production" !== "production") {
-        ("production" !== "production" ? warning(
+      if ("production" !== process.env.NODE_ENV) {
+        ("production" !== process.env.NODE_ENV ? warning(
           false,
           'Use the `defaultValue` or `value` props instead of setting ' +
           'children on <textarea>.'
         ) : null);
       }
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         defaultValue == null,
         'If you supply `defaultValue` on a <textarea>, do not pass children.'
       ) : invariant(defaultValue == null));
       if (Array.isArray(children)) {
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           children.length <= 1,
           '<textarea> can only have at most one child.'
         ) : invariant(children.length <= 1));
@@ -37426,7 +35406,7 @@ var ReactDOMTextarea = ReactClass.createClass({
     // Clone `this.props` so we don't mutate the input.
     var props = assign({}, this.props);
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       props.dangerouslySetInnerHTML == null,
       '`dangerouslySetInnerHTML` does not make sense on <textarea>.'
     ) : invariant(props.dangerouslySetInnerHTML == null));
@@ -37465,7 +35445,7 @@ var ReactDOMTextarea = ReactClass.createClass({
 module.exports = ReactDOMTextarea;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDOMTextarea.js","/../../node_modules/react/lib")
-},{"./AutoFocusMixin":202,"./DOMPropertyOperations":212,"./LinkedValueUtils":226,"./Object.assign":229,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./ReactUpdates":300,"./invariant":351,"./warning":372,"buffer":14,"oMfpAn":17}],259:[function(require,module,exports){
+},{"./AutoFocusMixin":202,"./DOMPropertyOperations":212,"./LinkedValueUtils":226,"./Object.assign":229,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactElement":263,"./ReactUpdates":300,"./invariant":351,"./warning":372,"buffer":18,"oMfpAn":21}],259:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37540,7 +35520,7 @@ var ReactDefaultBatchingStrategy = {
 module.exports = ReactDefaultBatchingStrategy;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDefaultBatchingStrategy.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./ReactUpdates":300,"./Transaction":317,"./emptyFunction":330,"buffer":14,"oMfpAn":17}],260:[function(require,module,exports){
+},{"./Object.assign":229,"./ReactUpdates":300,"./Transaction":317,"./emptyFunction":330,"buffer":18,"oMfpAn":21}],260:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37685,7 +35665,7 @@ function inject() {
   ReactInjection.Component.injectEnvironment(ReactComponentBrowserEnvironment);
   ReactInjection.DOMComponent.injectIDOperations(ReactDOMIDOperations);
 
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     var url = (ExecutionEnvironment.canUseDOM && window.location.href) || '';
     if ((/[?&]react_perf\b/).test(url)) {
       var ReactDefaultPerf = require("./ReactDefaultPerf");
@@ -37699,7 +35679,7 @@ module.exports = {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDefaultInjection.js","/../../node_modules/react/lib")
-},{"./BeforeInputEventPlugin":203,"./ChangeEventPlugin":208,"./ClientReactRootIndex":209,"./DefaultEventPluginOrder":214,"./EnterLeaveEventPlugin":215,"./ExecutionEnvironment":222,"./HTMLDOMPropertyConfig":224,"./MobileSafariClickEventPlugin":228,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactComponentBrowserEnvironment":240,"./ReactDOMButton":247,"./ReactDOMComponent":248,"./ReactDOMForm":249,"./ReactDOMIDOperations":250,"./ReactDOMIframe":251,"./ReactDOMImg":252,"./ReactDOMInput":253,"./ReactDOMOption":254,"./ReactDOMSelect":255,"./ReactDOMTextComponent":257,"./ReactDOMTextarea":258,"./ReactDefaultBatchingStrategy":259,"./ReactDefaultPerf":261,"./ReactElement":263,"./ReactEventListener":268,"./ReactInjection":270,"./ReactInstanceHandles":272,"./ReactMount":277,"./ReactReconcileTransaction":288,"./SVGDOMPropertyConfig":302,"./SelectEventPlugin":303,"./ServerReactRootIndex":304,"./SimpleEventPlugin":305,"./createFullPageComponent":326,"buffer":14,"oMfpAn":17}],261:[function(require,module,exports){
+},{"./BeforeInputEventPlugin":203,"./ChangeEventPlugin":208,"./ClientReactRootIndex":209,"./DefaultEventPluginOrder":214,"./EnterLeaveEventPlugin":215,"./ExecutionEnvironment":222,"./HTMLDOMPropertyConfig":224,"./MobileSafariClickEventPlugin":228,"./ReactBrowserComponentMixin":232,"./ReactClass":238,"./ReactComponentBrowserEnvironment":240,"./ReactDOMButton":247,"./ReactDOMComponent":248,"./ReactDOMForm":249,"./ReactDOMIDOperations":250,"./ReactDOMIframe":251,"./ReactDOMImg":252,"./ReactDOMInput":253,"./ReactDOMOption":254,"./ReactDOMSelect":255,"./ReactDOMTextComponent":257,"./ReactDOMTextarea":258,"./ReactDefaultBatchingStrategy":259,"./ReactDefaultPerf":261,"./ReactElement":263,"./ReactEventListener":268,"./ReactInjection":270,"./ReactInstanceHandles":272,"./ReactMount":277,"./ReactReconcileTransaction":288,"./SVGDOMPropertyConfig":302,"./SelectEventPlugin":303,"./ServerReactRootIndex":304,"./SimpleEventPlugin":305,"./createFullPageComponent":326,"buffer":18,"oMfpAn":21}],261:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -37967,7 +35947,7 @@ var ReactDefaultPerf = {
 module.exports = ReactDefaultPerf;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDefaultPerf.js","/../../node_modules/react/lib")
-},{"./DOMProperty":211,"./ReactDefaultPerfAnalysis":262,"./ReactMount":277,"./ReactPerf":282,"./performanceNow":363,"buffer":14,"oMfpAn":17}],262:[function(require,module,exports){
+},{"./DOMProperty":211,"./ReactDefaultPerfAnalysis":262,"./ReactMount":277,"./ReactPerf":282,"./performanceNow":363,"buffer":18,"oMfpAn":21}],262:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -38175,7 +36155,7 @@ var ReactDefaultPerfAnalysis = {
 module.exports = ReactDefaultPerfAnalysis;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactDefaultPerfAnalysis.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"buffer":14,"oMfpAn":17}],263:[function(require,module,exports){
+},{"./Object.assign":229,"buffer":18,"oMfpAn":21}],263:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -38222,7 +36202,7 @@ function defineWarningProperty(object, key) {
     },
 
     set: function(value) {
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         false,
         'Don\'t set the %s property of the React element. Instead, ' +
         'specify the correct value when initially creating the element.',
@@ -38282,7 +36262,7 @@ var ReactElement = function(type, key, ref, owner, context, props) {
   // through the owner.
   this._context = context;
 
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     // The validation flag and props are currently mutative. We put them on
     // an external backing store so that we can freeze the whole object.
     // This can be replaced with a WeakMap once they are implemented in
@@ -38321,7 +36301,7 @@ ReactElement.prototype = {
   _isReactElement: true
 };
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   defineMutationMembrane(ReactElement.prototype);
 }
 
@@ -38400,7 +36380,7 @@ ReactElement.cloneAndReplaceProps = function(oldElement, newProps) {
     newProps
   );
 
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     // If the key on the original is valid, then the clone is valid
     newElement._store.validated = oldElement._store.validated;
   }
@@ -38483,7 +36463,7 @@ ReactElement.isValidElement = function(object) {
 module.exports = ReactElement;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactElement.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./ReactContext":244,"./ReactCurrentOwner":245,"./warning":372,"buffer":14,"oMfpAn":17}],264:[function(require,module,exports){
+},{"./Object.assign":229,"./ReactContext":244,"./ReactCurrentOwner":245,"./warning":372,"buffer":18,"oMfpAn":21}],264:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -38651,7 +36631,7 @@ function warnAndMonitorForKeyUse(message, element, parentType) {
     childOwnerAddendum = (" It was passed a child from " + childOwnerName + ".");
   }
 
-  ("production" !== "production" ? warning(
+  ("production" !== process.env.NODE_ENV ? warning(
     false,
     message + '%s%s See https://fb.me/react-warning-keys for more information.',
     parentOrOwnerAddendum,
@@ -38722,7 +36702,7 @@ function checkPropTypes(componentName, propTypes, props, location) {
       try {
         // This is intentionally an invariant that gets caught. It's the same
         // behavior as without this statement except with a better message.
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           typeof propTypes[propName] === 'function',
           '%s: %s type `%s` is invalid; it must be a function, usually from ' +
           'React.PropTypes.',
@@ -38740,7 +36720,7 @@ function checkPropTypes(componentName, propTypes, props, location) {
         loggedTypeFailures[error.message] = true;
 
         var addendum = getDeclarationErrorAddendum(this);
-        ("production" !== "production" ? warning(false, 'Failed propType: %s%s', error.message, addendum) : null);
+        ("production" !== process.env.NODE_ENV ? warning(false, 'Failed propType: %s%s', error.message, addendum) : null);
       }
     }
   }
@@ -38775,7 +36755,7 @@ function warnForPropsMutation(propName, element) {
     ownerInfo = ' The element was created by ' + ownerName + '.';
   }
 
-  ("production" !== "production" ? warning(
+  ("production" !== process.env.NODE_ENV ? warning(
     false,
     'Don\'t set .props.%s of the React component%s. Instead, specify the ' +
     'correct value when initially creating the element or use ' +
@@ -38858,7 +36838,7 @@ function validatePropTypes(element) {
     );
   }
   if (typeof componentClass.getDefaultProps === 'function') {
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       componentClass.getDefaultProps.isReactClassApproved,
       'getDefaultProps is only used on classic React.createClass ' +
       'definitions. Use a static property named `defaultProps` instead.'
@@ -38873,7 +36853,7 @@ var ReactElementValidator = {
   createElement: function(type, props, children) {
     // We warn in this case but don't throw. We expect the element creation to
     // succeed and there will likely be errors in render.
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       type != null,
       'React.createElement: type should not be null or undefined. It should ' +
         'be a string (for DOM elements) or a ReactClass (for composite ' +
@@ -38905,7 +36885,7 @@ var ReactElementValidator = {
     // Legacy hook TODO: Warn if this is accessed
     validatedFactory.type = type;
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       try {
         Object.defineProperty(
           validatedFactory,
@@ -38913,7 +36893,7 @@ var ReactElementValidator = {
           {
             enumerable: false,
             get: function() {
-              ("production" !== "production" ? warning(
+              ("production" !== process.env.NODE_ENV ? warning(
                 false,
                 'Factory.type is deprecated. Access the class directly ' +
                 'before passing it to createFactory.'
@@ -38948,7 +36928,7 @@ var ReactElementValidator = {
 module.exports = ReactElementValidator;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactElementValidator.js","/../../node_modules/react/lib")
-},{"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactFragment":269,"./ReactNativeComponent":280,"./ReactPropTypeLocationNames":284,"./ReactPropTypeLocations":285,"./getIteratorFn":342,"./invariant":351,"./warning":372,"buffer":14,"oMfpAn":17}],265:[function(require,module,exports){
+},{"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactFragment":269,"./ReactNativeComponent":280,"./ReactPropTypeLocationNames":284,"./ReactPropTypeLocations":285,"./getIteratorFn":342,"./invariant":351,"./warning":372,"buffer":18,"oMfpAn":21}],265:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -39000,7 +36980,7 @@ ReactEmptyComponentType.prototype.componentWillUnmount = function() {
   deregisterNullComponentID(internalInstance._rootNodeID);
 };
 ReactEmptyComponentType.prototype.render = function() {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     component,
     'Trying to return null from a render, but no null placeholder component ' +
     'was injected.'
@@ -39043,7 +37023,7 @@ var ReactEmptyComponent = {
 module.exports = ReactEmptyComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactEmptyComponent.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./ReactInstanceMap":273,"./invariant":351,"buffer":14,"oMfpAn":17}],266:[function(require,module,exports){
+},{"./ReactElement":263,"./ReactInstanceMap":273,"./invariant":351,"buffer":18,"oMfpAn":21}],266:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39077,7 +37057,7 @@ var ReactErrorUtils = {
 module.exports = ReactErrorUtils;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactErrorUtils.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],267:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],267:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39129,7 +37109,7 @@ var ReactEventEmitterMixin = {
 module.exports = ReactEventEmitterMixin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactEventEmitterMixin.js","/../../node_modules/react/lib")
-},{"./EventPluginHub":218,"buffer":14,"oMfpAn":17}],268:[function(require,module,exports){
+},{"./EventPluginHub":218,"buffer":18,"oMfpAn":21}],268:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39314,7 +37294,7 @@ var ReactEventListener = {
 module.exports = ReactEventListener;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactEventListener.js","/../../node_modules/react/lib")
-},{"./EventListener":217,"./ExecutionEnvironment":222,"./Object.assign":229,"./PooledClass":230,"./ReactInstanceHandles":272,"./ReactMount":277,"./ReactUpdates":300,"./getEventTarget":341,"./getUnboundedScrollPosition":347,"buffer":14,"oMfpAn":17}],269:[function(require,module,exports){
+},{"./EventListener":217,"./ExecutionEnvironment":222,"./Object.assign":229,"./PooledClass":230,"./ReactInstanceHandles":272,"./ReactMount":277,"./ReactUpdates":300,"./getEventTarget":341,"./getUnboundedScrollPosition":347,"buffer":18,"oMfpAn":21}],269:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -39341,7 +37321,7 @@ var warning = require("./warning");
  * create a keyed fragment. The resulting data structure is opaque, for now.
  */
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   var fragmentKey = '_reactFragment';
   var didWarnKey = '_reactDidWarn';
   var canWarnForReactFragment = false;
@@ -39373,7 +37353,7 @@ if ("production" !== "production") {
     Object.defineProperty(obj, key, {
       enumerable: true,
       get: function() {
-        ("production" !== "production" ? warning(
+        ("production" !== process.env.NODE_ENV ? warning(
           this[didWarnKey],
           'A ReactFragment is an opaque type. Accessing any of its ' +
           'properties is deprecated. Pass it to one of the React.Children ' +
@@ -39383,7 +37363,7 @@ if ("production" !== "production") {
         return this[fragmentKey][key];
       },
       set: function(value) {
-        ("production" !== "production" ? warning(
+        ("production" !== process.env.NODE_ENV ? warning(
           this[didWarnKey],
           'A ReactFragment is an immutable opaque type. Mutating its ' +
           'properties is deprecated.'
@@ -39413,9 +37393,9 @@ var ReactFragment = {
   // Wrap a keyed object in an opaque proxy that warns you if you access any
   // of its properties.
   create: function(object) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       if (typeof object !== 'object' || !object || Array.isArray(object)) {
-        ("production" !== "production" ? warning(
+        ("production" !== process.env.NODE_ENV ? warning(
           false,
           'React.addons.createFragment only accepts a single object.',
           object
@@ -39423,7 +37403,7 @@ var ReactFragment = {
         return object;
       }
       if (ReactElement.isValidElement(object)) {
-        ("production" !== "production" ? warning(
+        ("production" !== process.env.NODE_ENV ? warning(
           false,
           'React.addons.createFragment does not accept a ReactElement ' +
           'without a wrapper object.'
@@ -39453,10 +37433,10 @@ var ReactFragment = {
   // Extract the original keyed object from the fragment opaque type. Warn if
   // a plain object is passed here.
   extract: function(fragment) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       if (canWarnForReactFragment) {
         if (!fragment[fragmentKey]) {
-          ("production" !== "production" ? warning(
+          ("production" !== process.env.NODE_ENV ? warning(
             didWarnForFragment(fragment),
             'Any use of a keyed object should be wrapped in ' +
             'React.addons.createFragment(object) before being passed as a ' +
@@ -39473,7 +37453,7 @@ var ReactFragment = {
   // is a fragment-like object, warn that it should be wrapped. Ignore if we
   // can't determine what kind of object this is.
   extractIfFragment: function(fragment) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       if (canWarnForReactFragment) {
         // If it is the opaque type, return the keyed object.
         if (fragment[fragmentKey]) {
@@ -39499,7 +37479,7 @@ var ReactFragment = {
 module.exports = ReactFragment;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactFragment.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./warning":372,"buffer":14,"oMfpAn":17}],270:[function(require,module,exports){
+},{"./ReactElement":263,"./warning":372,"buffer":18,"oMfpAn":21}],270:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39543,7 +37523,7 @@ var ReactInjection = {
 module.exports = ReactInjection;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactInjection.js","/../../node_modules/react/lib")
-},{"./DOMProperty":211,"./EventPluginHub":218,"./ReactBrowserEventEmitter":233,"./ReactClass":238,"./ReactComponentEnvironment":241,"./ReactDOMComponent":248,"./ReactEmptyComponent":265,"./ReactNativeComponent":280,"./ReactPerf":282,"./ReactRootIndex":291,"./ReactUpdates":300,"buffer":14,"oMfpAn":17}],271:[function(require,module,exports){
+},{"./DOMProperty":211,"./EventPluginHub":218,"./ReactBrowserEventEmitter":233,"./ReactClass":238,"./ReactComponentEnvironment":241,"./ReactDOMComponent":248,"./ReactEmptyComponent":265,"./ReactNativeComponent":280,"./ReactPerf":282,"./ReactRootIndex":291,"./ReactUpdates":300,"buffer":18,"oMfpAn":21}],271:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39680,7 +37660,7 @@ var ReactInputSelection = {
 module.exports = ReactInputSelection;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactInputSelection.js","/../../node_modules/react/lib")
-},{"./ReactDOMSelection":256,"./containsNode":324,"./focusNode":335,"./getActiveElement":337,"buffer":14,"oMfpAn":17}],272:[function(require,module,exports){
+},{"./ReactDOMSelection":256,"./containsNode":324,"./focusNode":335,"./getActiveElement":337,"buffer":18,"oMfpAn":21}],272:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -39780,13 +37760,13 @@ function getParentID(id) {
  * @private
  */
 function getNextDescendantID(ancestorID, destinationID) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     isValidID(ancestorID) && isValidID(destinationID),
     'getNextDescendantID(%s, %s): Received an invalid React DOM ID.',
     ancestorID,
     destinationID
   ) : invariant(isValidID(ancestorID) && isValidID(destinationID)));
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     isAncestorIDOf(ancestorID, destinationID),
     'getNextDescendantID(...): React has made an invalid assumption about ' +
     'the DOM hierarchy. Expected `%s` to be an ancestor of `%s`.',
@@ -39834,7 +37814,7 @@ function getFirstCommonAncestorID(oneID, twoID) {
     }
   }
   var longestCommonID = oneID.substr(0, lastCommonMarkerIndex);
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     isValidID(longestCommonID),
     'getFirstCommonAncestorID(%s, %s): Expected a valid React DOM ID: %s',
     oneID,
@@ -39859,13 +37839,13 @@ function getFirstCommonAncestorID(oneID, twoID) {
 function traverseParentPath(start, stop, cb, arg, skipFirst, skipLast) {
   start = start || '';
   stop = stop || '';
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     start !== stop,
     'traverseParentPath(...): Cannot traverse from and to the same ID, `%s`.',
     start
   ) : invariant(start !== stop));
   var traverseUp = isAncestorIDOf(stop, start);
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     traverseUp || isAncestorIDOf(start, stop),
     'traverseParentPath(%s, %s, ...): Cannot traverse from two IDs that do ' +
     'not have a parent path.',
@@ -39884,7 +37864,7 @@ function traverseParentPath(start, stop, cb, arg, skipFirst, skipLast) {
       // Only break //after// visiting `stop`.
       break;
     }
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       depth++ < MAX_TREE_DEPTH,
       'traverseParentPath(%s, %s, ...): Detected an infinite loop while ' +
       'traversing the React DOM ID tree. This may be due to malformed IDs: %s',
@@ -40016,7 +37996,7 @@ var ReactInstanceHandles = {
 module.exports = ReactInstanceHandles;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactInstanceHandles.js","/../../node_modules/react/lib")
-},{"./ReactRootIndex":291,"./invariant":351,"buffer":14,"oMfpAn":17}],273:[function(require,module,exports){
+},{"./ReactRootIndex":291,"./invariant":351,"buffer":18,"oMfpAn":21}],273:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40067,7 +38047,7 @@ var ReactInstanceMap = {
 module.exports = ReactInstanceMap;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactInstanceMap.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],274:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],274:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -40106,7 +38086,7 @@ var ReactLifeCycle = {
 module.exports = ReactLifeCycle;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactLifeCycle.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],275:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],275:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40181,7 +38161,7 @@ ReactLink.PropTypes = {
 module.exports = ReactLink;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactLink.js","/../../node_modules/react/lib")
-},{"./React":231,"buffer":14,"oMfpAn":17}],276:[function(require,module,exports){
+},{"./React":231,"buffer":18,"oMfpAn":21}],276:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40231,7 +38211,7 @@ var ReactMarkupChecksum = {
 module.exports = ReactMarkupChecksum;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactMarkupChecksum.js","/../../node_modules/react/lib")
-},{"./adler32":320,"buffer":14,"oMfpAn":17}],277:[function(require,module,exports){
+},{"./adler32":320,"buffer":18,"oMfpAn":21}],277:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -40283,7 +38263,7 @@ var instancesByReactRootID = {};
 /** Mapping from reactRootID to `container` nodes. */
 var containersByReactRootID = {};
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   /** __DEV__-only mapping from reactRootID to root elements. */
   var rootElementsByReactRootID = {};
 }
@@ -40332,7 +38312,7 @@ function getID(node) {
     if (nodeCache.hasOwnProperty(id)) {
       var cached = nodeCache[id];
       if (cached !== node) {
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           !isValid(cached, id),
           'ReactMount: Two valid but unequal nodes with the same `%s`: %s',
           ATTR_NAME, id
@@ -40414,7 +38394,7 @@ function getNodeFromInstance(instance) {
  */
 function isValid(node, id) {
   if (node) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       internalGetID(node) === id,
       'ReactMount: Unexpected modification of `%s`',
       ATTR_NAME
@@ -40559,7 +38539,7 @@ var ReactMount = {
       nextElement,
       container,
       callback) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       ReactElementValidator.checkAndWarnForMutatedProps(nextElement);
     }
 
@@ -40570,7 +38550,7 @@ var ReactMount = {
       }
     });
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       // Record the root element in case it later gets transplanted.
       rootElementsByReactRootID[getReactRootID(container)] =
         getReactRootElementInContainer(container);
@@ -40587,7 +38567,7 @@ var ReactMount = {
    * @return {string} reactRoot ID prefix
    */
   _registerComponent: function(nextComponent, container) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       container && (
         (container.nodeType === ELEMENT_NODE_TYPE || container.nodeType === DOC_NODE_TYPE)
       ),
@@ -40618,7 +38598,7 @@ var ReactMount = {
     // Various parts of our code (such as ReactCompositeComponent's
     // _renderValidatedComponent) assume that calls to render aren't nested;
     // verify that that's the case.
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       ReactCurrentOwner.current == null,
       '_renderNewRootComponent(): Render methods should be a pure function ' +
       'of props and state; triggering nested component updates from ' +
@@ -40644,7 +38624,7 @@ var ReactMount = {
       shouldReuseMarkup
     );
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       // Record the root element in case it later gets transplanted.
       rootElementsByReactRootID[reactRootID] =
         getReactRootElementInContainer(container);
@@ -40666,7 +38646,7 @@ var ReactMount = {
    * @return {ReactComponent} Component instance rendered in `container`.
    */
   render: function(nextElement, container, callback) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       ReactElement.isValidElement(nextElement),
       'React.render(): Invalid component element.%s',
       (
@@ -40704,12 +38684,12 @@ var ReactMount = {
     var containerHasReactMarkup =
       reactRootElement && ReactMount.isRenderedByReact(reactRootElement);
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       if (!containerHasReactMarkup || reactRootElement.nextSibling) {
         var rootElementSibling = reactRootElement;
         while (rootElementSibling) {
           if (ReactMount.isRenderedByReact(rootElementSibling)) {
-            ("production" !== "production" ? warning(
+            ("production" !== process.env.NODE_ENV ? warning(
               false,
               'render(): Target node has markup rendered by React, but there ' +
               'are unrelated nodes as well. This is most commonly caused by ' +
@@ -40761,7 +38741,7 @@ var ReactMount = {
    */
   constructAndRenderComponentByID: function(constructor, props, id) {
     var domNode = document.getElementById(id);
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       domNode,
       'Tried to get element with id of "%s" but it is not present on the page.',
       id
@@ -40803,7 +38783,7 @@ var ReactMount = {
     // _renderValidatedComponent) assume that calls to render aren't nested;
     // verify that that's the case. (Strictly speaking, unmounting won't cause a
     // render but we still don't expect to be in a render call here.)
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       ReactCurrentOwner.current == null,
       'unmountComponentAtNode(): Render methods should be a pure function of ' +
       'props and state; triggering nested component updates from render is ' +
@@ -40811,7 +38791,7 @@ var ReactMount = {
       'componentDidUpdate.'
     ) : null);
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       container && (
         (container.nodeType === ELEMENT_NODE_TYPE || container.nodeType === DOC_NODE_TYPE)
       ),
@@ -40828,7 +38808,7 @@ var ReactMount = {
     ReactMount.unmountComponentFromNode(component, container);
     delete instancesByReactRootID[reactRootID];
     delete containersByReactRootID[reactRootID];
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       delete rootElementsByReactRootID[reactRootID];
     }
     return true;
@@ -40867,10 +38847,10 @@ var ReactMount = {
     var reactRootID = ReactInstanceHandles.getReactRootIDFromNodeID(id);
     var container = containersByReactRootID[reactRootID];
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       var rootElement = rootElementsByReactRootID[reactRootID];
       if (rootElement && rootElement.parentNode !== container) {
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           // Call internalGetID here because getID calls isValid which calls
           // findReactContainerForID (this function).
           internalGetID(rootElement) === reactRootID,
@@ -40888,7 +38868,7 @@ var ReactMount = {
           // warning is when the container is empty.
           rootElementsByReactRootID[reactRootID] = containerChild;
         } else {
-          ("production" !== "production" ? warning(
+          ("production" !== process.env.NODE_ENV ? warning(
             false,
             'ReactMount: Root element has been removed from its original ' +
             'container. New container:', rootElement.parentNode
@@ -41012,7 +38992,7 @@ var ReactMount = {
 
     firstChildren.length = 0;
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       false,
       'findComponentRoot(..., %s): Unable to find element. This probably ' +
       'means the DOM was unexpectedly mutated (e.g., by the browser), ' +
@@ -41026,7 +39006,7 @@ var ReactMount = {
   },
 
   _mountImageIntoNode: function(markup, container, shouldReuseMarkup) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       container && (
         (container.nodeType === ELEMENT_NODE_TYPE || container.nodeType === DOC_NODE_TYPE)
       ),
@@ -41056,7 +39036,7 @@ var ReactMount = {
           markup.substring(diffIndex - 20, diffIndex + 20) +
           '\n (server) ' + rootMarkup.substring(diffIndex - 20, diffIndex + 20);
 
-        ("production" !== "production" ? invariant(
+        ("production" !== process.env.NODE_ENV ? invariant(
           container.nodeType !== DOC_NODE_TYPE,
           'You\'re trying to render a component to the document using ' +
           'server rendering but the checksum was invalid. This usually ' +
@@ -41069,8 +39049,8 @@ var ReactMount = {
           difference
         ) : invariant(container.nodeType !== DOC_NODE_TYPE));
 
-        if ("production" !== "production") {
-          ("production" !== "production" ? warning(
+        if ("production" !== process.env.NODE_ENV) {
+          ("production" !== process.env.NODE_ENV ? warning(
             false,
             'React attempted to reuse markup in a container but the ' +
             'checksum was invalid. This generally means that you are ' +
@@ -41086,7 +39066,7 @@ var ReactMount = {
       }
     }
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       container.nodeType !== DOC_NODE_TYPE,
       'You\'re trying to render a component to the document but ' +
         'you didn\'t use server rendering. We can\'t do this ' +
@@ -41122,7 +39102,7 @@ ReactPerf.measureMethods(ReactMount, 'ReactMount', {
 module.exports = ReactMount;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactMount.js","/../../node_modules/react/lib")
-},{"./DOMProperty":211,"./ReactBrowserEventEmitter":233,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactElementValidator":264,"./ReactEmptyComponent":265,"./ReactInstanceHandles":272,"./ReactInstanceMap":273,"./ReactMarkupChecksum":276,"./ReactPerf":282,"./ReactReconciler":289,"./ReactUpdateQueue":299,"./ReactUpdates":300,"./containsNode":324,"./emptyObject":331,"./getReactRootElementInContainer":345,"./instantiateReactComponent":350,"./invariant":351,"./setInnerHTML":365,"./shouldUpdateReactComponent":368,"./warning":372,"buffer":14,"oMfpAn":17}],278:[function(require,module,exports){
+},{"./DOMProperty":211,"./ReactBrowserEventEmitter":233,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactElementValidator":264,"./ReactEmptyComponent":265,"./ReactInstanceHandles":272,"./ReactInstanceMap":273,"./ReactMarkupChecksum":276,"./ReactPerf":282,"./ReactReconciler":289,"./ReactUpdateQueue":299,"./ReactUpdates":300,"./containsNode":324,"./emptyObject":331,"./getReactRootElementInContainer":345,"./instantiateReactComponent":350,"./invariant":351,"./setInnerHTML":365,"./shouldUpdateReactComponent":368,"./warning":372,"buffer":18,"oMfpAn":21}],278:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41554,7 +39534,7 @@ var ReactMultiChild = {
 module.exports = ReactMultiChild;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactMultiChild.js","/../../node_modules/react/lib")
-},{"./ReactChildReconciler":236,"./ReactComponentEnvironment":241,"./ReactMultiChildUpdateTypes":279,"./ReactReconciler":289,"buffer":14,"oMfpAn":17}],279:[function(require,module,exports){
+},{"./ReactChildReconciler":236,"./ReactComponentEnvironment":241,"./ReactMultiChildUpdateTypes":279,"./ReactReconciler":289,"buffer":18,"oMfpAn":21}],279:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41589,7 +39569,7 @@ var ReactMultiChildUpdateTypes = keyMirror({
 module.exports = ReactMultiChildUpdateTypes;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactMultiChildUpdateTypes.js","/../../node_modules/react/lib")
-},{"./keyMirror":357,"buffer":14,"oMfpAn":17}],280:[function(require,module,exports){
+},{"./keyMirror":357,"buffer":18,"oMfpAn":21}],280:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -41661,7 +39641,7 @@ function getComponentClassForElement(element) {
  * @return {function} The internal class constructor function.
  */
 function createInternalComponent(element) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     genericComponentClass,
     'There is no registered component for the tag %s',
     element.type
@@ -41696,7 +39676,7 @@ var ReactNativeComponent = {
 module.exports = ReactNativeComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactNativeComponent.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./invariant":351,"buffer":14,"oMfpAn":17}],281:[function(require,module,exports){
+},{"./Object.assign":229,"./invariant":351,"buffer":18,"oMfpAn":21}],281:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41767,7 +39747,7 @@ var ReactOwner = {
    * @internal
    */
   addComponentAsRefTo: function(component, ref, owner) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       ReactOwner.isValidOwner(owner),
       'addComponentAsRefTo(...): Only a ReactOwner can have refs. This ' +
       'usually means that you\'re trying to add a ref to a component that ' +
@@ -41788,7 +39768,7 @@ var ReactOwner = {
    * @internal
    */
   removeComponentAsRefFrom: function(component, ref, owner) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       ReactOwner.isValidOwner(owner),
       'removeComponentAsRefFrom(...): Only a ReactOwner can have refs. This ' +
       'usually means that you\'re trying to remove a ref to a component that ' +
@@ -41808,7 +39788,7 @@ var ReactOwner = {
 module.exports = ReactOwner;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactOwner.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],282:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],282:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -41847,7 +39827,7 @@ var ReactPerf = {
    * @param {object<string>} methodNames
    */
   measureMethods: function(object, objectName, methodNames) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       for (var key in methodNames) {
         if (!methodNames.hasOwnProperty(key)) {
           continue;
@@ -41870,7 +39850,7 @@ var ReactPerf = {
    * @return {function}
    */
   measure: function(objName, fnName, func) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       var measuredFunc = null;
       var wrapper = function() {
         if (ReactPerf.enableMeasure) {
@@ -41912,7 +39892,7 @@ function _noMeasure(objName, fnName, func) {
 module.exports = ReactPerf;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactPerf.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],283:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],283:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42024,7 +40004,7 @@ var ReactPropTransferer = {
 module.exports = ReactPropTransferer;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactPropTransferer.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./emptyFunction":330,"./joinClasses":356,"buffer":14,"oMfpAn":17}],284:[function(require,module,exports){
+},{"./Object.assign":229,"./emptyFunction":330,"./joinClasses":356,"buffer":18,"oMfpAn":21}],284:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42041,7 +40021,7 @@ module.exports = ReactPropTransferer;
 
 var ReactPropTypeLocationNames = {};
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   ReactPropTypeLocationNames = {
     prop: 'prop',
     context: 'context',
@@ -42052,7 +40032,7 @@ if ("production" !== "production") {
 module.exports = ReactPropTypeLocationNames;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactPropTypeLocationNames.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],285:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],285:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42078,7 +40058,7 @@ var ReactPropTypeLocations = keyMirror({
 module.exports = ReactPropTypeLocations;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactPropTypeLocations.js","/../../node_modules/react/lib")
-},{"./keyMirror":357,"buffer":14,"oMfpAn":17}],286:[function(require,module,exports){
+},{"./keyMirror":357,"buffer":18,"oMfpAn":21}],286:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42429,7 +40409,7 @@ function getPreciseType(propValue) {
 module.exports = ReactPropTypes;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactPropTypes.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./ReactFragment":269,"./ReactPropTypeLocationNames":284,"./emptyFunction":330,"buffer":14,"oMfpAn":17}],287:[function(require,module,exports){
+},{"./ReactElement":263,"./ReactFragment":269,"./ReactPropTypeLocationNames":284,"./emptyFunction":330,"buffer":18,"oMfpAn":21}],287:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42487,7 +40467,7 @@ PooledClass.addPoolingTo(ReactPutListenerQueue);
 module.exports = ReactPutListenerQueue;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactPutListenerQueue.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./PooledClass":230,"./ReactBrowserEventEmitter":233,"buffer":14,"oMfpAn":17}],288:[function(require,module,exports){
+},{"./Object.assign":229,"./PooledClass":230,"./ReactBrowserEventEmitter":233,"buffer":18,"oMfpAn":21}],288:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42665,7 +40645,7 @@ PooledClass.addPoolingTo(ReactReconcileTransaction);
 module.exports = ReactReconcileTransaction;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactReconcileTransaction.js","/../../node_modules/react/lib")
-},{"./CallbackQueue":207,"./Object.assign":229,"./PooledClass":230,"./ReactBrowserEventEmitter":233,"./ReactInputSelection":271,"./ReactPutListenerQueue":287,"./Transaction":317,"buffer":14,"oMfpAn":17}],289:[function(require,module,exports){
+},{"./CallbackQueue":207,"./Object.assign":229,"./PooledClass":230,"./ReactBrowserEventEmitter":233,"./ReactInputSelection":271,"./ReactPutListenerQueue":287,"./Transaction":317,"buffer":18,"oMfpAn":21}],289:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42705,7 +40685,7 @@ var ReactReconciler = {
    */
   mountComponent: function(internalInstance, rootID, transaction, context) {
     var markup = internalInstance.mountComponent(rootID, transaction, context);
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       ReactElementValidator.checkAndWarnForMutatedProps(
         internalInstance._currentElement
       );
@@ -42750,7 +40730,7 @@ var ReactReconciler = {
       return;
     }
 
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       ReactElementValidator.checkAndWarnForMutatedProps(nextElement);
     }
 
@@ -42789,7 +40769,7 @@ var ReactReconciler = {
 module.exports = ReactReconciler;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactReconciler.js","/../../node_modules/react/lib")
-},{"./ReactElementValidator":264,"./ReactRef":290,"buffer":14,"oMfpAn":17}],290:[function(require,module,exports){
+},{"./ReactElementValidator":264,"./ReactRef":290,"buffer":18,"oMfpAn":21}],290:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42862,7 +40842,7 @@ ReactRef.detachRefs = function(instance, element) {
 module.exports = ReactRef;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactRef.js","/../../node_modules/react/lib")
-},{"./ReactOwner":281,"buffer":14,"oMfpAn":17}],291:[function(require,module,exports){
+},{"./ReactOwner":281,"buffer":18,"oMfpAn":21}],291:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42895,7 +40875,7 @@ var ReactRootIndex = {
 module.exports = ReactRootIndex;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactRootIndex.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],292:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],292:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -42925,7 +40905,7 @@ var invariant = require("./invariant");
  * @return {string} the HTML markup
  */
 function renderToString(element) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     ReactElement.isValidElement(element),
     'renderToString(): You must pass a valid ReactElement.'
   ) : invariant(ReactElement.isValidElement(element)));
@@ -42952,7 +40932,7 @@ function renderToString(element) {
  * (for generating static pages)
  */
 function renderToStaticMarkup(element) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     ReactElement.isValidElement(element),
     'renderToStaticMarkup(): You must pass a valid ReactElement.'
   ) : invariant(ReactElement.isValidElement(element)));
@@ -42977,7 +40957,7 @@ module.exports = {
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactServerRendering.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./ReactInstanceHandles":272,"./ReactMarkupChecksum":276,"./ReactServerRenderingTransaction":293,"./emptyObject":331,"./instantiateReactComponent":350,"./invariant":351,"buffer":14,"oMfpAn":17}],293:[function(require,module,exports){
+},{"./ReactElement":263,"./ReactInstanceHandles":272,"./ReactMarkupChecksum":276,"./ReactServerRenderingTransaction":293,"./emptyObject":331,"./instantiateReactComponent":350,"./invariant":351,"buffer":18,"oMfpAn":21}],293:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -43092,7 +41072,7 @@ PooledClass.addPoolingTo(ReactServerRenderingTransaction);
 module.exports = ReactServerRenderingTransaction;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactServerRenderingTransaction.js","/../../node_modules/react/lib")
-},{"./CallbackQueue":207,"./Object.assign":229,"./PooledClass":230,"./ReactPutListenerQueue":287,"./Transaction":317,"./emptyFunction":330,"buffer":14,"oMfpAn":17}],294:[function(require,module,exports){
+},{"./CallbackQueue":207,"./Object.assign":229,"./PooledClass":230,"./ReactPutListenerQueue":287,"./Transaction":317,"./emptyFunction":330,"buffer":18,"oMfpAn":21}],294:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -43200,7 +41180,7 @@ ReactStateSetters.Mixin = {
 module.exports = ReactStateSetters;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactStateSetters.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],295:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],295:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -43716,7 +41696,7 @@ for (eventType in topLevelTypes) {
 module.exports = ReactTestUtils;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactTestUtils.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPluginHub":218,"./EventPropagators":221,"./Object.assign":229,"./React":231,"./ReactBrowserEventEmitter":233,"./ReactCompositeComponent":243,"./ReactElement":263,"./ReactEmptyComponent":265,"./ReactInstanceHandles":272,"./ReactInstanceMap":273,"./ReactMount":277,"./ReactUpdates":300,"./SyntheticEvent":309,"./emptyObject":331,"buffer":14,"oMfpAn":17}],296:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPluginHub":218,"./EventPropagators":221,"./Object.assign":229,"./React":231,"./ReactBrowserEventEmitter":233,"./ReactCompositeComponent":243,"./ReactElement":263,"./ReactEmptyComponent":265,"./ReactInstanceHandles":272,"./ReactInstanceMap":273,"./ReactMount":277,"./ReactUpdates":300,"./SyntheticEvent":309,"./emptyObject":331,"buffer":18,"oMfpAn":21}],296:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -43823,7 +41803,7 @@ var ReactTransitionChildMapping = {
 module.exports = ReactTransitionChildMapping;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactTransitionChildMapping.js","/../../node_modules/react/lib")
-},{"./ReactChildren":237,"./ReactFragment":269,"buffer":14,"oMfpAn":17}],297:[function(require,module,exports){
+},{"./ReactChildren":237,"./ReactFragment":269,"buffer":18,"oMfpAn":21}],297:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -43936,7 +41916,7 @@ var ReactTransitionEvents = {
 module.exports = ReactTransitionEvents;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactTransitionEvents.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"buffer":14,"oMfpAn":17}],298:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"buffer":18,"oMfpAn":21}],298:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -44168,7 +42148,7 @@ var ReactTransitionGroup = React.createClass({
 module.exports = ReactTransitionGroup;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactTransitionGroup.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./React":231,"./ReactTransitionChildMapping":296,"./cloneWithProps":323,"./emptyFunction":330,"buffer":14,"oMfpAn":17}],299:[function(require,module,exports){
+},{"./Object.assign":229,"./React":231,"./ReactTransitionChildMapping":296,"./cloneWithProps":323,"./emptyFunction":330,"buffer":18,"oMfpAn":21}],299:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2015, Facebook, Inc.
@@ -44204,7 +42184,7 @@ function enqueueUpdate(internalInstance) {
 }
 
 function getInternalInstanceReadyForUpdate(publicInstance, callerName) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     ReactCurrentOwner.current == null,
     '%s(...): Cannot update during an existing state transition ' +
     '(such as within `render`). Render methods should be a pure function ' +
@@ -44214,11 +42194,11 @@ function getInternalInstanceReadyForUpdate(publicInstance, callerName) {
 
   var internalInstance = ReactInstanceMap.get(publicInstance);
   if (!internalInstance) {
-    if ("production" !== "production") {
+    if ("production" !== process.env.NODE_ENV) {
       // Only warn when we have a callerName. Otherwise we should be silent.
       // We're probably calling from enqueueCallback. We don't want to warn
       // there because we already warned for the corresponding lifecycle method.
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         !callerName,
         '%s(...): Can only update a mounted or mounting component. ' +
         'This usually means you called %s() on an unmounted ' +
@@ -44252,7 +42232,7 @@ var ReactUpdateQueue = {
    * @internal
    */
   enqueueCallback: function(publicInstance, callback) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       typeof callback === 'function',
       'enqueueCallback(...): You called `setProps`, `replaceProps`, ' +
       '`setState`, `replaceState`, or `forceUpdate` with a callback that ' +
@@ -44283,7 +42263,7 @@ var ReactUpdateQueue = {
   },
 
   enqueueCallbackInternal: function(internalInstance, callback) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       typeof callback === 'function',
       'enqueueCallback(...): You called `setProps`, `replaceProps`, ' +
       '`setState`, `replaceState`, or `forceUpdate` with a callback that ' +
@@ -44397,7 +42377,7 @@ var ReactUpdateQueue = {
       return;
     }
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       internalInstance._isTopLevel,
       'setProps(...): You called `setProps` on a ' +
       'component with a parent. This is an anti-pattern since props will ' +
@@ -44436,7 +42416,7 @@ var ReactUpdateQueue = {
       return;
     }
 
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       internalInstance._isTopLevel,
       'replaceProps(...): You called `replaceProps` on a ' +
       'component with a parent. This is an anti-pattern since props will ' +
@@ -44467,7 +42447,7 @@ var ReactUpdateQueue = {
 module.exports = ReactUpdateQueue;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactUpdateQueue.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactInstanceMap":273,"./ReactLifeCycle":274,"./ReactUpdates":300,"./invariant":351,"./warning":372,"buffer":14,"oMfpAn":17}],300:[function(require,module,exports){
+},{"./Object.assign":229,"./ReactCurrentOwner":245,"./ReactElement":263,"./ReactInstanceMap":273,"./ReactLifeCycle":274,"./ReactUpdates":300,"./invariant":351,"./warning":372,"buffer":18,"oMfpAn":21}],300:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -44500,7 +42480,7 @@ var asapEnqueued = false;
 var batchingStrategy = null;
 
 function ensureInjected() {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     ReactUpdates.ReactReconcileTransaction && batchingStrategy,
     'ReactUpdates: must inject a reconcile transaction class and batching ' +
     'strategy'
@@ -44594,7 +42574,7 @@ function mountOrderComparator(c1, c2) {
 
 function runBatchedUpdates(transaction) {
   var len = transaction.dirtyComponentsLength;
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     len === dirtyComponents.length,
     'Expected flush transaction\'s stored dirty-components length (%s) to ' +
     'match dirty-components array length (%s).',
@@ -44674,7 +42654,7 @@ function enqueueUpdate(component) {
   // verify that that's the case. (This is called by each top-level update
   // function, like setProps, setState, forceUpdate, etc.; creation and
   // destruction of top-level components is guarded in ReactMount.)
-  ("production" !== "production" ? warning(
+  ("production" !== process.env.NODE_ENV ? warning(
     ReactCurrentOwner.current == null,
     'enqueueUpdate(): Render methods should be a pure function of props ' +
     'and state; triggering nested component updates from render is not ' +
@@ -44695,7 +42675,7 @@ function enqueueUpdate(component) {
  * if no updates are currently being performed.
  */
 function asap(callback, context) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     batchingStrategy.isBatchingUpdates,
     'ReactUpdates.asap: Can\'t enqueue an asap callback in a context where' +
     'updates are not being batched.'
@@ -44706,7 +42686,7 @@ function asap(callback, context) {
 
 var ReactUpdatesInjection = {
   injectReconcileTransaction: function(ReconcileTransaction) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       ReconcileTransaction,
       'ReactUpdates: must provide a reconcile transaction class'
     ) : invariant(ReconcileTransaction));
@@ -44714,15 +42694,15 @@ var ReactUpdatesInjection = {
   },
 
   injectBatchingStrategy: function(_batchingStrategy) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       _batchingStrategy,
       'ReactUpdates: must provide a batching strategy'
     ) : invariant(_batchingStrategy));
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       typeof _batchingStrategy.batchedUpdates === 'function',
       'ReactUpdates: must provide a batchedUpdates() function'
     ) : invariant(typeof _batchingStrategy.batchedUpdates === 'function'));
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       typeof _batchingStrategy.isBatchingUpdates === 'boolean',
       'ReactUpdates: must provide an isBatchingUpdates boolean attribute'
     ) : invariant(typeof _batchingStrategy.isBatchingUpdates === 'boolean'));
@@ -44749,7 +42729,7 @@ var ReactUpdates = {
 module.exports = ReactUpdates;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactUpdates.js","/../../node_modules/react/lib")
-},{"./CallbackQueue":207,"./Object.assign":229,"./PooledClass":230,"./ReactCurrentOwner":245,"./ReactPerf":282,"./ReactReconciler":289,"./Transaction":317,"./invariant":351,"./warning":372,"buffer":14,"oMfpAn":17}],301:[function(require,module,exports){
+},{"./CallbackQueue":207,"./Object.assign":229,"./PooledClass":230,"./ReactCurrentOwner":245,"./ReactPerf":282,"./ReactReconciler":289,"./Transaction":317,"./invariant":351,"./warning":372,"buffer":18,"oMfpAn":21}],301:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -44797,7 +42777,7 @@ React.addons = {
   update: update
 };
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   React.addons.Perf = require("./ReactDefaultPerf");
   React.addons.TestUtils = require("./ReactTestUtils");
 }
@@ -44805,7 +42785,7 @@ if ("production" !== "production") {
 module.exports = React;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ReactWithAddons.js","/../../node_modules/react/lib")
-},{"./LinkedStateMixin":225,"./React":231,"./ReactCSSTransitionGroup":234,"./ReactComponentWithPureRenderMixin":242,"./ReactDefaultPerf":261,"./ReactFragment":269,"./ReactTestUtils":295,"./ReactTransitionGroup":298,"./ReactUpdates":300,"./cloneWithProps":323,"./cx":328,"./update":371,"buffer":14,"oMfpAn":17}],302:[function(require,module,exports){
+},{"./LinkedStateMixin":225,"./React":231,"./ReactCSSTransitionGroup":234,"./ReactComponentWithPureRenderMixin":242,"./ReactDefaultPerf":261,"./ReactFragment":269,"./ReactTestUtils":295,"./ReactTransitionGroup":298,"./ReactUpdates":300,"./cloneWithProps":323,"./cx":328,"./update":371,"buffer":18,"oMfpAn":21}],302:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -44901,7 +42881,7 @@ var SVGDOMPropertyConfig = {
 module.exports = SVGDOMPropertyConfig;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SVGDOMPropertyConfig.js","/../../node_modules/react/lib")
-},{"./DOMProperty":211,"buffer":14,"oMfpAn":17}],303:[function(require,module,exports){
+},{"./DOMProperty":211,"buffer":18,"oMfpAn":21}],303:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45098,7 +43078,7 @@ var SelectEventPlugin = {
 module.exports = SelectEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SelectEventPlugin.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPropagators":221,"./ReactInputSelection":271,"./SyntheticEvent":309,"./getActiveElement":337,"./isTextInputElement":354,"./keyOf":358,"./shallowEqual":367,"buffer":14,"oMfpAn":17}],304:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPropagators":221,"./ReactInputSelection":271,"./SyntheticEvent":309,"./getActiveElement":337,"./isTextInputElement":354,"./keyOf":358,"./shallowEqual":367,"buffer":18,"oMfpAn":21}],304:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45131,7 +43111,7 @@ var ServerReactRootIndex = {
 module.exports = ServerReactRootIndex;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ServerReactRootIndex.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],305:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],305:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45439,7 +43419,7 @@ var SimpleEventPlugin = {
   executeDispatch: function(event, listener, domID) {
     var returnValue = EventPluginUtils.executeDispatch(event, listener, domID);
 
-    ("production" !== "production" ? warning(
+    ("production" !== process.env.NODE_ENV ? warning(
       typeof returnValue !== 'boolean',
       'Returning `false` from an event handler is deprecated and will be ' +
       'ignored in a future release. Instead, manually call ' +
@@ -45540,7 +43520,7 @@ var SimpleEventPlugin = {
         EventConstructor = SyntheticClipboardEvent;
         break;
     }
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       EventConstructor,
       'SimpleEventPlugin: Unhandled event type, `%s`.',
       topLevelType
@@ -45559,7 +43539,7 @@ var SimpleEventPlugin = {
 module.exports = SimpleEventPlugin;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SimpleEventPlugin.js","/../../node_modules/react/lib")
-},{"./EventConstants":216,"./EventPluginUtils":220,"./EventPropagators":221,"./SyntheticClipboardEvent":306,"./SyntheticDragEvent":308,"./SyntheticEvent":309,"./SyntheticFocusEvent":310,"./SyntheticKeyboardEvent":312,"./SyntheticMouseEvent":313,"./SyntheticTouchEvent":314,"./SyntheticUIEvent":315,"./SyntheticWheelEvent":316,"./getEventCharCode":338,"./invariant":351,"./keyOf":358,"./warning":372,"buffer":14,"oMfpAn":17}],306:[function(require,module,exports){
+},{"./EventConstants":216,"./EventPluginUtils":220,"./EventPropagators":221,"./SyntheticClipboardEvent":306,"./SyntheticDragEvent":308,"./SyntheticEvent":309,"./SyntheticFocusEvent":310,"./SyntheticKeyboardEvent":312,"./SyntheticMouseEvent":313,"./SyntheticTouchEvent":314,"./SyntheticUIEvent":315,"./SyntheticWheelEvent":316,"./getEventCharCode":338,"./invariant":351,"./keyOf":358,"./warning":372,"buffer":18,"oMfpAn":21}],306:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45606,7 +43586,7 @@ SyntheticEvent.augmentClass(SyntheticClipboardEvent, ClipboardEventInterface);
 module.exports = SyntheticClipboardEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticClipboardEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticEvent":309,"buffer":14,"oMfpAn":17}],307:[function(require,module,exports){
+},{"./SyntheticEvent":309,"buffer":18,"oMfpAn":21}],307:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45653,7 +43633,7 @@ SyntheticEvent.augmentClass(
 module.exports = SyntheticCompositionEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticCompositionEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticEvent":309,"buffer":14,"oMfpAn":17}],308:[function(require,module,exports){
+},{"./SyntheticEvent":309,"buffer":18,"oMfpAn":21}],308:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45694,7 +43674,7 @@ SyntheticMouseEvent.augmentClass(SyntheticDragEvent, DragEventInterface);
 module.exports = SyntheticDragEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticDragEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticMouseEvent":313,"buffer":14,"oMfpAn":17}],309:[function(require,module,exports){
+},{"./SyntheticMouseEvent":313,"buffer":18,"oMfpAn":21}],309:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45862,7 +43842,7 @@ PooledClass.addPoolingTo(SyntheticEvent, PooledClass.threeArgumentPooler);
 module.exports = SyntheticEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticEvent.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./PooledClass":230,"./emptyFunction":330,"./getEventTarget":341,"buffer":14,"oMfpAn":17}],310:[function(require,module,exports){
+},{"./Object.assign":229,"./PooledClass":230,"./emptyFunction":330,"./getEventTarget":341,"buffer":18,"oMfpAn":21}],310:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45903,7 +43883,7 @@ SyntheticUIEvent.augmentClass(SyntheticFocusEvent, FocusEventInterface);
 module.exports = SyntheticFocusEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticFocusEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticUIEvent":315,"buffer":14,"oMfpAn":17}],311:[function(require,module,exports){
+},{"./SyntheticUIEvent":315,"buffer":18,"oMfpAn":21}],311:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -45951,7 +43931,7 @@ SyntheticEvent.augmentClass(
 module.exports = SyntheticInputEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticInputEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticEvent":309,"buffer":14,"oMfpAn":17}],312:[function(require,module,exports){
+},{"./SyntheticEvent":309,"buffer":18,"oMfpAn":21}],312:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46040,7 +44020,7 @@ SyntheticUIEvent.augmentClass(SyntheticKeyboardEvent, KeyboardEventInterface);
 module.exports = SyntheticKeyboardEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticKeyboardEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticUIEvent":315,"./getEventCharCode":338,"./getEventKey":339,"./getEventModifierState":340,"buffer":14,"oMfpAn":17}],313:[function(require,module,exports){
+},{"./SyntheticUIEvent":315,"./getEventCharCode":338,"./getEventKey":339,"./getEventModifierState":340,"buffer":18,"oMfpAn":21}],313:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46123,7 +44103,7 @@ SyntheticUIEvent.augmentClass(SyntheticMouseEvent, MouseEventInterface);
 module.exports = SyntheticMouseEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticMouseEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticUIEvent":315,"./ViewportMetrics":318,"./getEventModifierState":340,"buffer":14,"oMfpAn":17}],314:[function(require,module,exports){
+},{"./SyntheticUIEvent":315,"./ViewportMetrics":318,"./getEventModifierState":340,"buffer":18,"oMfpAn":21}],314:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46173,7 +44153,7 @@ SyntheticUIEvent.augmentClass(SyntheticTouchEvent, TouchEventInterface);
 module.exports = SyntheticTouchEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticTouchEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticUIEvent":315,"./getEventModifierState":340,"buffer":14,"oMfpAn":17}],315:[function(require,module,exports){
+},{"./SyntheticUIEvent":315,"./getEventModifierState":340,"buffer":18,"oMfpAn":21}],315:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46237,7 +44217,7 @@ SyntheticEvent.augmentClass(SyntheticUIEvent, UIEventInterface);
 module.exports = SyntheticUIEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticUIEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticEvent":309,"./getEventTarget":341,"buffer":14,"oMfpAn":17}],316:[function(require,module,exports){
+},{"./SyntheticEvent":309,"./getEventTarget":341,"buffer":18,"oMfpAn":21}],316:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46300,7 +44280,7 @@ SyntheticMouseEvent.augmentClass(SyntheticWheelEvent, WheelEventInterface);
 module.exports = SyntheticWheelEvent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/SyntheticWheelEvent.js","/../../node_modules/react/lib")
-},{"./SyntheticMouseEvent":313,"buffer":14,"oMfpAn":17}],317:[function(require,module,exports){
+},{"./SyntheticMouseEvent":313,"buffer":18,"oMfpAn":21}],317:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46420,7 +44400,7 @@ var Mixin = {
    * @return Return value from `method`.
    */
   perform: function(method, scope, a, b, c, d, e, f) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       !this.isInTransaction(),
       'Transaction.perform(...): Cannot initialize a transaction when there ' +
       'is already an outstanding transaction.'
@@ -46492,7 +44472,7 @@ var Mixin = {
    * invoked).
    */
   closeAll: function(startIndex) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       this.isInTransaction(),
       'Transaction.closeAll(): Cannot close transaction when none are open.'
     ) : invariant(this.isInTransaction()));
@@ -46541,7 +44521,7 @@ var Transaction = {
 module.exports = Transaction;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/Transaction.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],318:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],318:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46572,7 +44552,7 @@ var ViewportMetrics = {
 module.exports = ViewportMetrics;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/ViewportMetrics.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],319:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],319:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -46604,7 +44584,7 @@ var invariant = require("./invariant");
  */
 
 function accumulateInto(current, next) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     next != null,
     'accumulateInto(...): Accumulated items must not be null or undefined.'
   ) : invariant(next != null));
@@ -46638,7 +44618,7 @@ function accumulateInto(current, next) {
 module.exports = accumulateInto;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/accumulateInto.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],320:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],320:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46674,7 +44654,7 @@ function adler32(data) {
 module.exports = adler32;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/adler32.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],321:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],321:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46708,7 +44688,7 @@ function camelize(string) {
 module.exports = camelize;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/camelize.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],322:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],322:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -46752,7 +44732,7 @@ function camelizeStyleName(string) {
 module.exports = camelizeStyleName;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/camelizeStyleName.js","/../../node_modules/react/lib")
-},{"./camelize":321,"buffer":14,"oMfpAn":17}],323:[function(require,module,exports){
+},{"./camelize":321,"buffer":18,"oMfpAn":21}],323:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46786,8 +44766,8 @@ var CHILDREN_PROP = keyOf({children: null});
  * @return {ReactElement} a clone of child with props merged in.
  */
 function cloneWithProps(child, props) {
-  if ("production" !== "production") {
-    ("production" !== "production" ? warning(
+  if ("production" !== process.env.NODE_ENV) {
+    ("production" !== process.env.NODE_ENV ? warning(
       !child.ref,
       'You are calling cloneWithProps() on a child with a ref. This is ' +
       'dangerous because you\'re creating a new child which will not be ' +
@@ -46811,7 +44791,7 @@ function cloneWithProps(child, props) {
 module.exports = cloneWithProps;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/cloneWithProps.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./ReactPropTransferer":283,"./keyOf":358,"./warning":372,"buffer":14,"oMfpAn":17}],324:[function(require,module,exports){
+},{"./ReactElement":263,"./ReactPropTransferer":283,"./keyOf":358,"./warning":372,"buffer":18,"oMfpAn":21}],324:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46857,7 +44837,7 @@ function containsNode(outerNode, innerNode) {
 module.exports = containsNode;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/containsNode.js","/../../node_modules/react/lib")
-},{"./isTextNode":355,"buffer":14,"oMfpAn":17}],325:[function(require,module,exports){
+},{"./isTextNode":355,"buffer":18,"oMfpAn":21}],325:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46945,7 +44925,7 @@ function createArrayFromMixed(obj) {
 module.exports = createArrayFromMixed;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/createArrayFromMixed.js","/../../node_modules/react/lib")
-},{"./toArray":369,"buffer":14,"oMfpAn":17}],326:[function(require,module,exports){
+},{"./toArray":369,"buffer":18,"oMfpAn":21}],326:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -46986,7 +44966,7 @@ function createFullPageComponent(tag) {
     displayName: 'ReactFullPageComponent' + tag,
 
     componentWillUnmount: function() {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         false,
         '%s tried to unmount. Because of cross-browser quirks it is ' +
         'impossible to unmount some top-level components (eg <html>, <head>, ' +
@@ -47007,7 +44987,7 @@ function createFullPageComponent(tag) {
 module.exports = createFullPageComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/createFullPageComponent.js","/../../node_modules/react/lib")
-},{"./ReactClass":238,"./ReactElement":263,"./invariant":351,"buffer":14,"oMfpAn":17}],327:[function(require,module,exports){
+},{"./ReactClass":238,"./ReactElement":263,"./invariant":351,"buffer":18,"oMfpAn":21}],327:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47063,7 +45043,7 @@ function getNodeName(markup) {
  */
 function createNodesFromMarkup(markup, handleScript) {
   var node = dummyNode;
-  ("production" !== "production" ? invariant(!!dummyNode, 'createNodesFromMarkup dummy not initialized') : invariant(!!dummyNode));
+  ("production" !== process.env.NODE_ENV ? invariant(!!dummyNode, 'createNodesFromMarkup dummy not initialized') : invariant(!!dummyNode));
   var nodeName = getNodeName(markup);
 
   var wrap = nodeName && getMarkupWrap(nodeName);
@@ -47080,7 +45060,7 @@ function createNodesFromMarkup(markup, handleScript) {
 
   var scripts = node.getElementsByTagName('script');
   if (scripts.length) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       handleScript,
       'createNodesFromMarkup(...): Unexpected <script> element rendered.'
     ) : invariant(handleScript));
@@ -47097,7 +45077,7 @@ function createNodesFromMarkup(markup, handleScript) {
 module.exports = createNodesFromMarkup;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/createNodesFromMarkup.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"./createArrayFromMixed":325,"./getMarkupWrap":343,"./invariant":351,"buffer":14,"oMfpAn":17}],328:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"./createArrayFromMixed":325,"./getMarkupWrap":343,"./invariant":351,"buffer":18,"oMfpAn":21}],328:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47132,8 +45112,8 @@ var warning = require("./warning");
 var warned = false;
 
 function cx(classNames) {
-  if ("production" !== "production") {
-    ("production" !== "production" ? warning(
+  if ("production" !== process.env.NODE_ENV) {
+    ("production" !== process.env.NODE_ENV ? warning(
       warned,
       'React.addons.classSet will be deprecated in a future version. See ' +
       'http://fb.me/react-addons-classset'
@@ -47153,7 +45133,7 @@ function cx(classNames) {
 module.exports = cx;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/cx.js","/../../node_modules/react/lib")
-},{"./warning":372,"buffer":14,"oMfpAn":17}],329:[function(require,module,exports){
+},{"./warning":372,"buffer":18,"oMfpAn":21}],329:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47213,7 +45193,7 @@ function dangerousStyleValue(name, value) {
 module.exports = dangerousStyleValue;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/dangerousStyleValue.js","/../../node_modules/react/lib")
-},{"./CSSProperty":205,"buffer":14,"oMfpAn":17}],330:[function(require,module,exports){
+},{"./CSSProperty":205,"buffer":18,"oMfpAn":21}],330:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47249,7 +45229,7 @@ emptyFunction.thatReturnsArgument = function(arg) { return arg; };
 module.exports = emptyFunction;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/emptyFunction.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],331:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],331:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47266,14 +45246,14 @@ module.exports = emptyFunction;
 
 var emptyObject = {};
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   Object.freeze(emptyObject);
 }
 
 module.exports = emptyObject;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/emptyObject.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],332:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],332:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47315,7 +45295,7 @@ function escapeTextContentForBrowser(text) {
 module.exports = escapeTextContentForBrowser;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/escapeTextContentForBrowser.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],333:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],333:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47346,10 +45326,10 @@ var warning = require("./warning");
  * @return {DOMElement} The root node of this element.
  */
 function findDOMNode(componentOrElement) {
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     var owner = ReactCurrentOwner.current;
     if (owner !== null) {
-      ("production" !== "production" ? warning(
+      ("production" !== process.env.NODE_ENV ? warning(
         owner._warnedAboutRefsInRender,
         '%s is accessing getDOMNode or findDOMNode inside its render(). ' +
         'render() should be a pure function of props and state. It should ' +
@@ -47370,7 +45350,7 @@ function findDOMNode(componentOrElement) {
   if (ReactInstanceMap.has(componentOrElement)) {
     return ReactMount.getNodeFromInstance(componentOrElement);
   }
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     componentOrElement.render == null ||
     typeof componentOrElement.render !== 'function',
     'Component (with keys: %s) contains `render` method ' +
@@ -47378,7 +45358,7 @@ function findDOMNode(componentOrElement) {
     Object.keys(componentOrElement)
   ) : invariant(componentOrElement.render == null ||
   typeof componentOrElement.render !== 'function'));
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     false,
     'Element appears to be neither ReactComponent nor DOMNode (keys: %s)',
     Object.keys(componentOrElement)
@@ -47388,7 +45368,7 @@ function findDOMNode(componentOrElement) {
 module.exports = findDOMNode;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/findDOMNode.js","/../../node_modules/react/lib")
-},{"./ReactCurrentOwner":245,"./ReactInstanceMap":273,"./ReactMount":277,"./invariant":351,"./isNode":353,"./warning":372,"buffer":14,"oMfpAn":17}],334:[function(require,module,exports){
+},{"./ReactCurrentOwner":245,"./ReactInstanceMap":273,"./ReactMount":277,"./invariant":351,"./isNode":353,"./warning":372,"buffer":18,"oMfpAn":21}],334:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47415,8 +45395,8 @@ function flattenSingleChildIntoContext(traverseContext, child, name) {
   // We found a component instance.
   var result = traverseContext;
   var keyUnique = !result.hasOwnProperty(name);
-  if ("production" !== "production") {
-    ("production" !== "production" ? warning(
+  if ("production" !== process.env.NODE_ENV) {
+    ("production" !== process.env.NODE_ENV ? warning(
       keyUnique,
       'flattenChildren(...): Encountered two children with the same key, ' +
       '`%s`. Child keys must be unique; when two children share a key, only ' +
@@ -47446,7 +45426,7 @@ function flattenChildren(children) {
 module.exports = flattenChildren;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/flattenChildren.js","/../../node_modules/react/lib")
-},{"./traverseAllChildren":370,"./warning":372,"buffer":14,"oMfpAn":17}],335:[function(require,module,exports){
+},{"./traverseAllChildren":370,"./warning":372,"buffer":18,"oMfpAn":21}],335:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -47477,7 +45457,7 @@ function focusNode(node) {
 module.exports = focusNode;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/focusNode.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],336:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],336:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47510,7 +45490,7 @@ var forEachAccumulated = function(arr, cb, scope) {
 module.exports = forEachAccumulated;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/forEachAccumulated.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],337:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],337:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47541,7 +45521,7 @@ function getActiveElement() /*?DOMElement*/ {
 module.exports = getActiveElement;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getActiveElement.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],338:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],338:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47595,7 +45575,7 @@ function getEventCharCode(nativeEvent) {
 module.exports = getEventCharCode;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getEventCharCode.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],339:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],339:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47702,7 +45682,7 @@ function getEventKey(nativeEvent) {
 module.exports = getEventKey;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getEventKey.js","/../../node_modules/react/lib")
-},{"./getEventCharCode":338,"buffer":14,"oMfpAn":17}],340:[function(require,module,exports){
+},{"./getEventCharCode":338,"buffer":18,"oMfpAn":21}],340:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47751,7 +45731,7 @@ function getEventModifierState(nativeEvent) {
 module.exports = getEventModifierState;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getEventModifierState.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],341:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],341:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47784,7 +45764,7 @@ function getEventTarget(nativeEvent) {
 module.exports = getEventTarget;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getEventTarget.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],342:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],342:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47830,7 +45810,7 @@ function getIteratorFn(maybeIterable) {
 module.exports = getIteratorFn;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getIteratorFn.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],343:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],343:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -47930,7 +45910,7 @@ var markupWrap = {
  * @return {?array} Markup wrap configuration, if applicable.
  */
 function getMarkupWrap(nodeName) {
-  ("production" !== "production" ? invariant(!!dummyNode, 'Markup wrapping node not initialized') : invariant(!!dummyNode));
+  ("production" !== process.env.NODE_ENV ? invariant(!!dummyNode, 'Markup wrapping node not initialized') : invariant(!!dummyNode));
   if (!markupWrap.hasOwnProperty(nodeName)) {
     nodeName = '*';
   }
@@ -47949,7 +45929,7 @@ function getMarkupWrap(nodeName) {
 module.exports = getMarkupWrap;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getMarkupWrap.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"./invariant":351,"buffer":14,"oMfpAn":17}],344:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"./invariant":351,"buffer":18,"oMfpAn":21}],344:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48026,7 +46006,7 @@ function getNodeForCharacterOffset(root, offset) {
 module.exports = getNodeForCharacterOffset;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getNodeForCharacterOffset.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],345:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],345:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48063,7 +46043,7 @@ function getReactRootElementInContainer(container) {
 module.exports = getReactRootElementInContainer;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getReactRootElementInContainer.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],346:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],346:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48102,7 +46082,7 @@ function getTextContentAccessor() {
 module.exports = getTextContentAccessor;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getTextContentAccessor.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"buffer":14,"oMfpAn":17}],347:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"buffer":18,"oMfpAn":21}],347:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48144,7 +46124,7 @@ function getUnboundedScrollPosition(scrollable) {
 module.exports = getUnboundedScrollPosition;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/getUnboundedScrollPosition.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],348:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],348:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48179,7 +46159,7 @@ function hyphenate(string) {
 module.exports = hyphenate;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/hyphenate.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],349:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],349:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48222,7 +46202,7 @@ function hyphenateStyleName(string) {
 module.exports = hyphenateStyleName;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/hyphenateStyleName.js","/../../node_modules/react/lib")
-},{"./hyphenate":348,"buffer":14,"oMfpAn":17}],350:[function(require,module,exports){
+},{"./hyphenate":348,"buffer":18,"oMfpAn":21}],350:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48289,8 +46269,8 @@ function instantiateReactComponent(node, parentCompositeType) {
 
   if (typeof node === 'object') {
     var element = node;
-    if ("production" !== "production") {
-      ("production" !== "production" ? warning(
+    if ("production" !== process.env.NODE_ENV) {
+      ("production" !== process.env.NODE_ENV ? warning(
         element && (typeof element.type === 'function' ||
                     typeof element.type === 'string'),
         'Only functions or strings can be mounted as React components.'
@@ -48315,15 +46295,15 @@ function instantiateReactComponent(node, parentCompositeType) {
   } else if (typeof node === 'string' || typeof node === 'number') {
     instance = ReactNativeComponent.createInstanceForText(node);
   } else {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       false,
       'Encountered invalid React node of type %s',
       typeof node
     ) : invariant(false));
   }
 
-  if ("production" !== "production") {
-    ("production" !== "production" ? warning(
+  if ("production" !== process.env.NODE_ENV) {
+    ("production" !== process.env.NODE_ENV ? warning(
       typeof instance.construct === 'function' &&
       typeof instance.mountComponent === 'function' &&
       typeof instance.receiveComponent === 'function' &&
@@ -48341,14 +46321,14 @@ function instantiateReactComponent(node, parentCompositeType) {
   instance._mountIndex = 0;
   instance._mountImage = null;
 
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     instance._isOwnerNecessary = false;
     instance._warnedAboutRefsInRender = false;
   }
 
   // Internal instances should fully constructed at this point, so they should
   // not get any new fields added to them at this point.
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     if (Object.preventExtensions) {
       Object.preventExtensions(instance);
     }
@@ -48360,7 +46340,7 @@ function instantiateReactComponent(node, parentCompositeType) {
 module.exports = instantiateReactComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/instantiateReactComponent.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./ReactCompositeComponent":243,"./ReactEmptyComponent":265,"./ReactNativeComponent":280,"./invariant":351,"./warning":372,"buffer":14,"oMfpAn":17}],351:[function(require,module,exports){
+},{"./Object.assign":229,"./ReactCompositeComponent":243,"./ReactEmptyComponent":265,"./ReactNativeComponent":280,"./invariant":351,"./warning":372,"buffer":18,"oMfpAn":21}],351:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48387,7 +46367,7 @@ module.exports = instantiateReactComponent;
  */
 
 var invariant = function(condition, format, a, b, c, d, e, f) {
-  if ("production" !== "production") {
+  if ("production" !== process.env.NODE_ENV) {
     if (format === undefined) {
       throw new Error('invariant requires an error message argument');
     }
@@ -48417,7 +46397,7 @@ var invariant = function(condition, format, a, b, c, d, e, f) {
 module.exports = invariant;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/invariant.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],352:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],352:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48484,7 +46464,7 @@ function isEventSupported(eventNameSuffix, capture) {
 module.exports = isEventSupported;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/isEventSupported.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"buffer":14,"oMfpAn":17}],353:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"buffer":18,"oMfpAn":21}],353:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48513,7 +46493,7 @@ function isNode(object) {
 module.exports = isNode;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/isNode.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],354:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],354:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48558,7 +46538,7 @@ function isTextInputElement(elem) {
 module.exports = isTextInputElement;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/isTextInputElement.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],355:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],355:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48585,7 +46565,7 @@ function isTextNode(object) {
 module.exports = isTextNode;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/isTextNode.js","/../../node_modules/react/lib")
-},{"./isNode":353,"buffer":14,"oMfpAn":17}],356:[function(require,module,exports){
+},{"./isNode":353,"buffer":18,"oMfpAn":21}],356:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48628,7 +46608,7 @@ function joinClasses(className/*, ... */) {
 module.exports = joinClasses;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/joinClasses.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],357:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],357:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48667,7 +46647,7 @@ var invariant = require("./invariant");
 var keyMirror = function(obj) {
   var ret = {};
   var key;
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     obj instanceof Object && !Array.isArray(obj),
     'keyMirror(...): Argument must be an object.'
   ) : invariant(obj instanceof Object && !Array.isArray(obj)));
@@ -48683,7 +46663,7 @@ var keyMirror = function(obj) {
 module.exports = keyMirror;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/keyMirror.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],358:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],358:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48721,7 +46701,7 @@ var keyOf = function(oneKeyObj) {
 module.exports = keyOf;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/keyOf.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],359:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],359:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48776,7 +46756,7 @@ function mapObject(object, callback, context) {
 module.exports = mapObject;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/mapObject.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],360:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],360:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48811,7 +46791,7 @@ function memoizeStringOnly(callback) {
 module.exports = memoizeStringOnly;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/memoizeStringOnly.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],361:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],361:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48841,7 +46821,7 @@ var invariant = require("./invariant");
  * structure.
  */
 function onlyChild(children) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     ReactElement.isValidElement(children),
     'onlyChild must be passed a children with exactly one child.'
   ) : invariant(ReactElement.isValidElement(children)));
@@ -48851,7 +46831,7 @@ function onlyChild(children) {
 module.exports = onlyChild;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/onlyChild.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./invariant":351,"buffer":14,"oMfpAn":17}],362:[function(require,module,exports){
+},{"./ReactElement":263,"./invariant":351,"buffer":18,"oMfpAn":21}],362:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48881,7 +46861,7 @@ if (ExecutionEnvironment.canUseDOM) {
 module.exports = performance || {};
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/performance.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"buffer":14,"oMfpAn":17}],363:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"buffer":18,"oMfpAn":21}],363:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48911,7 +46891,7 @@ var performanceNow = performance.now.bind(performance);
 module.exports = performanceNow;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/performanceNow.js","/../../node_modules/react/lib")
-},{"./performance":362,"buffer":14,"oMfpAn":17}],364:[function(require,module,exports){
+},{"./performance":362,"buffer":18,"oMfpAn":21}],364:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -48941,7 +46921,7 @@ function quoteAttributeValueForBrowser(value) {
 module.exports = quoteAttributeValueForBrowser;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/quoteAttributeValueForBrowser.js","/../../node_modules/react/lib")
-},{"./escapeTextContentForBrowser":332,"buffer":14,"oMfpAn":17}],365:[function(require,module,exports){
+},{"./escapeTextContentForBrowser":332,"buffer":18,"oMfpAn":21}],365:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -49032,7 +47012,7 @@ if (ExecutionEnvironment.canUseDOM) {
 module.exports = setInnerHTML;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/setInnerHTML.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"buffer":14,"oMfpAn":17}],366:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"buffer":18,"oMfpAn":21}],366:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -49076,7 +47056,7 @@ if (ExecutionEnvironment.canUseDOM) {
 module.exports = setTextContent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/setTextContent.js","/../../node_modules/react/lib")
-},{"./ExecutionEnvironment":222,"./escapeTextContentForBrowser":332,"./setInnerHTML":365,"buffer":14,"oMfpAn":17}],367:[function(require,module,exports){
+},{"./ExecutionEnvironment":222,"./escapeTextContentForBrowser":332,"./setInnerHTML":365,"buffer":18,"oMfpAn":21}],367:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -49122,7 +47102,7 @@ function shallowEqual(objA, objB) {
 module.exports = shallowEqual;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/shallowEqual.js","/../../node_modules/react/lib")
-},{"buffer":14,"oMfpAn":17}],368:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],368:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -49165,7 +47145,7 @@ function shouldUpdateReactComponent(prevElement, nextElement) {
         var prevName = null;
         var nextName = null;
         var nextDisplayName = null;
-        if ("production" !== "production") {
+        if ("production" !== process.env.NODE_ENV) {
           if (!ownersMatch) {
             if (prevElement._owner != null &&
                 prevElement._owner.getPublicInstance() != null &&
@@ -49199,7 +47179,7 @@ function shouldUpdateReactComponent(prevElement, nextElement) {
                 if (nextElement._owner != null) {
                   nextElement._owner._isOwnerNecessary = true;
                 }
-                ("production" !== "production" ? warning(
+                ("production" !== process.env.NODE_ENV ? warning(
                   false,
                   '<%s /> is being rendered by both %s and %s using the same ' +
                   'key (%s) in the same place. Currently, this means that ' +
@@ -49226,7 +47206,7 @@ function shouldUpdateReactComponent(prevElement, nextElement) {
 module.exports = shouldUpdateReactComponent;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/shouldUpdateReactComponent.js","/../../node_modules/react/lib")
-},{"./warning":372,"buffer":14,"oMfpAn":17}],369:[function(require,module,exports){
+},{"./warning":372,"buffer":18,"oMfpAn":21}],369:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -49256,19 +47236,19 @@ function toArray(obj) {
 
   // Some browse builtin objects can report typeof 'function' (e.g. NodeList in
   // old versions of Safari).
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     !Array.isArray(obj) &&
     (typeof obj === 'object' || typeof obj === 'function'),
     'toArray: Array-like object expected'
   ) : invariant(!Array.isArray(obj) &&
   (typeof obj === 'object' || typeof obj === 'function')));
 
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     typeof length === 'number',
     'toArray: Object needs a length property'
   ) : invariant(typeof length === 'number'));
 
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     length === 0 ||
     (length - 1) in obj,
     'toArray: Object should have keys for indices'
@@ -49298,7 +47278,7 @@ function toArray(obj) {
 module.exports = toArray;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/toArray.js","/../../node_modules/react/lib")
-},{"./invariant":351,"buffer":14,"oMfpAn":17}],370:[function(require,module,exports){
+},{"./invariant":351,"buffer":18,"oMfpAn":21}],370:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -49463,8 +47443,8 @@ function traverseAllChildrenImpl(
           );
         }
       } else {
-        if ("production" !== "production") {
-          ("production" !== "production" ? warning(
+        if ("production" !== process.env.NODE_ENV) {
+          ("production" !== process.env.NODE_ENV ? warning(
             didWarnAboutMaps,
             'Using Maps as children is not yet fully supported. It is an ' +
             'experimental feature that might be removed. Convert it to a ' +
@@ -49494,7 +47474,7 @@ function traverseAllChildrenImpl(
         }
       }
     } else if (type === 'object') {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         children.nodeType !== 1,
         'traverseAllChildren(...): Encountered an invalid child; DOM ' +
         'elements are not valid children of React components.'
@@ -49551,7 +47531,7 @@ function traverseAllChildren(children, callback, traverseContext) {
 module.exports = traverseAllChildren;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/traverseAllChildren.js","/../../node_modules/react/lib")
-},{"./ReactElement":263,"./ReactFragment":269,"./ReactInstanceHandles":272,"./getIteratorFn":342,"./invariant":351,"./warning":372,"buffer":14,"oMfpAn":17}],371:[function(require,module,exports){
+},{"./ReactElement":263,"./ReactFragment":269,"./ReactInstanceHandles":272,"./getIteratorFn":342,"./invariant":351,"./warning":372,"buffer":18,"oMfpAn":21}],371:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2013-2015, Facebook, Inc.
@@ -49606,14 +47586,14 @@ ALL_COMMANDS_LIST.forEach(function(command) {
 });
 
 function invariantArrayCase(value, spec, command) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     Array.isArray(value),
     'update(): expected target of %s to be an array; got %s.',
     command,
     value
   ) : invariant(Array.isArray(value)));
   var specValue = spec[command];
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     Array.isArray(specValue),
     'update(): expected spec of %s to be an array; got %s. ' +
     'Did you forget to wrap your parameter in an array?',
@@ -49623,7 +47603,7 @@ function invariantArrayCase(value, spec, command) {
 }
 
 function update(value, spec) {
-  ("production" !== "production" ? invariant(
+  ("production" !== process.env.NODE_ENV ? invariant(
     typeof spec === 'object',
     'update(): You provided a key path to update() that did not contain one ' +
     'of %s. Did you forget to include {%s: ...}?',
@@ -49632,7 +47612,7 @@ function update(value, spec) {
   ) : invariant(typeof spec === 'object'));
 
   if (hasOwnProperty.call(spec, COMMAND_SET)) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       Object.keys(spec).length === 1,
       'Cannot have more than one key in an object with %s',
       COMMAND_SET
@@ -49645,13 +47625,13 @@ function update(value, spec) {
 
   if (hasOwnProperty.call(spec, COMMAND_MERGE)) {
     var mergeObj = spec[COMMAND_MERGE];
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       mergeObj && typeof mergeObj === 'object',
       'update(): %s expects a spec of type \'object\'; got %s',
       COMMAND_MERGE,
       mergeObj
     ) : invariant(mergeObj && typeof mergeObj === 'object'));
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       nextValue && typeof nextValue === 'object',
       'update(): %s expects a target of type \'object\'; got %s',
       COMMAND_MERGE,
@@ -49675,13 +47655,13 @@ function update(value, spec) {
   }
 
   if (hasOwnProperty.call(spec, COMMAND_SPLICE)) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       Array.isArray(value),
       'Expected %s target to be an array; got %s',
       COMMAND_SPLICE,
       value
     ) : invariant(Array.isArray(value)));
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       Array.isArray(spec[COMMAND_SPLICE]),
       'update(): expected spec of %s to be an array of arrays; got %s. ' +
       'Did you forget to wrap your parameters in an array?',
@@ -49689,7 +47669,7 @@ function update(value, spec) {
       spec[COMMAND_SPLICE]
     ) : invariant(Array.isArray(spec[COMMAND_SPLICE])));
     spec[COMMAND_SPLICE].forEach(function(args) {
-      ("production" !== "production" ? invariant(
+      ("production" !== process.env.NODE_ENV ? invariant(
         Array.isArray(args),
         'update(): expected spec of %s to be an array of arrays; got %s. ' +
         'Did you forget to wrap your parameters in an array?',
@@ -49701,7 +47681,7 @@ function update(value, spec) {
   }
 
   if (hasOwnProperty.call(spec, COMMAND_APPLY)) {
-    ("production" !== "production" ? invariant(
+    ("production" !== process.env.NODE_ENV ? invariant(
       typeof spec[COMMAND_APPLY] === 'function',
       'update(): expected spec of %s to be a function; got %s.',
       COMMAND_APPLY,
@@ -49722,7 +47702,7 @@ function update(value, spec) {
 module.exports = update;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/update.js","/../../node_modules/react/lib")
-},{"./Object.assign":229,"./invariant":351,"./keyOf":358,"buffer":14,"oMfpAn":17}],372:[function(require,module,exports){
+},{"./Object.assign":229,"./invariant":351,"./keyOf":358,"buffer":18,"oMfpAn":21}],372:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Copyright 2014-2015, Facebook, Inc.
@@ -49748,7 +47728,7 @@ var emptyFunction = require("./emptyFunction");
 
 var warning = emptyFunction;
 
-if ("production" !== "production") {
+if ("production" !== process.env.NODE_ENV) {
   warning = function(condition, format ) {for (var args=[],$__0=2,$__1=arguments.length;$__0<$__1;$__0++) args.push(arguments[$__0]);
     if (format === undefined) {
       throw new Error(
@@ -49785,12 +47765,7089 @@ if ("production" !== "production") {
 module.exports = warning;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/lib/warning.js","/../../node_modules/react/lib")
-},{"./emptyFunction":330,"buffer":14,"oMfpAn":17}],373:[function(require,module,exports){
+},{"./emptyFunction":330,"buffer":18,"oMfpAn":21}],373:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 module.exports = require('./lib/React');
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/react/react.js","/../../node_modules/react")
-},{"./lib/React":231,"buffer":14,"oMfpAn":17}],374:[function(require,module,exports){
+},{"./lib/React":231,"buffer":18,"oMfpAn":21}],374:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+module.exports = require('./lib/');
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/index.js","/../../node_modules/socket.io-client")
+},{"./lib/":375,"buffer":18,"oMfpAn":21}],375:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module dependencies.
+ */
+
+var url = require('./url');
+var parser = require('socket.io-parser');
+var Manager = require('./manager');
+var debug = require('debug')('socket.io-client');
+
+/**
+ * Module exports.
+ */
+
+module.exports = exports = lookup;
+
+/**
+ * Managers cache.
+ */
+
+var cache = exports.managers = {};
+
+/**
+ * Looks up an existing `Manager` for multiplexing.
+ * If the user summons:
+ *
+ *   `io('http://localhost/a');`
+ *   `io('http://localhost/b');`
+ *
+ * We reuse the existing instance based on same scheme/port/host,
+ * and we initialize sockets for each namespace.
+ *
+ * @api public
+ */
+
+function lookup(uri, opts) {
+  if (typeof uri == 'object') {
+    opts = uri;
+    uri = undefined;
+  }
+
+  opts = opts || {};
+
+  var parsed = url(uri);
+  var source = parsed.source;
+  var id = parsed.id;
+  var io;
+
+  if (opts.forceNew || opts['force new connection'] || false === opts.multiplex) {
+    debug('ignoring socket cache for %s', source);
+    io = Manager(source, opts);
+  } else {
+    if (!cache[id]) {
+      debug('new io instance for %s', source);
+      cache[id] = Manager(source, opts);
+    }
+    io = cache[id];
+  }
+
+  return io.socket(parsed.path);
+}
+
+/**
+ * Protocol version.
+ *
+ * @api public
+ */
+
+exports.protocol = parser.protocol;
+
+/**
+ * `connect`.
+ *
+ * @param {String} uri
+ * @api public
+ */
+
+exports.connect = lookup;
+
+/**
+ * Expose constructors for standalone build.
+ *
+ * @api public
+ */
+
+exports.Manager = require('./manager');
+exports.Socket = require('./socket');
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/lib/index.js","/../../node_modules/socket.io-client/lib")
+},{"./manager":376,"./socket":378,"./url":379,"buffer":18,"debug":383,"oMfpAn":21,"socket.io-parser":419}],376:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module dependencies.
+ */
+
+var url = require('./url');
+var eio = require('engine.io-client');
+var Socket = require('./socket');
+var Emitter = require('component-emitter');
+var parser = require('socket.io-parser');
+var on = require('./on');
+var bind = require('component-bind');
+var object = require('object-component');
+var debug = require('debug')('socket.io-client:manager');
+var indexOf = require('indexof');
+var Backoff = require('backo2');
+
+/**
+ * Module exports
+ */
+
+module.exports = Manager;
+
+/**
+ * `Manager` constructor.
+ *
+ * @param {String} engine instance or engine uri/opts
+ * @param {Object} options
+ * @api public
+ */
+
+function Manager(uri, opts){
+  if (!(this instanceof Manager)) return new Manager(uri, opts);
+  if (uri && ('object' == typeof uri)) {
+    opts = uri;
+    uri = undefined;
+  }
+  opts = opts || {};
+
+  opts.path = opts.path || '/socket.io';
+  this.nsps = {};
+  this.subs = [];
+  this.opts = opts;
+  this.reconnection(opts.reconnection !== false);
+  this.reconnectionAttempts(opts.reconnectionAttempts || Infinity);
+  this.reconnectionDelay(opts.reconnectionDelay || 1000);
+  this.reconnectionDelayMax(opts.reconnectionDelayMax || 5000);
+  this.randomizationFactor(opts.randomizationFactor || 0.5);
+  this.backoff = new Backoff({
+    min: this.reconnectionDelay(),
+    max: this.reconnectionDelayMax(),
+    jitter: this.randomizationFactor()
+  });
+  this.timeout(null == opts.timeout ? 20000 : opts.timeout);
+  this.readyState = 'closed';
+  this.uri = uri;
+  this.connected = [];
+  this.encoding = false;
+  this.packetBuffer = [];
+  this.encoder = new parser.Encoder();
+  this.decoder = new parser.Decoder();
+  this.autoConnect = opts.autoConnect !== false;
+  if (this.autoConnect) this.open();
+}
+
+/**
+ * Propagate given event to sockets and emit on `this`
+ *
+ * @api private
+ */
+
+Manager.prototype.emitAll = function() {
+  this.emit.apply(this, arguments);
+  for (var nsp in this.nsps) {
+    this.nsps[nsp].emit.apply(this.nsps[nsp], arguments);
+  }
+};
+
+/**
+ * Update `socket.id` of all sockets
+ *
+ * @api private
+ */
+
+Manager.prototype.updateSocketIds = function(){
+  for (var nsp in this.nsps) {
+    this.nsps[nsp].id = this.engine.id;
+  }
+};
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Manager.prototype);
+
+/**
+ * Sets the `reconnection` config.
+ *
+ * @param {Boolean} true/false if it should automatically reconnect
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnection = function(v){
+  if (!arguments.length) return this._reconnection;
+  this._reconnection = !!v;
+  return this;
+};
+
+/**
+ * Sets the reconnection attempts config.
+ *
+ * @param {Number} max reconnection attempts before giving up
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnectionAttempts = function(v){
+  if (!arguments.length) return this._reconnectionAttempts;
+  this._reconnectionAttempts = v;
+  return this;
+};
+
+/**
+ * Sets the delay between reconnections.
+ *
+ * @param {Number} delay
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnectionDelay = function(v){
+  if (!arguments.length) return this._reconnectionDelay;
+  this._reconnectionDelay = v;
+  this.backoff && this.backoff.setMin(v);
+  return this;
+};
+
+Manager.prototype.randomizationFactor = function(v){
+  if (!arguments.length) return this._randomizationFactor;
+  this._randomizationFactor = v;
+  this.backoff && this.backoff.setJitter(v);
+  return this;
+};
+
+/**
+ * Sets the maximum delay between reconnections.
+ *
+ * @param {Number} delay
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.reconnectionDelayMax = function(v){
+  if (!arguments.length) return this._reconnectionDelayMax;
+  this._reconnectionDelayMax = v;
+  this.backoff && this.backoff.setMax(v);
+  return this;
+};
+
+/**
+ * Sets the connection timeout. `false` to disable
+ *
+ * @return {Manager} self or value
+ * @api public
+ */
+
+Manager.prototype.timeout = function(v){
+  if (!arguments.length) return this._timeout;
+  this._timeout = v;
+  return this;
+};
+
+/**
+ * Starts trying to reconnect if reconnection is enabled and we have not
+ * started reconnecting yet
+ *
+ * @api private
+ */
+
+Manager.prototype.maybeReconnectOnOpen = function() {
+  // Only try to reconnect if it's the first time we're connecting
+  if (!this.reconnecting && this._reconnection && this.backoff.attempts === 0) {
+    // keeps reconnection from firing twice for the same reconnection loop
+    this.reconnect();
+  }
+};
+
+
+/**
+ * Sets the current transport `socket`.
+ *
+ * @param {Function} optional, callback
+ * @return {Manager} self
+ * @api public
+ */
+
+Manager.prototype.open =
+Manager.prototype.connect = function(fn){
+  debug('readyState %s', this.readyState);
+  if (~this.readyState.indexOf('open')) return this;
+
+  debug('opening %s', this.uri);
+  this.engine = eio(this.uri, this.opts);
+  var socket = this.engine;
+  var self = this;
+  this.readyState = 'opening';
+  this.skipReconnect = false;
+
+  // emit `open`
+  var openSub = on(socket, 'open', function() {
+    self.onopen();
+    fn && fn();
+  });
+
+  // emit `connect_error`
+  var errorSub = on(socket, 'error', function(data){
+    debug('connect_error');
+    self.cleanup();
+    self.readyState = 'closed';
+    self.emitAll('connect_error', data);
+    if (fn) {
+      var err = new Error('Connection error');
+      err.data = data;
+      fn(err);
+    } else {
+      // Only do this if there is no fn to handle the error
+      self.maybeReconnectOnOpen();
+    }
+  });
+
+  // emit `connect_timeout`
+  if (false !== this._timeout) {
+    var timeout = this._timeout;
+    debug('connect attempt will timeout after %d', timeout);
+
+    // set timer
+    var timer = setTimeout(function(){
+      debug('connect attempt timed out after %d', timeout);
+      openSub.destroy();
+      socket.close();
+      socket.emit('error', 'timeout');
+      self.emitAll('connect_timeout', timeout);
+    }, timeout);
+
+    this.subs.push({
+      destroy: function(){
+        clearTimeout(timer);
+      }
+    });
+  }
+
+  this.subs.push(openSub);
+  this.subs.push(errorSub);
+
+  return this;
+};
+
+/**
+ * Called upon transport open.
+ *
+ * @api private
+ */
+
+Manager.prototype.onopen = function(){
+  debug('open');
+
+  // clear old subs
+  this.cleanup();
+
+  // mark as open
+  this.readyState = 'open';
+  this.emit('open');
+
+  // add new subs
+  var socket = this.engine;
+  this.subs.push(on(socket, 'data', bind(this, 'ondata')));
+  this.subs.push(on(this.decoder, 'decoded', bind(this, 'ondecoded')));
+  this.subs.push(on(socket, 'error', bind(this, 'onerror')));
+  this.subs.push(on(socket, 'close', bind(this, 'onclose')));
+};
+
+/**
+ * Called with data.
+ *
+ * @api private
+ */
+
+Manager.prototype.ondata = function(data){
+  this.decoder.add(data);
+};
+
+/**
+ * Called when parser fully decodes a packet.
+ *
+ * @api private
+ */
+
+Manager.prototype.ondecoded = function(packet) {
+  this.emit('packet', packet);
+};
+
+/**
+ * Called upon socket error.
+ *
+ * @api private
+ */
+
+Manager.prototype.onerror = function(err){
+  debug('error', err);
+  this.emitAll('error', err);
+};
+
+/**
+ * Creates a new socket for the given `nsp`.
+ *
+ * @return {Socket}
+ * @api public
+ */
+
+Manager.prototype.socket = function(nsp){
+  var socket = this.nsps[nsp];
+  if (!socket) {
+    socket = new Socket(this, nsp);
+    this.nsps[nsp] = socket;
+    var self = this;
+    socket.on('connect', function(){
+      socket.id = self.engine.id;
+      if (!~indexOf(self.connected, socket)) {
+        self.connected.push(socket);
+      }
+    });
+  }
+  return socket;
+};
+
+/**
+ * Called upon a socket close.
+ *
+ * @param {Socket} socket
+ */
+
+Manager.prototype.destroy = function(socket){
+  var index = indexOf(this.connected, socket);
+  if (~index) this.connected.splice(index, 1);
+  if (this.connected.length) return;
+
+  this.close();
+};
+
+/**
+ * Writes a packet.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Manager.prototype.packet = function(packet){
+  debug('writing packet %j', packet);
+  var self = this;
+
+  if (!self.encoding) {
+    // encode, then write to engine with result
+    self.encoding = true;
+    this.encoder.encode(packet, function(encodedPackets) {
+      for (var i = 0; i < encodedPackets.length; i++) {
+        self.engine.write(encodedPackets[i]);
+      }
+      self.encoding = false;
+      self.processPacketQueue();
+    });
+  } else { // add packet to the queue
+    self.packetBuffer.push(packet);
+  }
+};
+
+/**
+ * If packet buffer is non-empty, begins encoding the
+ * next packet in line.
+ *
+ * @api private
+ */
+
+Manager.prototype.processPacketQueue = function() {
+  if (this.packetBuffer.length > 0 && !this.encoding) {
+    var pack = this.packetBuffer.shift();
+    this.packet(pack);
+  }
+};
+
+/**
+ * Clean up transport subscriptions and packet buffer.
+ *
+ * @api private
+ */
+
+Manager.prototype.cleanup = function(){
+  var sub;
+  while (sub = this.subs.shift()) sub.destroy();
+
+  this.packetBuffer = [];
+  this.encoding = false;
+
+  this.decoder.destroy();
+};
+
+/**
+ * Close the current socket.
+ *
+ * @api private
+ */
+
+Manager.prototype.close =
+Manager.prototype.disconnect = function(){
+  this.skipReconnect = true;
+  this.backoff.reset();
+  this.readyState = 'closed';
+  this.engine && this.engine.close();
+};
+
+/**
+ * Called upon engine close.
+ *
+ * @api private
+ */
+
+Manager.prototype.onclose = function(reason){
+  debug('close');
+  this.cleanup();
+  this.backoff.reset();
+  this.readyState = 'closed';
+  this.emit('close', reason);
+  if (this._reconnection && !this.skipReconnect) {
+    this.reconnect();
+  }
+};
+
+/**
+ * Attempt a reconnection.
+ *
+ * @api private
+ */
+
+Manager.prototype.reconnect = function(){
+  if (this.reconnecting || this.skipReconnect) return this;
+
+  var self = this;
+
+  if (this.backoff.attempts >= this._reconnectionAttempts) {
+    debug('reconnect failed');
+    this.backoff.reset();
+    this.emitAll('reconnect_failed');
+    this.reconnecting = false;
+  } else {
+    var delay = this.backoff.duration();
+    debug('will wait %dms before reconnect attempt', delay);
+
+    this.reconnecting = true;
+    var timer = setTimeout(function(){
+      if (self.skipReconnect) return;
+
+      debug('attempting reconnect');
+      self.emitAll('reconnect_attempt', self.backoff.attempts);
+      self.emitAll('reconnecting', self.backoff.attempts);
+
+      // check again for the case socket closed in above events
+      if (self.skipReconnect) return;
+
+      self.open(function(err){
+        if (err) {
+          debug('reconnect attempt error');
+          self.reconnecting = false;
+          self.reconnect();
+          self.emitAll('reconnect_error', err.data);
+        } else {
+          debug('reconnect success');
+          self.onreconnect();
+        }
+      });
+    }, delay);
+
+    this.subs.push({
+      destroy: function(){
+        clearTimeout(timer);
+      }
+    });
+  }
+};
+
+/**
+ * Called upon successful reconnect.
+ *
+ * @api private
+ */
+
+Manager.prototype.onreconnect = function(){
+  var attempt = this.backoff.attempts;
+  this.reconnecting = false;
+  this.backoff.reset();
+  this.updateSocketIds();
+  this.emitAll('reconnect', attempt);
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/lib/manager.js","/../../node_modules/socket.io-client/lib")
+},{"./on":377,"./socket":378,"./url":379,"backo2":380,"buffer":18,"component-bind":381,"component-emitter":382,"debug":383,"engine.io-client":384,"indexof":415,"oMfpAn":21,"object-component":416,"socket.io-parser":419}],377:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module exports.
+ */
+
+module.exports = on;
+
+/**
+ * Helper for subscriptions.
+ *
+ * @param {Object|EventEmitter} obj with `Emitter` mixin or `EventEmitter`
+ * @param {String} event name
+ * @param {Function} callback
+ * @api public
+ */
+
+function on(obj, ev, fn) {
+  obj.on(ev, fn);
+  return {
+    destroy: function(){
+      obj.removeListener(ev, fn);
+    }
+  };
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/lib/on.js","/../../node_modules/socket.io-client/lib")
+},{"buffer":18,"oMfpAn":21}],378:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module dependencies.
+ */
+
+var parser = require('socket.io-parser');
+var Emitter = require('component-emitter');
+var toArray = require('to-array');
+var on = require('./on');
+var bind = require('component-bind');
+var debug = require('debug')('socket.io-client:socket');
+var hasBin = require('has-binary');
+
+/**
+ * Module exports.
+ */
+
+module.exports = exports = Socket;
+
+/**
+ * Internal events (blacklisted).
+ * These events can't be emitted by the user.
+ *
+ * @api private
+ */
+
+var events = {
+  connect: 1,
+  connect_error: 1,
+  connect_timeout: 1,
+  disconnect: 1,
+  error: 1,
+  reconnect: 1,
+  reconnect_attempt: 1,
+  reconnect_failed: 1,
+  reconnect_error: 1,
+  reconnecting: 1
+};
+
+/**
+ * Shortcut to `Emitter#emit`.
+ */
+
+var emit = Emitter.prototype.emit;
+
+/**
+ * `Socket` constructor.
+ *
+ * @api public
+ */
+
+function Socket(io, nsp){
+  this.io = io;
+  this.nsp = nsp;
+  this.json = this; // compat
+  this.ids = 0;
+  this.acks = {};
+  if (this.io.autoConnect) this.open();
+  this.receiveBuffer = [];
+  this.sendBuffer = [];
+  this.connected = false;
+  this.disconnected = true;
+}
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Socket.prototype);
+
+/**
+ * Subscribe to open, close and packet events
+ *
+ * @api private
+ */
+
+Socket.prototype.subEvents = function() {
+  if (this.subs) return;
+
+  var io = this.io;
+  this.subs = [
+    on(io, 'open', bind(this, 'onopen')),
+    on(io, 'packet', bind(this, 'onpacket')),
+    on(io, 'close', bind(this, 'onclose'))
+  ];
+};
+
+/**
+ * "Opens" the socket.
+ *
+ * @api public
+ */
+
+Socket.prototype.open =
+Socket.prototype.connect = function(){
+  if (this.connected) return this;
+
+  this.subEvents();
+  this.io.open(); // ensure open
+  if ('open' == this.io.readyState) this.onopen();
+  return this;
+};
+
+/**
+ * Sends a `message` event.
+ *
+ * @return {Socket} self
+ * @api public
+ */
+
+Socket.prototype.send = function(){
+  var args = toArray(arguments);
+  args.unshift('message');
+  this.emit.apply(this, args);
+  return this;
+};
+
+/**
+ * Override `emit`.
+ * If the event is in `events`, it's emitted normally.
+ *
+ * @param {String} event name
+ * @return {Socket} self
+ * @api public
+ */
+
+Socket.prototype.emit = function(ev){
+  if (events.hasOwnProperty(ev)) {
+    emit.apply(this, arguments);
+    return this;
+  }
+
+  var args = toArray(arguments);
+  var parserType = parser.EVENT; // default
+  if (hasBin(args)) { parserType = parser.BINARY_EVENT; } // binary
+  var packet = { type: parserType, data: args };
+
+  // event ack callback
+  if ('function' == typeof args[args.length - 1]) {
+    debug('emitting packet with ack id %d', this.ids);
+    this.acks[this.ids] = args.pop();
+    packet.id = this.ids++;
+  }
+
+  if (this.connected) {
+    this.packet(packet);
+  } else {
+    this.sendBuffer.push(packet);
+  }
+
+  return this;
+};
+
+/**
+ * Sends a packet.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.packet = function(packet){
+  packet.nsp = this.nsp;
+  this.io.packet(packet);
+};
+
+/**
+ * Called upon engine `open`.
+ *
+ * @api private
+ */
+
+Socket.prototype.onopen = function(){
+  debug('transport is open - connecting');
+
+  // write connect packet if necessary
+  if ('/' != this.nsp) {
+    this.packet({ type: parser.CONNECT });
+  }
+};
+
+/**
+ * Called upon engine `close`.
+ *
+ * @param {String} reason
+ * @api private
+ */
+
+Socket.prototype.onclose = function(reason){
+  debug('close (%s)', reason);
+  this.connected = false;
+  this.disconnected = true;
+  delete this.id;
+  this.emit('disconnect', reason);
+};
+
+/**
+ * Called with socket packet.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.onpacket = function(packet){
+  if (packet.nsp != this.nsp) return;
+
+  switch (packet.type) {
+    case parser.CONNECT:
+      this.onconnect();
+      break;
+
+    case parser.EVENT:
+      this.onevent(packet);
+      break;
+
+    case parser.BINARY_EVENT:
+      this.onevent(packet);
+      break;
+
+    case parser.ACK:
+      this.onack(packet);
+      break;
+
+    case parser.BINARY_ACK:
+      this.onack(packet);
+      break;
+
+    case parser.DISCONNECT:
+      this.ondisconnect();
+      break;
+
+    case parser.ERROR:
+      this.emit('error', packet.data);
+      break;
+  }
+};
+
+/**
+ * Called upon a server event.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.onevent = function(packet){
+  var args = packet.data || [];
+  debug('emitting event %j', args);
+
+  if (null != packet.id) {
+    debug('attaching ack callback to event');
+    args.push(this.ack(packet.id));
+  }
+
+  if (this.connected) {
+    emit.apply(this, args);
+  } else {
+    this.receiveBuffer.push(args);
+  }
+};
+
+/**
+ * Produces an ack callback to emit with an event.
+ *
+ * @api private
+ */
+
+Socket.prototype.ack = function(id){
+  var self = this;
+  var sent = false;
+  return function(){
+    // prevent double callbacks
+    if (sent) return;
+    sent = true;
+    var args = toArray(arguments);
+    debug('sending ack %j', args);
+
+    var type = hasBin(args) ? parser.BINARY_ACK : parser.ACK;
+    self.packet({
+      type: type,
+      id: id,
+      data: args
+    });
+  };
+};
+
+/**
+ * Called upon a server acknowlegement.
+ *
+ * @param {Object} packet
+ * @api private
+ */
+
+Socket.prototype.onack = function(packet){
+  debug('calling ack %s with %j', packet.id, packet.data);
+  var fn = this.acks[packet.id];
+  fn.apply(this, packet.data);
+  delete this.acks[packet.id];
+};
+
+/**
+ * Called upon server connect.
+ *
+ * @api private
+ */
+
+Socket.prototype.onconnect = function(){
+  this.connected = true;
+  this.disconnected = false;
+  this.emit('connect');
+  this.emitBuffered();
+};
+
+/**
+ * Emit buffered events (received and emitted).
+ *
+ * @api private
+ */
+
+Socket.prototype.emitBuffered = function(){
+  var i;
+  for (i = 0; i < this.receiveBuffer.length; i++) {
+    emit.apply(this, this.receiveBuffer[i]);
+  }
+  this.receiveBuffer = [];
+
+  for (i = 0; i < this.sendBuffer.length; i++) {
+    this.packet(this.sendBuffer[i]);
+  }
+  this.sendBuffer = [];
+};
+
+/**
+ * Called upon server disconnect.
+ *
+ * @api private
+ */
+
+Socket.prototype.ondisconnect = function(){
+  debug('server disconnect (%s)', this.nsp);
+  this.destroy();
+  this.onclose('io server disconnect');
+};
+
+/**
+ * Called upon forced client/server side disconnections,
+ * this method ensures the manager stops tracking us and
+ * that reconnections don't get triggered for this.
+ *
+ * @api private.
+ */
+
+Socket.prototype.destroy = function(){
+  if (this.subs) {
+    // clean subscriptions to avoid reconnections
+    for (var i = 0; i < this.subs.length; i++) {
+      this.subs[i].destroy();
+    }
+    this.subs = null;
+  }
+
+  this.io.destroy(this);
+};
+
+/**
+ * Disconnects the socket manually.
+ *
+ * @return {Socket} self
+ * @api public
+ */
+
+Socket.prototype.close =
+Socket.prototype.disconnect = function(){
+  if (this.connected) {
+    debug('performing disconnect (%s)', this.nsp);
+    this.packet({ type: parser.DISCONNECT });
+  }
+
+  // remove socket from pool
+  this.destroy();
+
+  if (this.connected) {
+    // fire events
+    this.onclose('io client disconnect');
+  }
+  return this;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/lib/socket.js","/../../node_modules/socket.io-client/lib")
+},{"./on":377,"buffer":18,"component-bind":381,"component-emitter":382,"debug":383,"has-binary":413,"oMfpAn":21,"socket.io-parser":419,"to-array":423}],379:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module dependencies.
+ */
+
+var parseuri = require('parseuri');
+var debug = require('debug')('socket.io-client:url');
+
+/**
+ * Module exports.
+ */
+
+module.exports = url;
+
+/**
+ * URL parser.
+ *
+ * @param {String} url
+ * @param {Object} An object meant to mimic window.location.
+ *                 Defaults to window.location.
+ * @api public
+ */
+
+function url(uri, loc){
+  var obj = uri;
+
+  // default to window.location
+  var loc = loc || global.location;
+  if (null == uri) uri = loc.protocol + '//' + loc.host;
+
+  // relative path support
+  if ('string' == typeof uri) {
+    if ('/' == uri.charAt(0)) {
+      if ('/' == uri.charAt(1)) {
+        uri = loc.protocol + uri;
+      } else {
+        uri = loc.hostname + uri;
+      }
+    }
+
+    if (!/^(https?|wss?):\/\//.test(uri)) {
+      debug('protocol-less url %s', uri);
+      if ('undefined' != typeof loc) {
+        uri = loc.protocol + '//' + uri;
+      } else {
+        uri = 'https://' + uri;
+      }
+    }
+
+    // parse
+    debug('parse %s', uri);
+    obj = parseuri(uri);
+  }
+
+  // make sure we treat `localhost:80` and `localhost` equally
+  if (!obj.port) {
+    if (/^(http|ws)$/.test(obj.protocol)) {
+      obj.port = '80';
+    }
+    else if (/^(http|ws)s$/.test(obj.protocol)) {
+      obj.port = '443';
+    }
+  }
+
+  obj.path = obj.path || '/';
+
+  // define unique id
+  obj.id = obj.protocol + '://' + obj.host + ':' + obj.port;
+  // define href
+  obj.href = obj.protocol + '://' + obj.host + (loc && loc.port == obj.port ? '' : (':' + obj.port));
+
+  return obj;
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/lib/url.js","/../../node_modules/socket.io-client/lib")
+},{"buffer":18,"debug":383,"oMfpAn":21,"parseuri":417}],380:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Expose `Backoff`.
+ */
+
+module.exports = Backoff;
+
+/**
+ * Initialize backoff timer with `opts`.
+ *
+ * - `min` initial timeout in milliseconds [100]
+ * - `max` max timeout [10000]
+ * - `jitter` [0]
+ * - `factor` [2]
+ *
+ * @param {Object} opts
+ * @api public
+ */
+
+function Backoff(opts) {
+  opts = opts || {};
+  this.ms = opts.min || 100;
+  this.max = opts.max || 10000;
+  this.factor = opts.factor || 2;
+  this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
+  this.attempts = 0;
+}
+
+/**
+ * Return the backoff duration.
+ *
+ * @return {Number}
+ * @api public
+ */
+
+Backoff.prototype.duration = function(){
+  var ms = this.ms * Math.pow(this.factor, this.attempts++);
+  if (this.jitter) {
+    var rand =  Math.random();
+    var deviation = Math.floor(rand * this.jitter * ms);
+    ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
+  }
+  return Math.min(ms, this.max) | 0;
+};
+
+/**
+ * Reset the number of attempts.
+ *
+ * @api public
+ */
+
+Backoff.prototype.reset = function(){
+  this.attempts = 0;
+};
+
+/**
+ * Set the minimum duration
+ *
+ * @api public
+ */
+
+Backoff.prototype.setMin = function(min){
+  this.ms = min;
+};
+
+/**
+ * Set the maximum duration
+ *
+ * @api public
+ */
+
+Backoff.prototype.setMax = function(max){
+  this.max = max;
+};
+
+/**
+ * Set the jitter
+ *
+ * @api public
+ */
+
+Backoff.prototype.setJitter = function(jitter){
+  this.jitter = jitter;
+};
+
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/backo2/index.js","/../../node_modules/socket.io-client/node_modules/backo2")
+},{"buffer":18,"oMfpAn":21}],381:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Slice reference.
+ */
+
+var slice = [].slice;
+
+/**
+ * Bind `obj` to `fn`.
+ *
+ * @param {Object} obj
+ * @param {Function|String} fn or string
+ * @return {Function}
+ * @api public
+ */
+
+module.exports = function(obj, fn){
+  if ('string' == typeof fn) fn = obj[fn];
+  if ('function' != typeof fn) throw new Error('bind() requires a function');
+  var args = slice.call(arguments, 2);
+  return function(){
+    return fn.apply(obj, args.concat(slice.call(arguments)));
+  }
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/component-bind/index.js","/../../node_modules/socket.io-client/node_modules/component-bind")
+},{"buffer":18,"oMfpAn":21}],382:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Expose `Emitter`.
+ */
+
+module.exports = Emitter;
+
+/**
+ * Initialize a new `Emitter`.
+ *
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) return mixin(obj);
+};
+
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
+
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
+  }
+  return obj;
+}
+
+/**
+ * Listen on the given `event` with `fn`.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.on =
+Emitter.prototype.addEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks[event] = this._callbacks[event] || [])
+    .push(fn);
+  return this;
+};
+
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.once = function(event, fn){
+  var self = this;
+  this._callbacks = this._callbacks || {};
+
+  function on() {
+    self.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  on.fn = fn;
+  this.on(event, on);
+  return this;
+};
+
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners =
+Emitter.prototype.removeEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
+    return this;
+  }
+
+  // specific event
+  var callbacks = this._callbacks[event];
+  if (!callbacks) return this;
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks[event];
+    return this;
+  }
+
+  // remove specific handler
+  var cb;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    if (cb === fn || cb.fn === fn) {
+      callbacks.splice(i, 1);
+      break;
+    }
+  }
+  return this;
+};
+
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+  var args = [].slice.call(arguments, 1)
+    , callbacks = this._callbacks[event];
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
+  }
+
+  return this;
+};
+
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks[event] || [];
+};
+
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
+
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/component-emitter/index.js","/../../node_modules/socket.io-client/node_modules/component-emitter")
+},{"buffer":18,"oMfpAn":21}],383:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Expose `debug()` as the module.
+ */
+
+module.exports = debug;
+
+/**
+ * Create a debugger with the given `name`.
+ *
+ * @param {String} name
+ * @return {Type}
+ * @api public
+ */
+
+function debug(name) {
+  if (!debug.enabled(name)) return function(){};
+
+  return function(fmt){
+    fmt = coerce(fmt);
+
+    var curr = new Date;
+    var ms = curr - (debug[name] || curr);
+    debug[name] = curr;
+
+    fmt = name
+      + ' '
+      + fmt
+      + ' +' + debug.humanize(ms);
+
+    // This hackery is required for IE8
+    // where `console.log` doesn't have 'apply'
+    window.console
+      && console.log
+      && Function.prototype.apply.call(console.log, console, arguments);
+  }
+}
+
+/**
+ * The currently active debug mode names.
+ */
+
+debug.names = [];
+debug.skips = [];
+
+/**
+ * Enables a debug mode by name. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} name
+ * @api public
+ */
+
+debug.enable = function(name) {
+  try {
+    localStorage.debug = name;
+  } catch(e){}
+
+  var split = (name || '').split(/[\s,]+/)
+    , len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    name = split[i].replace('*', '.*?');
+    if (name[0] === '-') {
+      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
+    }
+    else {
+      debug.names.push(new RegExp('^' + name + '$'));
+    }
+  }
+};
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+debug.disable = function(){
+  debug.enable('');
+};
+
+/**
+ * Humanize the given `ms`.
+ *
+ * @param {Number} m
+ * @return {String}
+ * @api private
+ */
+
+debug.humanize = function(ms) {
+  var sec = 1000
+    , min = 60 * 1000
+    , hour = 60 * min;
+
+  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
+  if (ms >= min) return (ms / min).toFixed(1) + 'm';
+  if (ms >= sec) return (ms / sec | 0) + 's';
+  return ms + 'ms';
+};
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+debug.enabled = function(name) {
+  for (var i = 0, len = debug.skips.length; i < len; i++) {
+    if (debug.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (var i = 0, len = debug.names.length; i < len; i++) {
+    if (debug.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Coerce `val`.
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+// persist
+
+try {
+  if (window.localStorage) debug.enable(localStorage.debug);
+} catch(e){}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/debug/debug.js","/../../node_modules/socket.io-client/node_modules/debug")
+},{"buffer":18,"oMfpAn":21}],384:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+module.exports =  require('./lib/');
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client")
+},{"./lib/":385,"buffer":18,"oMfpAn":21}],385:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+module.exports = require('./socket');
+
+/**
+ * Exports parser
+ *
+ * @api public
+ *
+ */
+module.exports.parser = require('engine.io-parser');
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib")
+},{"./socket":386,"buffer":18,"engine.io-parser":398,"oMfpAn":21}],386:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Module dependencies.
+ */
+
+var transports = require('./transports');
+var Emitter = require('component-emitter');
+var debug = require('debug')('engine.io-client:socket');
+var index = require('indexof');
+var parser = require('engine.io-parser');
+var parseuri = require('parseuri');
+var parsejson = require('parsejson');
+var parseqs = require('parseqs');
+
+/**
+ * Module exports.
+ */
+
+module.exports = Socket;
+
+/**
+ * Noop function.
+ *
+ * @api private
+ */
+
+function noop(){}
+
+/**
+ * Socket constructor.
+ *
+ * @param {String|Object} uri or options
+ * @param {Object} options
+ * @api public
+ */
+
+function Socket(uri, opts){
+  if (!(this instanceof Socket)) return new Socket(uri, opts);
+
+  opts = opts || {};
+
+  if (uri && 'object' == typeof uri) {
+    opts = uri;
+    uri = null;
+  }
+
+  if (uri) {
+    uri = parseuri(uri);
+    opts.host = uri.host;
+    opts.secure = uri.protocol == 'https' || uri.protocol == 'wss';
+    opts.port = uri.port;
+    if (uri.query) opts.query = uri.query;
+  }
+
+  this.secure = null != opts.secure ? opts.secure :
+    (global.location && 'https:' == location.protocol);
+
+  if (opts.host) {
+    var pieces = opts.host.split(':');
+    opts.hostname = pieces.shift();
+    if (pieces.length) {
+      opts.port = pieces.pop();
+    } else if (!opts.port) {
+      // if no port is specified manually, use the protocol default
+      opts.port = this.secure ? '443' : '80';
+    }
+  }
+
+  this.agent = opts.agent || false;
+  this.hostname = opts.hostname ||
+    (global.location ? location.hostname : 'localhost');
+  this.port = opts.port || (global.location && location.port ?
+       location.port :
+       (this.secure ? 443 : 80));
+  this.query = opts.query || {};
+  if ('string' == typeof this.query) this.query = parseqs.decode(this.query);
+  this.upgrade = false !== opts.upgrade;
+  this.path = (opts.path || '/engine.io').replace(/\/$/, '') + '/';
+  this.forceJSONP = !!opts.forceJSONP;
+  this.jsonp = false !== opts.jsonp;
+  this.forceBase64 = !!opts.forceBase64;
+  this.enablesXDR = !!opts.enablesXDR;
+  this.timestampParam = opts.timestampParam || 't';
+  this.timestampRequests = opts.timestampRequests;
+  this.transports = opts.transports || ['polling', 'websocket'];
+  this.readyState = '';
+  this.writeBuffer = [];
+  this.callbackBuffer = [];
+  this.policyPort = opts.policyPort || 843;
+  this.rememberUpgrade = opts.rememberUpgrade || false;
+  this.binaryType = null;
+  this.onlyBinaryUpgrades = opts.onlyBinaryUpgrades;
+
+  // SSL options for Node.js client
+  this.pfx = opts.pfx || null;
+  this.key = opts.key || null;
+  this.passphrase = opts.passphrase || null;
+  this.cert = opts.cert || null;
+  this.ca = opts.ca || null;
+  this.ciphers = opts.ciphers || null;
+  this.rejectUnauthorized = opts.rejectUnauthorized || null;
+
+  this.open();
+}
+
+Socket.priorWebsocketSuccess = false;
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Socket.prototype);
+
+/**
+ * Protocol version.
+ *
+ * @api public
+ */
+
+Socket.protocol = parser.protocol; // this is an int
+
+/**
+ * Expose deps for legacy compatibility
+ * and standalone browser access.
+ */
+
+Socket.Socket = Socket;
+Socket.Transport = require('./transport');
+Socket.transports = require('./transports');
+Socket.parser = require('engine.io-parser');
+
+/**
+ * Creates transport of the given type.
+ *
+ * @param {String} transport name
+ * @return {Transport}
+ * @api private
+ */
+
+Socket.prototype.createTransport = function (name) {
+  debug('creating transport "%s"', name);
+  var query = clone(this.query);
+
+  // append engine.io protocol identifier
+  query.EIO = parser.protocol;
+
+  // transport name
+  query.transport = name;
+
+  // session id if we already have one
+  if (this.id) query.sid = this.id;
+
+  var transport = new transports[name]({
+    agent: this.agent,
+    hostname: this.hostname,
+    port: this.port,
+    secure: this.secure,
+    path: this.path,
+    query: query,
+    forceJSONP: this.forceJSONP,
+    jsonp: this.jsonp,
+    forceBase64: this.forceBase64,
+    enablesXDR: this.enablesXDR,
+    timestampRequests: this.timestampRequests,
+    timestampParam: this.timestampParam,
+    policyPort: this.policyPort,
+    socket: this,
+    pfx: this.pfx,
+    key: this.key,
+    passphrase: this.passphrase,
+    cert: this.cert,
+    ca: this.ca,
+    ciphers: this.ciphers,
+    rejectUnauthorized: this.rejectUnauthorized
+  });
+
+  return transport;
+};
+
+function clone (obj) {
+  var o = {};
+  for (var i in obj) {
+    if (obj.hasOwnProperty(i)) {
+      o[i] = obj[i];
+    }
+  }
+  return o;
+}
+
+/**
+ * Initializes transport to use and starts probe.
+ *
+ * @api private
+ */
+Socket.prototype.open = function () {
+  var transport;
+  if (this.rememberUpgrade && Socket.priorWebsocketSuccess && this.transports.indexOf('websocket') != -1) {
+    transport = 'websocket';
+  } else if (0 == this.transports.length) {
+    // Emit error on next tick so it can be listened to
+    var self = this;
+    setTimeout(function() {
+      self.emit('error', 'No transports available');
+    }, 0);
+    return;
+  } else {
+    transport = this.transports[0];
+  }
+  this.readyState = 'opening';
+
+  // Retry with the next transport if the transport is disabled (jsonp: false)
+  var transport;
+  try {
+    transport = this.createTransport(transport);
+  } catch (e) {
+    this.transports.shift();
+    this.open();
+    return;
+  }
+
+  transport.open();
+  this.setTransport(transport);
+};
+
+/**
+ * Sets the current transport. Disables the existing one (if any).
+ *
+ * @api private
+ */
+
+Socket.prototype.setTransport = function(transport){
+  debug('setting transport %s', transport.name);
+  var self = this;
+
+  if (this.transport) {
+    debug('clearing existing transport %s', this.transport.name);
+    this.transport.removeAllListeners();
+  }
+
+  // set up transport
+  this.transport = transport;
+
+  // set up transport listeners
+  transport
+  .on('drain', function(){
+    self.onDrain();
+  })
+  .on('packet', function(packet){
+    self.onPacket(packet);
+  })
+  .on('error', function(e){
+    self.onError(e);
+  })
+  .on('close', function(){
+    self.onClose('transport close');
+  });
+};
+
+/**
+ * Probes a transport.
+ *
+ * @param {String} transport name
+ * @api private
+ */
+
+Socket.prototype.probe = function (name) {
+  debug('probing transport "%s"', name);
+  var transport = this.createTransport(name, { probe: 1 })
+    , failed = false
+    , self = this;
+
+  Socket.priorWebsocketSuccess = false;
+
+  function onTransportOpen(){
+    if (self.onlyBinaryUpgrades) {
+      var upgradeLosesBinary = !this.supportsBinary && self.transport.supportsBinary;
+      failed = failed || upgradeLosesBinary;
+    }
+    if (failed) return;
+
+    debug('probe transport "%s" opened', name);
+    transport.send([{ type: 'ping', data: 'probe' }]);
+    transport.once('packet', function (msg) {
+      if (failed) return;
+      if ('pong' == msg.type && 'probe' == msg.data) {
+        debug('probe transport "%s" pong', name);
+        self.upgrading = true;
+        self.emit('upgrading', transport);
+        if (!transport) return;
+        Socket.priorWebsocketSuccess = 'websocket' == transport.name;
+
+        debug('pausing current transport "%s"', self.transport.name);
+        self.transport.pause(function () {
+          if (failed) return;
+          if ('closed' == self.readyState) return;
+          debug('changing transport and sending upgrade packet');
+
+          cleanup();
+
+          self.setTransport(transport);
+          transport.send([{ type: 'upgrade' }]);
+          self.emit('upgrade', transport);
+          transport = null;
+          self.upgrading = false;
+          self.flush();
+        });
+      } else {
+        debug('probe transport "%s" failed', name);
+        var err = new Error('probe error');
+        err.transport = transport.name;
+        self.emit('upgradeError', err);
+      }
+    });
+  }
+
+  function freezeTransport() {
+    if (failed) return;
+
+    // Any callback called by transport should be ignored since now
+    failed = true;
+
+    cleanup();
+
+    transport.close();
+    transport = null;
+  }
+
+  //Handle any error that happens while probing
+  function onerror(err) {
+    var error = new Error('probe error: ' + err);
+    error.transport = transport.name;
+
+    freezeTransport();
+
+    debug('probe transport "%s" failed because of error: %s', name, err);
+
+    self.emit('upgradeError', error);
+  }
+
+  function onTransportClose(){
+    onerror("transport closed");
+  }
+
+  //When the socket is closed while we're probing
+  function onclose(){
+    onerror("socket closed");
+  }
+
+  //When the socket is upgraded while we're probing
+  function onupgrade(to){
+    if (transport && to.name != transport.name) {
+      debug('"%s" works - aborting "%s"', to.name, transport.name);
+      freezeTransport();
+    }
+  }
+
+  //Remove all listeners on the transport and on self
+  function cleanup(){
+    transport.removeListener('open', onTransportOpen);
+    transport.removeListener('error', onerror);
+    transport.removeListener('close', onTransportClose);
+    self.removeListener('close', onclose);
+    self.removeListener('upgrading', onupgrade);
+  }
+
+  transport.once('open', onTransportOpen);
+  transport.once('error', onerror);
+  transport.once('close', onTransportClose);
+
+  this.once('close', onclose);
+  this.once('upgrading', onupgrade);
+
+  transport.open();
+
+};
+
+/**
+ * Called when connection is deemed open.
+ *
+ * @api public
+ */
+
+Socket.prototype.onOpen = function () {
+  debug('socket open');
+  this.readyState = 'open';
+  Socket.priorWebsocketSuccess = 'websocket' == this.transport.name;
+  this.emit('open');
+  this.flush();
+
+  // we check for `readyState` in case an `open`
+  // listener already closed the socket
+  if ('open' == this.readyState && this.upgrade && this.transport.pause) {
+    debug('starting upgrade probes');
+    for (var i = 0, l = this.upgrades.length; i < l; i++) {
+      this.probe(this.upgrades[i]);
+    }
+  }
+};
+
+/**
+ * Handles a packet.
+ *
+ * @api private
+ */
+
+Socket.prototype.onPacket = function (packet) {
+  if ('opening' == this.readyState || 'open' == this.readyState) {
+    debug('socket receive: type "%s", data "%s"', packet.type, packet.data);
+
+    this.emit('packet', packet);
+
+    // Socket is live - any packet counts
+    this.emit('heartbeat');
+
+    switch (packet.type) {
+      case 'open':
+        this.onHandshake(parsejson(packet.data));
+        break;
+
+      case 'pong':
+        this.setPing();
+        break;
+
+      case 'error':
+        var err = new Error('server error');
+        err.code = packet.data;
+        this.emit('error', err);
+        break;
+
+      case 'message':
+        this.emit('data', packet.data);
+        this.emit('message', packet.data);
+        break;
+    }
+  } else {
+    debug('packet received with socket readyState "%s"', this.readyState);
+  }
+};
+
+/**
+ * Called upon handshake completion.
+ *
+ * @param {Object} handshake obj
+ * @api private
+ */
+
+Socket.prototype.onHandshake = function (data) {
+  this.emit('handshake', data);
+  this.id = data.sid;
+  this.transport.query.sid = data.sid;
+  this.upgrades = this.filterUpgrades(data.upgrades);
+  this.pingInterval = data.pingInterval;
+  this.pingTimeout = data.pingTimeout;
+  this.onOpen();
+  // In case open handler closes socket
+  if  ('closed' == this.readyState) return;
+  this.setPing();
+
+  // Prolong liveness of socket on heartbeat
+  this.removeListener('heartbeat', this.onHeartbeat);
+  this.on('heartbeat', this.onHeartbeat);
+};
+
+/**
+ * Resets ping timeout.
+ *
+ * @api private
+ */
+
+Socket.prototype.onHeartbeat = function (timeout) {
+  clearTimeout(this.pingTimeoutTimer);
+  var self = this;
+  self.pingTimeoutTimer = setTimeout(function () {
+    if ('closed' == self.readyState) return;
+    self.onClose('ping timeout');
+  }, timeout || (self.pingInterval + self.pingTimeout));
+};
+
+/**
+ * Pings server every `this.pingInterval` and expects response
+ * within `this.pingTimeout` or closes connection.
+ *
+ * @api private
+ */
+
+Socket.prototype.setPing = function () {
+  var self = this;
+  clearTimeout(self.pingIntervalTimer);
+  self.pingIntervalTimer = setTimeout(function () {
+    debug('writing ping packet - expecting pong within %sms', self.pingTimeout);
+    self.ping();
+    self.onHeartbeat(self.pingTimeout);
+  }, self.pingInterval);
+};
+
+/**
+* Sends a ping packet.
+*
+* @api public
+*/
+
+Socket.prototype.ping = function () {
+  this.sendPacket('ping');
+};
+
+/**
+ * Called on `drain` event
+ *
+ * @api private
+ */
+
+Socket.prototype.onDrain = function() {
+  for (var i = 0; i < this.prevBufferLen; i++) {
+    if (this.callbackBuffer[i]) {
+      this.callbackBuffer[i]();
+    }
+  }
+
+  this.writeBuffer.splice(0, this.prevBufferLen);
+  this.callbackBuffer.splice(0, this.prevBufferLen);
+
+  // setting prevBufferLen = 0 is very important
+  // for example, when upgrading, upgrade packet is sent over,
+  // and a nonzero prevBufferLen could cause problems on `drain`
+  this.prevBufferLen = 0;
+
+  if (this.writeBuffer.length == 0) {
+    this.emit('drain');
+  } else {
+    this.flush();
+  }
+};
+
+/**
+ * Flush write buffers.
+ *
+ * @api private
+ */
+
+Socket.prototype.flush = function () {
+  if ('closed' != this.readyState && this.transport.writable &&
+    !this.upgrading && this.writeBuffer.length) {
+    debug('flushing %d packets in socket', this.writeBuffer.length);
+    this.transport.send(this.writeBuffer);
+    // keep track of current length of writeBuffer
+    // splice writeBuffer and callbackBuffer on `drain`
+    this.prevBufferLen = this.writeBuffer.length;
+    this.emit('flush');
+  }
+};
+
+/**
+ * Sends a message.
+ *
+ * @param {String} message.
+ * @param {Function} callback function.
+ * @return {Socket} for chaining.
+ * @api public
+ */
+
+Socket.prototype.write =
+Socket.prototype.send = function (msg, fn) {
+  this.sendPacket('message', msg, fn);
+  return this;
+};
+
+/**
+ * Sends a packet.
+ *
+ * @param {String} packet type.
+ * @param {String} data.
+ * @param {Function} callback function.
+ * @api private
+ */
+
+Socket.prototype.sendPacket = function (type, data, fn) {
+  if ('closing' == this.readyState || 'closed' == this.readyState) {
+    return;
+  }
+
+  var packet = { type: type, data: data };
+  this.emit('packetCreate', packet);
+  this.writeBuffer.push(packet);
+  this.callbackBuffer.push(fn);
+  this.flush();
+};
+
+/**
+ * Closes the connection.
+ *
+ * @api private
+ */
+
+Socket.prototype.close = function () {
+  if ('opening' == this.readyState || 'open' == this.readyState) {
+    this.readyState = 'closing';
+
+    var self = this;
+
+    function close() {
+      self.onClose('forced close');
+      debug('socket closing - telling transport to close');
+      self.transport.close();
+    }
+
+    function cleanupAndClose() {
+      self.removeListener('upgrade', cleanupAndClose);
+      self.removeListener('upgradeError', cleanupAndClose);
+      close();
+    }
+
+    function waitForUpgrade() {
+      // wait for upgrade to finish since we can't send packets while pausing a transport
+      self.once('upgrade', cleanupAndClose);
+      self.once('upgradeError', cleanupAndClose);
+    }
+
+    if (this.writeBuffer.length) {
+      this.once('drain', function() {
+        if (this.upgrading) {
+          waitForUpgrade();
+        } else {
+          close();
+        }
+      });
+    } else if (this.upgrading) {
+      waitForUpgrade();
+    } else {
+      close();
+    }
+  }
+
+  return this;
+};
+
+/**
+ * Called upon transport error
+ *
+ * @api private
+ */
+
+Socket.prototype.onError = function (err) {
+  debug('socket error %j', err);
+  Socket.priorWebsocketSuccess = false;
+  this.emit('error', err);
+  this.onClose('transport error', err);
+};
+
+/**
+ * Called upon transport close.
+ *
+ * @api private
+ */
+
+Socket.prototype.onClose = function (reason, desc) {
+  if ('opening' == this.readyState || 'open' == this.readyState || 'closing' == this.readyState) {
+    debug('socket close with reason: "%s"', reason);
+    var self = this;
+
+    // clear timers
+    clearTimeout(this.pingIntervalTimer);
+    clearTimeout(this.pingTimeoutTimer);
+
+    // clean buffers in next tick, so developers can still
+    // grab the buffers on `close` event
+    setTimeout(function() {
+      self.writeBuffer = [];
+      self.callbackBuffer = [];
+      self.prevBufferLen = 0;
+    }, 0);
+
+    // stop event from firing again for transport
+    this.transport.removeAllListeners('close');
+
+    // ensure transport won't stay open
+    this.transport.close();
+
+    // ignore further transport communication
+    this.transport.removeAllListeners();
+
+    // set ready state
+    this.readyState = 'closed';
+
+    // clear session id
+    this.id = null;
+
+    // emit close event
+    this.emit('close', reason, desc);
+  }
+};
+
+/**
+ * Filters upgrades, returning only those matching client transports.
+ *
+ * @param {Array} server upgrades
+ * @api private
+ *
+ */
+
+Socket.prototype.filterUpgrades = function (upgrades) {
+  var filteredUpgrades = [];
+  for (var i = 0, j = upgrades.length; i<j; i++) {
+    if (~index(this.transports, upgrades[i])) filteredUpgrades.push(upgrades[i]);
+  }
+  return filteredUpgrades;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/socket.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib")
+},{"./transport":387,"./transports":388,"buffer":18,"component-emitter":382,"debug":395,"engine.io-parser":398,"indexof":415,"oMfpAn":21,"parsejson":409,"parseqs":410,"parseuri":411}],387:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Module dependencies.
+ */
+
+var parser = require('engine.io-parser');
+var Emitter = require('component-emitter');
+
+/**
+ * Module exports.
+ */
+
+module.exports = Transport;
+
+/**
+ * Transport abstract constructor.
+ *
+ * @param {Object} options.
+ * @api private
+ */
+
+function Transport (opts) {
+  this.path = opts.path;
+  this.hostname = opts.hostname;
+  this.port = opts.port;
+  this.secure = opts.secure;
+  this.query = opts.query;
+  this.timestampParam = opts.timestampParam;
+  this.timestampRequests = opts.timestampRequests;
+  this.readyState = '';
+  this.agent = opts.agent || false;
+  this.socket = opts.socket;
+  this.enablesXDR = opts.enablesXDR;
+
+  // SSL options for Node.js client
+  this.pfx = opts.pfx;
+  this.key = opts.key;
+  this.passphrase = opts.passphrase;
+  this.cert = opts.cert;
+  this.ca = opts.ca;
+  this.ciphers = opts.ciphers;
+  this.rejectUnauthorized = opts.rejectUnauthorized;
+}
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Transport.prototype);
+
+/**
+ * A counter used to prevent collisions in the timestamps used
+ * for cache busting.
+ */
+
+Transport.timestamps = 0;
+
+/**
+ * Emits an error.
+ *
+ * @param {String} str
+ * @return {Transport} for chaining
+ * @api public
+ */
+
+Transport.prototype.onError = function (msg, desc) {
+  var err = new Error(msg);
+  err.type = 'TransportError';
+  err.description = desc;
+  this.emit('error', err);
+  return this;
+};
+
+/**
+ * Opens the transport.
+ *
+ * @api public
+ */
+
+Transport.prototype.open = function () {
+  if ('closed' == this.readyState || '' == this.readyState) {
+    this.readyState = 'opening';
+    this.doOpen();
+  }
+
+  return this;
+};
+
+/**
+ * Closes the transport.
+ *
+ * @api private
+ */
+
+Transport.prototype.close = function () {
+  if ('opening' == this.readyState || 'open' == this.readyState) {
+    this.doClose();
+    this.onClose();
+  }
+
+  return this;
+};
+
+/**
+ * Sends multiple packets.
+ *
+ * @param {Array} packets
+ * @api private
+ */
+
+Transport.prototype.send = function(packets){
+  if ('open' == this.readyState) {
+    this.write(packets);
+  } else {
+    throw new Error('Transport not open');
+  }
+};
+
+/**
+ * Called upon open
+ *
+ * @api private
+ */
+
+Transport.prototype.onOpen = function () {
+  this.readyState = 'open';
+  this.writable = true;
+  this.emit('open');
+};
+
+/**
+ * Called with data.
+ *
+ * @param {String} data
+ * @api private
+ */
+
+Transport.prototype.onData = function(data){
+  var packet = parser.decodePacket(data, this.socket.binaryType);
+  this.onPacket(packet);
+};
+
+/**
+ * Called with a decoded packet.
+ */
+
+Transport.prototype.onPacket = function (packet) {
+  this.emit('packet', packet);
+};
+
+/**
+ * Called upon close.
+ *
+ * @api private
+ */
+
+Transport.prototype.onClose = function () {
+  this.readyState = 'closed';
+  this.emit('close');
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transport.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib")
+},{"buffer":18,"component-emitter":382,"engine.io-parser":398,"oMfpAn":21}],388:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Module dependencies
+ */
+
+var XMLHttpRequest = require('xmlhttprequest');
+var XHR = require('./polling-xhr');
+var JSONP = require('./polling-jsonp');
+var websocket = require('./websocket');
+
+/**
+ * Export transports.
+ */
+
+exports.polling = polling;
+exports.websocket = websocket;
+
+/**
+ * Polling transport polymorphic constructor.
+ * Decides on xhr vs jsonp based on feature detection.
+ *
+ * @api private
+ */
+
+function polling(opts){
+  var xhr;
+  var xd = false;
+  var xs = false;
+  var jsonp = false !== opts.jsonp;
+
+  if (global.location) {
+    var isSSL = 'https:' == location.protocol;
+    var port = location.port;
+
+    // some user agents have empty `location.port`
+    if (!port) {
+      port = isSSL ? 443 : 80;
+    }
+
+    xd = opts.hostname != location.hostname || port != opts.port;
+    xs = opts.secure != isSSL;
+  }
+
+  opts.xdomain = xd;
+  opts.xscheme = xs;
+  xhr = new XMLHttpRequest(opts);
+
+  if ('open' in xhr && !opts.forceJSONP) {
+    return new XHR(opts);
+  } else {
+    if (!jsonp) throw new Error('JSONP disabled');
+    return new JSONP(opts);
+  }
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports")
+},{"./polling-jsonp":389,"./polling-xhr":390,"./websocket":392,"buffer":18,"oMfpAn":21,"xmlhttprequest":393}],389:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module requirements.
+ */
+
+var Polling = require('./polling');
+var inherit = require('component-inherit');
+
+/**
+ * Module exports.
+ */
+
+module.exports = JSONPPolling;
+
+/**
+ * Cached regular expressions.
+ */
+
+var rNewline = /\n/g;
+var rEscapedNewline = /\\n/g;
+
+/**
+ * Global JSONP callbacks.
+ */
+
+var callbacks;
+
+/**
+ * Callbacks count.
+ */
+
+var index = 0;
+
+/**
+ * Noop.
+ */
+
+function empty () { }
+
+/**
+ * JSONP Polling constructor.
+ *
+ * @param {Object} opts.
+ * @api public
+ */
+
+function JSONPPolling (opts) {
+  Polling.call(this, opts);
+
+  this.query = this.query || {};
+
+  // define global callbacks array if not present
+  // we do this here (lazily) to avoid unneeded global pollution
+  if (!callbacks) {
+    // we need to consider multiple engines in the same page
+    if (!global.___eio) global.___eio = [];
+    callbacks = global.___eio;
+  }
+
+  // callback identifier
+  this.index = callbacks.length;
+
+  // add callback to jsonp global
+  var self = this;
+  callbacks.push(function (msg) {
+    self.onData(msg);
+  });
+
+  // append to query string
+  this.query.j = this.index;
+
+  // prevent spurious errors from being emitted when the window is unloaded
+  if (global.document && global.addEventListener) {
+    global.addEventListener('beforeunload', function () {
+      if (self.script) self.script.onerror = empty;
+    }, false);
+  }
+}
+
+/**
+ * Inherits from Polling.
+ */
+
+inherit(JSONPPolling, Polling);
+
+/*
+ * JSONP only supports binary as base64 encoded strings
+ */
+
+JSONPPolling.prototype.supportsBinary = false;
+
+/**
+ * Closes the socket.
+ *
+ * @api private
+ */
+
+JSONPPolling.prototype.doClose = function () {
+  if (this.script) {
+    this.script.parentNode.removeChild(this.script);
+    this.script = null;
+  }
+
+  if (this.form) {
+    this.form.parentNode.removeChild(this.form);
+    this.form = null;
+    this.iframe = null;
+  }
+
+  Polling.prototype.doClose.call(this);
+};
+
+/**
+ * Starts a poll cycle.
+ *
+ * @api private
+ */
+
+JSONPPolling.prototype.doPoll = function () {
+  var self = this;
+  var script = document.createElement('script');
+
+  if (this.script) {
+    this.script.parentNode.removeChild(this.script);
+    this.script = null;
+  }
+
+  script.async = true;
+  script.src = this.uri();
+  script.onerror = function(e){
+    self.onError('jsonp poll error',e);
+  };
+
+  var insertAt = document.getElementsByTagName('script')[0];
+  insertAt.parentNode.insertBefore(script, insertAt);
+  this.script = script;
+
+  var isUAgecko = 'undefined' != typeof navigator && /gecko/i.test(navigator.userAgent);
+  
+  if (isUAgecko) {
+    setTimeout(function () {
+      var iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      document.body.removeChild(iframe);
+    }, 100);
+  }
+};
+
+/**
+ * Writes with a hidden iframe.
+ *
+ * @param {String} data to send
+ * @param {Function} called upon flush.
+ * @api private
+ */
+
+JSONPPolling.prototype.doWrite = function (data, fn) {
+  var self = this;
+
+  if (!this.form) {
+    var form = document.createElement('form');
+    var area = document.createElement('textarea');
+    var id = this.iframeId = 'eio_iframe_' + this.index;
+    var iframe;
+
+    form.className = 'socketio';
+    form.style.position = 'absolute';
+    form.style.top = '-1000px';
+    form.style.left = '-1000px';
+    form.target = id;
+    form.method = 'POST';
+    form.setAttribute('accept-charset', 'utf-8');
+    area.name = 'd';
+    form.appendChild(area);
+    document.body.appendChild(form);
+
+    this.form = form;
+    this.area = area;
+  }
+
+  this.form.action = this.uri();
+
+  function complete () {
+    initIframe();
+    fn();
+  }
+
+  function initIframe () {
+    if (self.iframe) {
+      try {
+        self.form.removeChild(self.iframe);
+      } catch (e) {
+        self.onError('jsonp polling iframe removal error', e);
+      }
+    }
+
+    try {
+      // ie6 dynamic iframes with target="" support (thanks Chris Lambacher)
+      var html = '<iframe src="javascript:0" name="'+ self.iframeId +'">';
+      iframe = document.createElement(html);
+    } catch (e) {
+      iframe = document.createElement('iframe');
+      iframe.name = self.iframeId;
+      iframe.src = 'javascript:0';
+    }
+
+    iframe.id = self.iframeId;
+
+    self.form.appendChild(iframe);
+    self.iframe = iframe;
+  }
+
+  initIframe();
+
+  // escape \n to prevent it from being converted into \r\n by some UAs
+  // double escaping is required for escaped new lines because unescaping of new lines can be done safely on server-side
+  data = data.replace(rEscapedNewline, '\\\n');
+  this.area.value = data.replace(rNewline, '\\n');
+
+  try {
+    this.form.submit();
+  } catch(e) {}
+
+  if (this.iframe.attachEvent) {
+    this.iframe.onreadystatechange = function(){
+      if (self.iframe.readyState == 'complete') {
+        complete();
+      }
+    };
+  } else {
+    this.iframe.onload = complete;
+  }
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports/polling-jsonp.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports")
+},{"./polling":391,"buffer":18,"component-inherit":394,"oMfpAn":21}],390:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Module requirements.
+ */
+
+var XMLHttpRequest = require('xmlhttprequest');
+var Polling = require('./polling');
+var Emitter = require('component-emitter');
+var inherit = require('component-inherit');
+var debug = require('debug')('engine.io-client:polling-xhr');
+
+/**
+ * Module exports.
+ */
+
+module.exports = XHR;
+module.exports.Request = Request;
+
+/**
+ * Empty function
+ */
+
+function empty(){}
+
+/**
+ * XHR Polling constructor.
+ *
+ * @param {Object} opts
+ * @api public
+ */
+
+function XHR(opts){
+  Polling.call(this, opts);
+
+  if (global.location) {
+    var isSSL = 'https:' == location.protocol;
+    var port = location.port;
+
+    // some user agents have empty `location.port`
+    if (!port) {
+      port = isSSL ? 443 : 80;
+    }
+
+    this.xd = opts.hostname != global.location.hostname ||
+      port != opts.port;
+    this.xs = opts.secure != isSSL;
+  }
+}
+
+/**
+ * Inherits from Polling.
+ */
+
+inherit(XHR, Polling);
+
+/**
+ * XHR supports binary
+ */
+
+XHR.prototype.supportsBinary = true;
+
+/**
+ * Creates a request.
+ *
+ * @param {String} method
+ * @api private
+ */
+
+XHR.prototype.request = function(opts){
+  opts = opts || {};
+  opts.uri = this.uri();
+  opts.xd = this.xd;
+  opts.xs = this.xs;
+  opts.agent = this.agent || false;
+  opts.supportsBinary = this.supportsBinary;
+  opts.enablesXDR = this.enablesXDR;
+
+  // SSL options for Node.js client
+  opts.pfx = this.pfx;
+  opts.key = this.key;
+  opts.passphrase = this.passphrase;
+  opts.cert = this.cert;
+  opts.ca = this.ca;
+  opts.ciphers = this.ciphers;
+  opts.rejectUnauthorized = this.rejectUnauthorized;
+
+  return new Request(opts);
+};
+
+/**
+ * Sends data.
+ *
+ * @param {String} data to send.
+ * @param {Function} called upon flush.
+ * @api private
+ */
+
+XHR.prototype.doWrite = function(data, fn){
+  var isBinary = typeof data !== 'string' && data !== undefined;
+  var req = this.request({ method: 'POST', data: data, isBinary: isBinary });
+  var self = this;
+  req.on('success', fn);
+  req.on('error', function(err){
+    self.onError('xhr post error', err);
+  });
+  this.sendXhr = req;
+};
+
+/**
+ * Starts a poll cycle.
+ *
+ * @api private
+ */
+
+XHR.prototype.doPoll = function(){
+  debug('xhr poll');
+  var req = this.request();
+  var self = this;
+  req.on('data', function(data){
+    self.onData(data);
+  });
+  req.on('error', function(err){
+    self.onError('xhr poll error', err);
+  });
+  this.pollXhr = req;
+};
+
+/**
+ * Request constructor
+ *
+ * @param {Object} options
+ * @api public
+ */
+
+function Request(opts){
+  this.method = opts.method || 'GET';
+  this.uri = opts.uri;
+  this.xd = !!opts.xd;
+  this.xs = !!opts.xs;
+  this.async = false !== opts.async;
+  this.data = undefined != opts.data ? opts.data : null;
+  this.agent = opts.agent;
+  this.isBinary = opts.isBinary;
+  this.supportsBinary = opts.supportsBinary;
+  this.enablesXDR = opts.enablesXDR;
+
+  // SSL options for Node.js client
+  this.pfx = opts.pfx;
+  this.key = opts.key;
+  this.passphrase = opts.passphrase;
+  this.cert = opts.cert;
+  this.ca = opts.ca;
+  this.ciphers = opts.ciphers;
+  this.rejectUnauthorized = opts.rejectUnauthorized;
+
+  this.create();
+}
+
+/**
+ * Mix in `Emitter`.
+ */
+
+Emitter(Request.prototype);
+
+/**
+ * Creates the XHR object and sends the request.
+ *
+ * @api private
+ */
+
+Request.prototype.create = function(){
+  var opts = { agent: this.agent, xdomain: this.xd, xscheme: this.xs, enablesXDR: this.enablesXDR };
+
+  // SSL options for Node.js client
+  opts.pfx = this.pfx;
+  opts.key = this.key;
+  opts.passphrase = this.passphrase;
+  opts.cert = this.cert;
+  opts.ca = this.ca;
+  opts.ciphers = this.ciphers;
+  opts.rejectUnauthorized = this.rejectUnauthorized;
+
+  var xhr = this.xhr = new XMLHttpRequest(opts);
+  var self = this;
+
+  try {
+    debug('xhr open %s: %s', this.method, this.uri);
+    xhr.open(this.method, this.uri, this.async);
+    if (this.supportsBinary) {
+      // This has to be done after open because Firefox is stupid
+      // http://stackoverflow.com/questions/13216903/get-binary-data-with-xmlhttprequest-in-a-firefox-extension
+      xhr.responseType = 'arraybuffer';
+    }
+
+    if ('POST' == this.method) {
+      try {
+        if (this.isBinary) {
+          xhr.setRequestHeader('Content-type', 'application/octet-stream');
+        } else {
+          xhr.setRequestHeader('Content-type', 'text/plain;charset=UTF-8');
+        }
+      } catch (e) {}
+    }
+
+    // ie6 check
+    if ('withCredentials' in xhr) {
+      xhr.withCredentials = true;
+    }
+
+    if (this.hasXDR()) {
+      xhr.onload = function(){
+        self.onLoad();
+      };
+      xhr.onerror = function(){
+        self.onError(xhr.responseText);
+      };
+    } else {
+      xhr.onreadystatechange = function(){
+        if (4 != xhr.readyState) return;
+        if (200 == xhr.status || 1223 == xhr.status) {
+          self.onLoad();
+        } else {
+          // make sure the `error` event handler that's user-set
+          // does not throw in the same tick and gets caught here
+          setTimeout(function(){
+            self.onError(xhr.status);
+          }, 0);
+        }
+      };
+    }
+
+    debug('xhr data %s', this.data);
+    xhr.send(this.data);
+  } catch (e) {
+    // Need to defer since .create() is called directly fhrom the constructor
+    // and thus the 'error' event can only be only bound *after* this exception
+    // occurs.  Therefore, also, we cannot throw here at all.
+    setTimeout(function() {
+      self.onError(e);
+    }, 0);
+    return;
+  }
+
+  if (global.document) {
+    this.index = Request.requestsCount++;
+    Request.requests[this.index] = this;
+  }
+};
+
+/**
+ * Called upon successful response.
+ *
+ * @api private
+ */
+
+Request.prototype.onSuccess = function(){
+  this.emit('success');
+  this.cleanup();
+};
+
+/**
+ * Called if we have data.
+ *
+ * @api private
+ */
+
+Request.prototype.onData = function(data){
+  this.emit('data', data);
+  this.onSuccess();
+};
+
+/**
+ * Called upon error.
+ *
+ * @api private
+ */
+
+Request.prototype.onError = function(err){
+  this.emit('error', err);
+  this.cleanup(true);
+};
+
+/**
+ * Cleans up house.
+ *
+ * @api private
+ */
+
+Request.prototype.cleanup = function(fromError){
+  if ('undefined' == typeof this.xhr || null === this.xhr) {
+    return;
+  }
+  // xmlhttprequest
+  if (this.hasXDR()) {
+    this.xhr.onload = this.xhr.onerror = empty;
+  } else {
+    this.xhr.onreadystatechange = empty;
+  }
+
+  if (fromError) {
+    try {
+      this.xhr.abort();
+    } catch(e) {}
+  }
+
+  if (global.document) {
+    delete Request.requests[this.index];
+  }
+
+  this.xhr = null;
+};
+
+/**
+ * Called upon load.
+ *
+ * @api private
+ */
+
+Request.prototype.onLoad = function(){
+  var data;
+  try {
+    var contentType;
+    try {
+      contentType = this.xhr.getResponseHeader('Content-Type').split(';')[0];
+    } catch (e) {}
+    if (contentType === 'application/octet-stream') {
+      data = this.xhr.response;
+    } else {
+      if (!this.supportsBinary) {
+        data = this.xhr.responseText;
+      } else {
+        data = 'ok';
+      }
+    }
+  } catch (e) {
+    this.onError(e);
+  }
+  if (null != data) {
+    this.onData(data);
+  }
+};
+
+/**
+ * Check if it has XDomainRequest.
+ *
+ * @api private
+ */
+
+Request.prototype.hasXDR = function(){
+  return 'undefined' !== typeof global.XDomainRequest && !this.xs && this.enablesXDR;
+};
+
+/**
+ * Aborts the request.
+ *
+ * @api public
+ */
+
+Request.prototype.abort = function(){
+  this.cleanup();
+};
+
+/**
+ * Aborts pending requests when unloading the window. This is needed to prevent
+ * memory leaks (e.g. when using IE) and to ensure that no spurious error is
+ * emitted.
+ */
+
+if (global.document) {
+  Request.requestsCount = 0;
+  Request.requests = {};
+  if (global.attachEvent) {
+    global.attachEvent('onunload', unloadHandler);
+  } else if (global.addEventListener) {
+    global.addEventListener('beforeunload', unloadHandler, false);
+  }
+}
+
+function unloadHandler() {
+  for (var i in Request.requests) {
+    if (Request.requests.hasOwnProperty(i)) {
+      Request.requests[i].abort();
+    }
+  }
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports/polling-xhr.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports")
+},{"./polling":391,"buffer":18,"component-emitter":382,"component-inherit":394,"debug":395,"oMfpAn":21,"xmlhttprequest":393}],391:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Module dependencies.
+ */
+
+var Transport = require('../transport');
+var parseqs = require('parseqs');
+var parser = require('engine.io-parser');
+var inherit = require('component-inherit');
+var debug = require('debug')('engine.io-client:polling');
+
+/**
+ * Module exports.
+ */
+
+module.exports = Polling;
+
+/**
+ * Is XHR2 supported?
+ */
+
+var hasXHR2 = (function() {
+  var XMLHttpRequest = require('xmlhttprequest');
+  var xhr = new XMLHttpRequest({ xdomain: false });
+  return null != xhr.responseType;
+})();
+
+/**
+ * Polling interface.
+ *
+ * @param {Object} opts
+ * @api private
+ */
+
+function Polling(opts){
+  var forceBase64 = (opts && opts.forceBase64);
+  if (!hasXHR2 || forceBase64) {
+    this.supportsBinary = false;
+  }
+  Transport.call(this, opts);
+}
+
+/**
+ * Inherits from Transport.
+ */
+
+inherit(Polling, Transport);
+
+/**
+ * Transport name.
+ */
+
+Polling.prototype.name = 'polling';
+
+/**
+ * Opens the socket (triggers polling). We write a PING message to determine
+ * when the transport is open.
+ *
+ * @api private
+ */
+
+Polling.prototype.doOpen = function(){
+  this.poll();
+};
+
+/**
+ * Pauses polling.
+ *
+ * @param {Function} callback upon buffers are flushed and transport is paused
+ * @api private
+ */
+
+Polling.prototype.pause = function(onPause){
+  var pending = 0;
+  var self = this;
+
+  this.readyState = 'pausing';
+
+  function pause(){
+    debug('paused');
+    self.readyState = 'paused';
+    onPause();
+  }
+
+  if (this.polling || !this.writable) {
+    var total = 0;
+
+    if (this.polling) {
+      debug('we are currently polling - waiting to pause');
+      total++;
+      this.once('pollComplete', function(){
+        debug('pre-pause polling complete');
+        --total || pause();
+      });
+    }
+
+    if (!this.writable) {
+      debug('we are currently writing - waiting to pause');
+      total++;
+      this.once('drain', function(){
+        debug('pre-pause writing complete');
+        --total || pause();
+      });
+    }
+  } else {
+    pause();
+  }
+};
+
+/**
+ * Starts polling cycle.
+ *
+ * @api public
+ */
+
+Polling.prototype.poll = function(){
+  debug('polling');
+  this.polling = true;
+  this.doPoll();
+  this.emit('poll');
+};
+
+/**
+ * Overloads onData to detect payloads.
+ *
+ * @api private
+ */
+
+Polling.prototype.onData = function(data){
+  var self = this;
+  debug('polling got data %s', data);
+  var callback = function(packet, index, total) {
+    // if its the first message we consider the transport open
+    if ('opening' == self.readyState) {
+      self.onOpen();
+    }
+
+    // if its a close packet, we close the ongoing requests
+    if ('close' == packet.type) {
+      self.onClose();
+      return false;
+    }
+
+    // otherwise bypass onData and handle the message
+    self.onPacket(packet);
+  };
+
+  // decode payload
+  parser.decodePayload(data, this.socket.binaryType, callback);
+
+  // if an event did not trigger closing
+  if ('closed' != this.readyState) {
+    // if we got data we're not polling
+    this.polling = false;
+    this.emit('pollComplete');
+
+    if ('open' == this.readyState) {
+      this.poll();
+    } else {
+      debug('ignoring poll - transport state "%s"', this.readyState);
+    }
+  }
+};
+
+/**
+ * For polling, send a close packet.
+ *
+ * @api private
+ */
+
+Polling.prototype.doClose = function(){
+  var self = this;
+
+  function close(){
+    debug('writing close packet');
+    self.write([{ type: 'close' }]);
+  }
+
+  if ('open' == this.readyState) {
+    debug('transport open - closing');
+    close();
+  } else {
+    // in case we're trying to close while
+    // handshaking is in progress (GH-164)
+    debug('transport not open - deferring close');
+    this.once('open', close);
+  }
+};
+
+/**
+ * Writes a packets payload.
+ *
+ * @param {Array} data packets
+ * @param {Function} drain callback
+ * @api private
+ */
+
+Polling.prototype.write = function(packets){
+  var self = this;
+  this.writable = false;
+  var callbackfn = function() {
+    self.writable = true;
+    self.emit('drain');
+  };
+
+  var self = this;
+  parser.encodePayload(packets, this.supportsBinary, function(data) {
+    self.doWrite(data, callbackfn);
+  });
+};
+
+/**
+ * Generates uri for connection.
+ *
+ * @api private
+ */
+
+Polling.prototype.uri = function(){
+  var query = this.query || {};
+  var schema = this.secure ? 'https' : 'http';
+  var port = '';
+
+  // cache busting is forced
+  if (false !== this.timestampRequests) {
+    query[this.timestampParam] = +new Date + '-' + Transport.timestamps++;
+  }
+
+  if (!this.supportsBinary && !query.sid) {
+    query.b64 = 1;
+  }
+
+  query = parseqs.encode(query);
+
+  // avoid port if default for schema
+  if (this.port && (('https' == schema && this.port != 443) ||
+     ('http' == schema && this.port != 80))) {
+    port = ':' + this.port;
+  }
+
+  // prepend ? to query
+  if (query.length) {
+    query = '?' + query;
+  }
+
+  return schema + '://' + this.hostname + port + this.path + query;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports/polling.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports")
+},{"../transport":387,"buffer":18,"component-inherit":394,"debug":395,"engine.io-parser":398,"oMfpAn":21,"parseqs":410,"xmlhttprequest":393}],392:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Module dependencies.
+ */
+
+var Transport = require('../transport');
+var parser = require('engine.io-parser');
+var parseqs = require('parseqs');
+var inherit = require('component-inherit');
+var debug = require('debug')('engine.io-client:websocket');
+
+/**
+ * `ws` exposes a WebSocket-compatible interface in
+ * Node, or the `WebSocket` or `MozWebSocket` globals
+ * in the browser.
+ */
+
+var WebSocket = require('ws');
+
+/**
+ * Module exports.
+ */
+
+module.exports = WS;
+
+/**
+ * WebSocket transport constructor.
+ *
+ * @api {Object} connection options
+ * @api public
+ */
+
+function WS(opts){
+  var forceBase64 = (opts && opts.forceBase64);
+  if (forceBase64) {
+    this.supportsBinary = false;
+  }
+  Transport.call(this, opts);
+}
+
+/**
+ * Inherits from Transport.
+ */
+
+inherit(WS, Transport);
+
+/**
+ * Transport name.
+ *
+ * @api public
+ */
+
+WS.prototype.name = 'websocket';
+
+/*
+ * WebSockets support binary
+ */
+
+WS.prototype.supportsBinary = true;
+
+/**
+ * Opens socket.
+ *
+ * @api private
+ */
+
+WS.prototype.doOpen = function(){
+  if (!this.check()) {
+    // let probe timeout
+    return;
+  }
+
+  var self = this;
+  var uri = this.uri();
+  var protocols = void(0);
+  var opts = { agent: this.agent };
+
+  // SSL options for Node.js client
+  opts.pfx = this.pfx;
+  opts.key = this.key;
+  opts.passphrase = this.passphrase;
+  opts.cert = this.cert;
+  opts.ca = this.ca;
+  opts.ciphers = this.ciphers;
+  opts.rejectUnauthorized = this.rejectUnauthorized;
+
+  this.ws = new WebSocket(uri, protocols, opts);
+
+  if (this.ws.binaryType === undefined) {
+    this.supportsBinary = false;
+  }
+
+  this.ws.binaryType = 'arraybuffer';
+  this.addEventListeners();
+};
+
+/**
+ * Adds event listeners to the socket
+ *
+ * @api private
+ */
+
+WS.prototype.addEventListeners = function(){
+  var self = this;
+
+  this.ws.onopen = function(){
+    self.onOpen();
+  };
+  this.ws.onclose = function(){
+    self.onClose();
+  };
+  this.ws.onmessage = function(ev){
+    self.onData(ev.data);
+  };
+  this.ws.onerror = function(e){
+    self.onError('websocket error', e);
+  };
+};
+
+/**
+ * Override `onData` to use a timer on iOS.
+ * See: https://gist.github.com/mloughran/2052006
+ *
+ * @api private
+ */
+
+if ('undefined' != typeof navigator
+  && /iPad|iPhone|iPod/i.test(navigator.userAgent)) {
+  WS.prototype.onData = function(data){
+    var self = this;
+    setTimeout(function(){
+      Transport.prototype.onData.call(self, data);
+    }, 0);
+  };
+}
+
+/**
+ * Writes data to socket.
+ *
+ * @param {Array} array of packets.
+ * @api private
+ */
+
+WS.prototype.write = function(packets){
+  var self = this;
+  this.writable = false;
+  // encodePacket efficient as it uses WS framing
+  // no need for encodePayload
+  for (var i = 0, l = packets.length; i < l; i++) {
+    parser.encodePacket(packets[i], this.supportsBinary, function(data) {
+      //Sometimes the websocket has already been closed but the browser didn't
+      //have a chance of informing us about it yet, in that case send will
+      //throw an error
+      try {
+        self.ws.send(data);
+      } catch (e){
+        debug('websocket closed before onclose event');
+      }
+    });
+  }
+
+  function ondrain() {
+    self.writable = true;
+    self.emit('drain');
+  }
+  // fake drain
+  // defer to next tick to allow Socket to clear writeBuffer
+  setTimeout(ondrain, 0);
+};
+
+/**
+ * Called upon close
+ *
+ * @api private
+ */
+
+WS.prototype.onClose = function(){
+  Transport.prototype.onClose.call(this);
+};
+
+/**
+ * Closes socket.
+ *
+ * @api private
+ */
+
+WS.prototype.doClose = function(){
+  if (typeof this.ws !== 'undefined') {
+    this.ws.close();
+  }
+};
+
+/**
+ * Generates uri for connection.
+ *
+ * @api private
+ */
+
+WS.prototype.uri = function(){
+  var query = this.query || {};
+  var schema = this.secure ? 'wss' : 'ws';
+  var port = '';
+
+  // avoid port if default for schema
+  if (this.port && (('wss' == schema && this.port != 443)
+    || ('ws' == schema && this.port != 80))) {
+    port = ':' + this.port;
+  }
+
+  // append timestamp to URI
+  if (this.timestampRequests) {
+    query[this.timestampParam] = +new Date;
+  }
+
+  // communicate binary support capabilities
+  if (!this.supportsBinary) {
+    query.b64 = 1;
+  }
+
+  query = parseqs.encode(query);
+
+  // prepend ? to query
+  if (query.length) {
+    query = '?' + query;
+  }
+
+  return schema + '://' + this.hostname + port + this.path + query;
+};
+
+/**
+ * Feature detection for WebSocket.
+ *
+ * @return {Boolean} whether this transport is available.
+ * @api public
+ */
+
+WS.prototype.check = function(){
+  return !!WebSocket && !('__initialize' in WebSocket && this.name === WS.prototype.name);
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports/websocket.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/transports")
+},{"../transport":387,"buffer":18,"component-inherit":394,"debug":395,"engine.io-parser":398,"oMfpAn":21,"parseqs":410,"ws":412}],393:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+// browser shim for xmlhttprequest module
+var hasCORS = require('has-cors');
+
+module.exports = function(opts) {
+  var xdomain = opts.xdomain;
+
+  // scheme must be same when usign XDomainRequest
+  // http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+  var xscheme = opts.xscheme;
+
+  // XDomainRequest has a flow of not sending cookie, therefore it should be disabled as a default.
+  // https://github.com/Automattic/engine.io-client/pull/217
+  var enablesXDR = opts.enablesXDR;
+
+  // XMLHttpRequest can be disabled on IE
+  try {
+    if ('undefined' != typeof XMLHttpRequest && (!xdomain || hasCORS)) {
+      return new XMLHttpRequest();
+    }
+  } catch (e) { }
+
+  // Use XDomainRequest for IE8 if enablesXDR is true
+  // because loading bar keeps flashing when using jsonp-polling
+  // https://github.com/yujiosaka/socke.io-ie8-loading-example
+  try {
+    if ('undefined' != typeof XDomainRequest && !xscheme && enablesXDR) {
+      return new XDomainRequest();
+    }
+  } catch (e) { }
+
+  if (!xdomain) {
+    try {
+      return new ActiveXObject('Microsoft.XMLHTTP');
+    } catch(e) { }
+  }
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/lib/xmlhttprequest.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/lib")
+},{"buffer":18,"has-cors":407,"oMfpAn":21}],394:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+module.exports = function(a, b){
+  var fn = function(){};
+  fn.prototype = b.prototype;
+  a.prototype = new fn;
+  a.prototype.constructor = a;
+};
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/component-inherit/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/component-inherit")
+},{"buffer":18,"oMfpAn":21}],395:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * This is the web browser implementation of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = require('./debug');
+exports.log = log;
+exports.formatArgs = formatArgs;
+exports.save = save;
+exports.load = load;
+exports.useColors = useColors;
+
+/**
+ * Colors.
+ */
+
+exports.colors = [
+  'lightseagreen',
+  'forestgreen',
+  'goldenrod',
+  'dodgerblue',
+  'darkorchid',
+  'crimson'
+];
+
+/**
+ * Currently only WebKit-based Web Inspectors, Firefox >= v31,
+ * and the Firebug extension (any Firefox version) are known
+ * to support "%c" CSS customizations.
+ *
+ * TODO: add a `localStorage` variable to explicitly enable/disable colors
+ */
+
+function useColors() {
+  // is webkit? http://stackoverflow.com/a/16459606/376773
+  return ('WebkitAppearance' in document.documentElement.style) ||
+    // is firebug? http://stackoverflow.com/a/398120/376773
+    (window.console && (console.firebug || (console.exception && console.table))) ||
+    // is firefox >= v31?
+    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+    (navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31);
+}
+
+/**
+ * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
+ */
+
+exports.formatters.j = function(v) {
+  return JSON.stringify(v);
+};
+
+
+/**
+ * Colorize log arguments if enabled.
+ *
+ * @api public
+ */
+
+function formatArgs() {
+  var args = arguments;
+  var useColors = this.useColors;
+
+  args[0] = (useColors ? '%c' : '')
+    + this.namespace
+    + (useColors ? ' %c' : ' ')
+    + args[0]
+    + (useColors ? '%c ' : ' ')
+    + '+' + exports.humanize(this.diff);
+
+  if (!useColors) return args;
+
+  var c = 'color: ' + this.color;
+  args = [args[0], c, 'color: inherit'].concat(Array.prototype.slice.call(args, 1));
+
+  // the final "%c" is somewhat tricky, because there could be other
+  // arguments passed either before or after the %c, so we need to
+  // figure out the correct index to insert the CSS into
+  var index = 0;
+  var lastC = 0;
+  args[0].replace(/%[a-z%]/g, function(match) {
+    if ('%%' === match) return;
+    index++;
+    if ('%c' === match) {
+      // we only are interested in the *last* %c
+      // (the user may have provided their own)
+      lastC = index;
+    }
+  });
+
+  args.splice(lastC, 0, c);
+  return args;
+}
+
+/**
+ * Invokes `console.log()` when available.
+ * No-op when `console.log` is not a "function".
+ *
+ * @api public
+ */
+
+function log() {
+  // This hackery is required for IE8,
+  // where the `console.log` function doesn't have 'apply'
+  return 'object' == typeof console
+    && 'function' == typeof console.log
+    && Function.prototype.apply.call(console.log, console, arguments);
+}
+
+/**
+ * Save `namespaces`.
+ *
+ * @param {String} namespaces
+ * @api private
+ */
+
+function save(namespaces) {
+  try {
+    if (null == namespaces) {
+      localStorage.removeItem('debug');
+    } else {
+      localStorage.debug = namespaces;
+    }
+  } catch(e) {}
+}
+
+/**
+ * Load `namespaces`.
+ *
+ * @return {String} returns the previously persisted debug modes
+ * @api private
+ */
+
+function load() {
+  var r;
+  try {
+    r = localStorage.debug;
+  } catch(e) {}
+  return r;
+}
+
+/**
+ * Enable namespaces listed in `localStorage.debug` initially.
+ */
+
+exports.enable(load());
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/debug/browser.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/debug")
+},{"./debug":396,"buffer":18,"oMfpAn":21}],396:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * This is the common logic for both the Node.js and web browser
+ * implementations of `debug()`.
+ *
+ * Expose `debug()` as the module.
+ */
+
+exports = module.exports = debug;
+exports.coerce = coerce;
+exports.disable = disable;
+exports.enable = enable;
+exports.enabled = enabled;
+exports.humanize = require('ms');
+
+/**
+ * The currently active debug mode names, and names to skip.
+ */
+
+exports.names = [];
+exports.skips = [];
+
+/**
+ * Map of special "%n" handling functions, for the debug "format" argument.
+ *
+ * Valid key names are a single, lowercased letter, i.e. "n".
+ */
+
+exports.formatters = {};
+
+/**
+ * Previously assigned color.
+ */
+
+var prevColor = 0;
+
+/**
+ * Previous log timestamp.
+ */
+
+var prevTime;
+
+/**
+ * Select a color.
+ *
+ * @return {Number}
+ * @api private
+ */
+
+function selectColor() {
+  return exports.colors[prevColor++ % exports.colors.length];
+}
+
+/**
+ * Create a debugger with the given `namespace`.
+ *
+ * @param {String} namespace
+ * @return {Function}
+ * @api public
+ */
+
+function debug(namespace) {
+
+  // define the `disabled` version
+  function disabled() {
+  }
+  disabled.enabled = false;
+
+  // define the `enabled` version
+  function enabled() {
+
+    var self = enabled;
+
+    // set `diff` timestamp
+    var curr = +new Date();
+    var ms = curr - (prevTime || curr);
+    self.diff = ms;
+    self.prev = prevTime;
+    self.curr = curr;
+    prevTime = curr;
+
+    // add the `color` if not set
+    if (null == self.useColors) self.useColors = exports.useColors();
+    if (null == self.color && self.useColors) self.color = selectColor();
+
+    var args = Array.prototype.slice.call(arguments);
+
+    args[0] = exports.coerce(args[0]);
+
+    if ('string' !== typeof args[0]) {
+      // anything else let's inspect with %o
+      args = ['%o'].concat(args);
+    }
+
+    // apply any `formatters` transformations
+    var index = 0;
+    args[0] = args[0].replace(/%([a-z%])/g, function(match, format) {
+      // if we encounter an escaped % then don't increase the array index
+      if (match === '%%') return match;
+      index++;
+      var formatter = exports.formatters[format];
+      if ('function' === typeof formatter) {
+        var val = args[index];
+        match = formatter.call(self, val);
+
+        // now we need to remove `args[index]` since it's inlined in the `format`
+        args.splice(index, 1);
+        index--;
+      }
+      return match;
+    });
+
+    if ('function' === typeof exports.formatArgs) {
+      args = exports.formatArgs.apply(self, args);
+    }
+    var logFn = enabled.log || exports.log || console.log.bind(console);
+    logFn.apply(self, args);
+  }
+  enabled.enabled = true;
+
+  var fn = exports.enabled(namespace) ? enabled : disabled;
+
+  fn.namespace = namespace;
+
+  return fn;
+}
+
+/**
+ * Enables a debug mode by namespaces. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} namespaces
+ * @api public
+ */
+
+function enable(namespaces) {
+  exports.save(namespaces);
+
+  var split = (namespaces || '').split(/[\s,]+/);
+  var len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    if (!split[i]) continue; // ignore empty strings
+    namespaces = split[i].replace(/\*/g, '.*?');
+    if (namespaces[0] === '-') {
+      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+    } else {
+      exports.names.push(new RegExp('^' + namespaces + '$'));
+    }
+  }
+}
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+function disable() {
+  exports.enable('');
+}
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+function enabled(name) {
+  var i, len;
+  for (i = 0, len = exports.skips.length; i < len; i++) {
+    if (exports.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (i = 0, len = exports.names.length; i < len; i++) {
+    if (exports.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Coerce `val`.
+ *
+ * @param {Mixed} val
+ * @return {Mixed}
+ * @api private
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/debug/debug.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/debug")
+},{"buffer":18,"ms":397,"oMfpAn":21}],397:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Helpers.
+ */
+
+var s = 1000;
+var m = s * 60;
+var h = m * 60;
+var d = h * 24;
+var y = d * 365.25;
+
+/**
+ * Parse or format the given `val`.
+ *
+ * Options:
+ *
+ *  - `long` verbose formatting [false]
+ *
+ * @param {String|Number} val
+ * @param {Object} options
+ * @return {String|Number}
+ * @api public
+ */
+
+module.exports = function(val, options){
+  options = options || {};
+  if ('string' == typeof val) return parse(val);
+  return options.long
+    ? long(val)
+    : short(val);
+};
+
+/**
+ * Parse the given `str` and return milliseconds.
+ *
+ * @param {String} str
+ * @return {Number}
+ * @api private
+ */
+
+function parse(str) {
+  var match = /^((?:\d+)?\.?\d+) *(ms|seconds?|s|minutes?|m|hours?|h|days?|d|years?|y)?$/i.exec(str);
+  if (!match) return;
+  var n = parseFloat(match[1]);
+  var type = (match[2] || 'ms').toLowerCase();
+  switch (type) {
+    case 'years':
+    case 'year':
+    case 'y':
+      return n * y;
+    case 'days':
+    case 'day':
+    case 'd':
+      return n * d;
+    case 'hours':
+    case 'hour':
+    case 'h':
+      return n * h;
+    case 'minutes':
+    case 'minute':
+    case 'm':
+      return n * m;
+    case 'seconds':
+    case 'second':
+    case 's':
+      return n * s;
+    case 'ms':
+      return n;
+  }
+}
+
+/**
+ * Short format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function short(ms) {
+  if (ms >= d) return Math.round(ms / d) + 'd';
+  if (ms >= h) return Math.round(ms / h) + 'h';
+  if (ms >= m) return Math.round(ms / m) + 'm';
+  if (ms >= s) return Math.round(ms / s) + 's';
+  return ms + 'ms';
+}
+
+/**
+ * Long format for `ms`.
+ *
+ * @param {Number} ms
+ * @return {String}
+ * @api private
+ */
+
+function long(ms) {
+  return plural(ms, d, 'day')
+    || plural(ms, h, 'hour')
+    || plural(ms, m, 'minute')
+    || plural(ms, s, 'second')
+    || ms + ' ms';
+}
+
+/**
+ * Pluralization helper.
+ */
+
+function plural(ms, n, name) {
+  if (ms < n) return;
+  if (ms < n * 1.5) return Math.floor(ms / n) + ' ' + name;
+  return Math.ceil(ms / n) + ' ' + name + 's';
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/debug/node_modules/ms/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/debug/node_modules/ms")
+},{"buffer":18,"oMfpAn":21}],398:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Module dependencies.
+ */
+
+var keys = require('./keys');
+var hasBinary = require('has-binary');
+var sliceBuffer = require('arraybuffer.slice');
+var base64encoder = require('base64-arraybuffer');
+var after = require('after');
+var utf8 = require('utf8');
+
+/**
+ * Check if we are running an android browser. That requires us to use
+ * ArrayBuffer with polling transports...
+ *
+ * http://ghinda.net/jpeg-blob-ajax-android/
+ */
+
+var isAndroid = navigator.userAgent.match(/Android/i);
+
+/**
+ * Check if we are running in PhantomJS.
+ * Uploading a Blob with PhantomJS does not work correctly, as reported here:
+ * https://github.com/ariya/phantomjs/issues/11395
+ * @type boolean
+ */
+var isPhantomJS = /PhantomJS/i.test(navigator.userAgent);
+
+/**
+ * When true, avoids using Blobs to encode payloads.
+ * @type boolean
+ */
+var dontSendBlobs = isAndroid || isPhantomJS;
+
+/**
+ * Current protocol version.
+ */
+
+exports.protocol = 3;
+
+/**
+ * Packet types.
+ */
+
+var packets = exports.packets = {
+    open:     0    // non-ws
+  , close:    1    // non-ws
+  , ping:     2
+  , pong:     3
+  , message:  4
+  , upgrade:  5
+  , noop:     6
+};
+
+var packetslist = keys(packets);
+
+/**
+ * Premade error packet.
+ */
+
+var err = { type: 'error', data: 'parser error' };
+
+/**
+ * Create a blob api even for blob builder when vendor prefixes exist
+ */
+
+var Blob = require('blob');
+
+/**
+ * Encodes a packet.
+ *
+ *     <packet type id> [ <data> ]
+ *
+ * Example:
+ *
+ *     5hello world
+ *     3
+ *     4
+ *
+ * Binary is encoded in an identical principle
+ *
+ * @api private
+ */
+
+exports.encodePacket = function (packet, supportsBinary, utf8encode, callback) {
+  if ('function' == typeof supportsBinary) {
+    callback = supportsBinary;
+    supportsBinary = false;
+  }
+
+  if ('function' == typeof utf8encode) {
+    callback = utf8encode;
+    utf8encode = null;
+  }
+
+  var data = (packet.data === undefined)
+    ? undefined
+    : packet.data.buffer || packet.data;
+
+  if (global.ArrayBuffer && data instanceof ArrayBuffer) {
+    return encodeArrayBuffer(packet, supportsBinary, callback);
+  } else if (Blob && data instanceof global.Blob) {
+    return encodeBlob(packet, supportsBinary, callback);
+  }
+
+  // might be an object with { base64: true, data: dataAsBase64String }
+  if (data && data.base64) {
+    return encodeBase64Object(packet, callback);
+  }
+
+  // Sending data as a utf-8 string
+  var encoded = packets[packet.type];
+
+  // data fragment is optional
+  if (undefined !== packet.data) {
+    encoded += utf8encode ? utf8.encode(String(packet.data)) : String(packet.data);
+  }
+
+  return callback('' + encoded);
+
+};
+
+function encodeBase64Object(packet, callback) {
+  // packet data is an object { base64: true, data: dataAsBase64String }
+  var message = 'b' + exports.packets[packet.type] + packet.data.data;
+  return callback(message);
+}
+
+/**
+ * Encode packet helpers for binary types
+ */
+
+function encodeArrayBuffer(packet, supportsBinary, callback) {
+  if (!supportsBinary) {
+    return exports.encodeBase64Packet(packet, callback);
+  }
+
+  var data = packet.data;
+  var contentArray = new Uint8Array(data);
+  var resultBuffer = new Uint8Array(1 + data.byteLength);
+
+  resultBuffer[0] = packets[packet.type];
+  for (var i = 0; i < contentArray.length; i++) {
+    resultBuffer[i+1] = contentArray[i];
+  }
+
+  return callback(resultBuffer.buffer);
+}
+
+function encodeBlobAsArrayBuffer(packet, supportsBinary, callback) {
+  if (!supportsBinary) {
+    return exports.encodeBase64Packet(packet, callback);
+  }
+
+  var fr = new FileReader();
+  fr.onload = function() {
+    packet.data = fr.result;
+    exports.encodePacket(packet, supportsBinary, true, callback);
+  };
+  return fr.readAsArrayBuffer(packet.data);
+}
+
+function encodeBlob(packet, supportsBinary, callback) {
+  if (!supportsBinary) {
+    return exports.encodeBase64Packet(packet, callback);
+  }
+
+  if (dontSendBlobs) {
+    return encodeBlobAsArrayBuffer(packet, supportsBinary, callback);
+  }
+
+  var length = new Uint8Array(1);
+  length[0] = packets[packet.type];
+  var blob = new Blob([length.buffer, packet.data]);
+
+  return callback(blob);
+}
+
+/**
+ * Encodes a packet with binary data in a base64 string
+ *
+ * @param {Object} packet, has `type` and `data`
+ * @return {String} base64 encoded message
+ */
+
+exports.encodeBase64Packet = function(packet, callback) {
+  var message = 'b' + exports.packets[packet.type];
+  if (Blob && packet.data instanceof Blob) {
+    var fr = new FileReader();
+    fr.onload = function() {
+      var b64 = fr.result.split(',')[1];
+      callback(message + b64);
+    };
+    return fr.readAsDataURL(packet.data);
+  }
+
+  var b64data;
+  try {
+    b64data = String.fromCharCode.apply(null, new Uint8Array(packet.data));
+  } catch (e) {
+    // iPhone Safari doesn't let you apply with typed arrays
+    var typed = new Uint8Array(packet.data);
+    var basic = new Array(typed.length);
+    for (var i = 0; i < typed.length; i++) {
+      basic[i] = typed[i];
+    }
+    b64data = String.fromCharCode.apply(null, basic);
+  }
+  message += global.btoa(b64data);
+  return callback(message);
+};
+
+/**
+ * Decodes a packet. Changes format to Blob if requested.
+ *
+ * @return {Object} with `type` and `data` (if any)
+ * @api private
+ */
+
+exports.decodePacket = function (data, binaryType, utf8decode) {
+  // String data
+  if (typeof data == 'string' || data === undefined) {
+    if (data.charAt(0) == 'b') {
+      return exports.decodeBase64Packet(data.substr(1), binaryType);
+    }
+
+    if (utf8decode) {
+      try {
+        data = utf8.decode(data);
+      } catch (e) {
+        return err;
+      }
+    }
+    var type = data.charAt(0);
+
+    if (Number(type) != type || !packetslist[type]) {
+      return err;
+    }
+
+    if (data.length > 1) {
+      return { type: packetslist[type], data: data.substring(1) };
+    } else {
+      return { type: packetslist[type] };
+    }
+  }
+
+  var asArray = new Uint8Array(data);
+  var type = asArray[0];
+  var rest = sliceBuffer(data, 1);
+  if (Blob && binaryType === 'blob') {
+    rest = new Blob([rest]);
+  }
+  return { type: packetslist[type], data: rest };
+};
+
+/**
+ * Decodes a packet encoded in a base64 string
+ *
+ * @param {String} base64 encoded message
+ * @return {Object} with `type` and `data` (if any)
+ */
+
+exports.decodeBase64Packet = function(msg, binaryType) {
+  var type = packetslist[msg.charAt(0)];
+  if (!global.ArrayBuffer) {
+    return { type: type, data: { base64: true, data: msg.substr(1) } };
+  }
+
+  var data = base64encoder.decode(msg.substr(1));
+
+  if (binaryType === 'blob' && Blob) {
+    data = new Blob([data]);
+  }
+
+  return { type: type, data: data };
+};
+
+/**
+ * Encodes multiple messages (payload).
+ *
+ *     <length>:data
+ *
+ * Example:
+ *
+ *     11:hello world2:hi
+ *
+ * If any contents are binary, they will be encoded as base64 strings. Base64
+ * encoded strings are marked with a b before the length specifier
+ *
+ * @param {Array} packets
+ * @api private
+ */
+
+exports.encodePayload = function (packets, supportsBinary, callback) {
+  if (typeof supportsBinary == 'function') {
+    callback = supportsBinary;
+    supportsBinary = null;
+  }
+
+  var isBinary = hasBinary(packets);
+
+  if (supportsBinary && isBinary) {
+    if (Blob && !dontSendBlobs) {
+      return exports.encodePayloadAsBlob(packets, callback);
+    }
+
+    return exports.encodePayloadAsArrayBuffer(packets, callback);
+  }
+
+  if (!packets.length) {
+    return callback('0:');
+  }
+
+  function setLengthHeader(message) {
+    return message.length + ':' + message;
+  }
+
+  function encodeOne(packet, doneCallback) {
+    exports.encodePacket(packet, !isBinary ? false : supportsBinary, true, function(message) {
+      doneCallback(null, setLengthHeader(message));
+    });
+  }
+
+  map(packets, encodeOne, function(err, results) {
+    return callback(results.join(''));
+  });
+};
+
+/**
+ * Async array map using after
+ */
+
+function map(ary, each, done) {
+  var result = new Array(ary.length);
+  var next = after(ary.length, done);
+
+  var eachWithIndex = function(i, el, cb) {
+    each(el, function(error, msg) {
+      result[i] = msg;
+      cb(error, result);
+    });
+  };
+
+  for (var i = 0; i < ary.length; i++) {
+    eachWithIndex(i, ary[i], next);
+  }
+}
+
+/*
+ * Decodes data when a payload is maybe expected. Possible binary contents are
+ * decoded from their base64 representation
+ *
+ * @param {String} data, callback method
+ * @api public
+ */
+
+exports.decodePayload = function (data, binaryType, callback) {
+  if (typeof data != 'string') {
+    return exports.decodePayloadAsBinary(data, binaryType, callback);
+  }
+
+  if (typeof binaryType === 'function') {
+    callback = binaryType;
+    binaryType = null;
+  }
+
+  var packet;
+  if (data == '') {
+    // parser error - ignoring payload
+    return callback(err, 0, 1);
+  }
+
+  var length = ''
+    , n, msg;
+
+  for (var i = 0, l = data.length; i < l; i++) {
+    var chr = data.charAt(i);
+
+    if (':' != chr) {
+      length += chr;
+    } else {
+      if ('' == length || (length != (n = Number(length)))) {
+        // parser error - ignoring payload
+        return callback(err, 0, 1);
+      }
+
+      msg = data.substr(i + 1, n);
+
+      if (length != msg.length) {
+        // parser error - ignoring payload
+        return callback(err, 0, 1);
+      }
+
+      if (msg.length) {
+        packet = exports.decodePacket(msg, binaryType, true);
+
+        if (err.type == packet.type && err.data == packet.data) {
+          // parser error in individual packet - ignoring payload
+          return callback(err, 0, 1);
+        }
+
+        var ret = callback(packet, i + n, l);
+        if (false === ret) return;
+      }
+
+      // advance cursor
+      i += n;
+      length = '';
+    }
+  }
+
+  if (length != '') {
+    // parser error - ignoring payload
+    return callback(err, 0, 1);
+  }
+
+};
+
+/**
+ * Encodes multiple messages (payload) as binary.
+ *
+ * <1 = binary, 0 = string><number from 0-9><number from 0-9>[...]<number
+ * 255><data>
+ *
+ * Example:
+ * 1 3 255 1 2 3, if the binary contents are interpreted as 8 bit integers
+ *
+ * @param {Array} packets
+ * @return {ArrayBuffer} encoded payload
+ * @api private
+ */
+
+exports.encodePayloadAsArrayBuffer = function(packets, callback) {
+  if (!packets.length) {
+    return callback(new ArrayBuffer(0));
+  }
+
+  function encodeOne(packet, doneCallback) {
+    exports.encodePacket(packet, true, true, function(data) {
+      return doneCallback(null, data);
+    });
+  }
+
+  map(packets, encodeOne, function(err, encodedPackets) {
+    var totalLength = encodedPackets.reduce(function(acc, p) {
+      var len;
+      if (typeof p === 'string'){
+        len = p.length;
+      } else {
+        len = p.byteLength;
+      }
+      return acc + len.toString().length + len + 2; // string/binary identifier + separator = 2
+    }, 0);
+
+    var resultArray = new Uint8Array(totalLength);
+
+    var bufferIndex = 0;
+    encodedPackets.forEach(function(p) {
+      var isString = typeof p === 'string';
+      var ab = p;
+      if (isString) {
+        var view = new Uint8Array(p.length);
+        for (var i = 0; i < p.length; i++) {
+          view[i] = p.charCodeAt(i);
+        }
+        ab = view.buffer;
+      }
+
+      if (isString) { // not true binary
+        resultArray[bufferIndex++] = 0;
+      } else { // true binary
+        resultArray[bufferIndex++] = 1;
+      }
+
+      var lenStr = ab.byteLength.toString();
+      for (var i = 0; i < lenStr.length; i++) {
+        resultArray[bufferIndex++] = parseInt(lenStr[i]);
+      }
+      resultArray[bufferIndex++] = 255;
+
+      var view = new Uint8Array(ab);
+      for (var i = 0; i < view.length; i++) {
+        resultArray[bufferIndex++] = view[i];
+      }
+    });
+
+    return callback(resultArray.buffer);
+  });
+};
+
+/**
+ * Encode as Blob
+ */
+
+exports.encodePayloadAsBlob = function(packets, callback) {
+  function encodeOne(packet, doneCallback) {
+    exports.encodePacket(packet, true, true, function(encoded) {
+      var binaryIdentifier = new Uint8Array(1);
+      binaryIdentifier[0] = 1;
+      if (typeof encoded === 'string') {
+        var view = new Uint8Array(encoded.length);
+        for (var i = 0; i < encoded.length; i++) {
+          view[i] = encoded.charCodeAt(i);
+        }
+        encoded = view.buffer;
+        binaryIdentifier[0] = 0;
+      }
+
+      var len = (encoded instanceof ArrayBuffer)
+        ? encoded.byteLength
+        : encoded.size;
+
+      var lenStr = len.toString();
+      var lengthAry = new Uint8Array(lenStr.length + 1);
+      for (var i = 0; i < lenStr.length; i++) {
+        lengthAry[i] = parseInt(lenStr[i]);
+      }
+      lengthAry[lenStr.length] = 255;
+
+      if (Blob) {
+        var blob = new Blob([binaryIdentifier.buffer, lengthAry.buffer, encoded]);
+        doneCallback(null, blob);
+      }
+    });
+  }
+
+  map(packets, encodeOne, function(err, results) {
+    return callback(new Blob(results));
+  });
+};
+
+/*
+ * Decodes data when a payload is maybe expected. Strings are decoded by
+ * interpreting each byte as a key code for entries marked to start with 0. See
+ * description of encodePayloadAsBinary
+ *
+ * @param {ArrayBuffer} data, callback method
+ * @api public
+ */
+
+exports.decodePayloadAsBinary = function (data, binaryType, callback) {
+  if (typeof binaryType === 'function') {
+    callback = binaryType;
+    binaryType = null;
+  }
+
+  var bufferTail = data;
+  var buffers = [];
+
+  var numberTooLong = false;
+  while (bufferTail.byteLength > 0) {
+    var tailArray = new Uint8Array(bufferTail);
+    var isString = tailArray[0] === 0;
+    var msgLength = '';
+
+    for (var i = 1; ; i++) {
+      if (tailArray[i] == 255) break;
+
+      if (msgLength.length > 310) {
+        numberTooLong = true;
+        break;
+      }
+
+      msgLength += tailArray[i];
+    }
+
+    if(numberTooLong) return callback(err, 0, 1);
+
+    bufferTail = sliceBuffer(bufferTail, 2 + msgLength.length);
+    msgLength = parseInt(msgLength);
+
+    var msg = sliceBuffer(bufferTail, 0, msgLength);
+    if (isString) {
+      try {
+        msg = String.fromCharCode.apply(null, new Uint8Array(msg));
+      } catch (e) {
+        // iPhone Safari doesn't let you apply to typed arrays
+        var typed = new Uint8Array(msg);
+        msg = '';
+        for (var i = 0; i < typed.length; i++) {
+          msg += String.fromCharCode(typed[i]);
+        }
+      }
+    }
+
+    buffers.push(msg);
+    bufferTail = sliceBuffer(bufferTail, msgLength);
+  }
+
+  var total = buffers.length;
+  buffers.forEach(function(buffer, i) {
+    callback(exports.decodePacket(buffer, binaryType, true), i, total);
+  });
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/lib/browser.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/lib")
+},{"./keys":399,"after":400,"arraybuffer.slice":401,"base64-arraybuffer":402,"blob":403,"buffer":18,"has-binary":404,"oMfpAn":21,"utf8":406}],399:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Gets the keys for an object.
+ *
+ * @return {Array} keys
+ * @api private
+ */
+
+module.exports = Object.keys || function keys (obj){
+  var arr = [];
+  var has = Object.prototype.hasOwnProperty;
+
+  for (var i in obj) {
+    if (has.call(obj, i)) {
+      arr.push(i);
+    }
+  }
+  return arr;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/lib/keys.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/lib")
+},{"buffer":18,"oMfpAn":21}],400:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+module.exports = after
+
+function after(count, callback, err_cb) {
+    var bail = false
+    err_cb = err_cb || noop
+    proxy.count = count
+
+    return (count === 0) ? callback() : proxy
+
+    function proxy(err, result) {
+        if (proxy.count <= 0) {
+            throw new Error('after called too many times')
+        }
+        --proxy.count
+
+        // after first error, rest are passed to err_cb
+        if (err) {
+            bail = true
+            callback(err)
+            // future error callbacks will go to error handler
+            callback = err_cb
+        } else if (proxy.count === 0 && !bail) {
+            callback(null, result)
+        }
+    }
+}
+
+function noop() {}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/after/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/after")
+},{"buffer":18,"oMfpAn":21}],401:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * An abstraction for slicing an arraybuffer even when
+ * ArrayBuffer.prototype.slice is not supported
+ *
+ * @api public
+ */
+
+module.exports = function(arraybuffer, start, end) {
+  var bytes = arraybuffer.byteLength;
+  start = start || 0;
+  end = end || bytes;
+
+  if (arraybuffer.slice) { return arraybuffer.slice(start, end); }
+
+  if (start < 0) { start += bytes; }
+  if (end < 0) { end += bytes; }
+  if (end > bytes) { end = bytes; }
+
+  if (start >= bytes || start >= end || bytes === 0) {
+    return new ArrayBuffer(0);
+  }
+
+  var abv = new Uint8Array(arraybuffer);
+  var result = new Uint8Array(end - start);
+  for (var i = start, ii = 0; i < end; i++, ii++) {
+    result[ii] = abv[i];
+  }
+  return result.buffer;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/arraybuffer.slice/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/arraybuffer.slice")
+},{"buffer":18,"oMfpAn":21}],402:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/*
+ * base64-arraybuffer
+ * https://github.com/niklasvh/base64-arraybuffer
+ *
+ * Copyright (c) 2012 Niklas von Hertzen
+ * Licensed under the MIT license.
+ */
+(function(chars){
+  "use strict";
+
+  exports.encode = function(arraybuffer) {
+    var bytes = new Uint8Array(arraybuffer),
+    i, len = bytes.length, base64 = "";
+
+    for (i = 0; i < len; i+=3) {
+      base64 += chars[bytes[i] >> 2];
+      base64 += chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
+      base64 += chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
+      base64 += chars[bytes[i + 2] & 63];
+    }
+
+    if ((len % 3) === 2) {
+      base64 = base64.substring(0, base64.length - 1) + "=";
+    } else if (len % 3 === 1) {
+      base64 = base64.substring(0, base64.length - 2) + "==";
+    }
+
+    return base64;
+  };
+
+  exports.decode =  function(base64) {
+    var bufferLength = base64.length * 0.75,
+    len = base64.length, i, p = 0,
+    encoded1, encoded2, encoded3, encoded4;
+
+    if (base64[base64.length - 1] === "=") {
+      bufferLength--;
+      if (base64[base64.length - 2] === "=") {
+        bufferLength--;
+      }
+    }
+
+    var arraybuffer = new ArrayBuffer(bufferLength),
+    bytes = new Uint8Array(arraybuffer);
+
+    for (i = 0; i < len; i+=4) {
+      encoded1 = chars.indexOf(base64[i]);
+      encoded2 = chars.indexOf(base64[i+1]);
+      encoded3 = chars.indexOf(base64[i+2]);
+      encoded4 = chars.indexOf(base64[i+3]);
+
+      bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
+      bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+      bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
+    }
+
+    return arraybuffer;
+  };
+})("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/base64-arraybuffer/lib/base64-arraybuffer.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/base64-arraybuffer/lib")
+},{"buffer":18,"oMfpAn":21}],403:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Create a blob builder even when vendor prefixes exist
+ */
+
+var BlobBuilder = global.BlobBuilder
+  || global.WebKitBlobBuilder
+  || global.MSBlobBuilder
+  || global.MozBlobBuilder;
+
+/**
+ * Check if Blob constructor is supported
+ */
+
+var blobSupported = (function() {
+  try {
+    var b = new Blob(['hi']);
+    return b.size == 2;
+  } catch(e) {
+    return false;
+  }
+})();
+
+/**
+ * Check if BlobBuilder is supported
+ */
+
+var blobBuilderSupported = BlobBuilder
+  && BlobBuilder.prototype.append
+  && BlobBuilder.prototype.getBlob;
+
+function BlobBuilderConstructor(ary, options) {
+  options = options || {};
+
+  var bb = new BlobBuilder();
+  for (var i = 0; i < ary.length; i++) {
+    bb.append(ary[i]);
+  }
+  return (options.type) ? bb.getBlob(options.type) : bb.getBlob();
+};
+
+module.exports = (function() {
+  if (blobSupported) {
+    return global.Blob;
+  } else if (blobBuilderSupported) {
+    return BlobBuilderConstructor;
+  } else {
+    return undefined;
+  }
+})();
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/blob/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/blob")
+},{"buffer":18,"oMfpAn":21}],404:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/*
+ * Module requirements.
+ */
+
+var isArray = require('isarray');
+
+/**
+ * Module exports.
+ */
+
+module.exports = hasBinary;
+
+/**
+ * Checks for binary data.
+ *
+ * Right now only Buffer and ArrayBuffer are supported..
+ *
+ * @param {Object} anything
+ * @api public
+ */
+
+function hasBinary(data) {
+
+  function _hasBinary(obj) {
+    if (!obj) return false;
+
+    if ( (global.Buffer && global.Buffer.isBuffer(obj)) ||
+         (global.ArrayBuffer && obj instanceof ArrayBuffer) ||
+         (global.Blob && obj instanceof Blob) ||
+         (global.File && obj instanceof File)
+        ) {
+      return true;
+    }
+
+    if (isArray(obj)) {
+      for (var i = 0; i < obj.length; i++) {
+          if (_hasBinary(obj[i])) {
+              return true;
+          }
+      }
+    } else if (obj && 'object' == typeof obj) {
+      if (obj.toJSON) {
+        obj = obj.toJSON();
+      }
+
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key) && _hasBinary(obj[key])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  return _hasBinary(data);
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/has-binary/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/has-binary")
+},{"buffer":18,"isarray":405,"oMfpAn":21}],405:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+module.exports = Array.isArray || function (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]';
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/has-binary/node_modules/isarray/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/has-binary/node_modules/isarray")
+},{"buffer":18,"oMfpAn":21}],406:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/*! http://mths.be/utf8js v2.0.0 by @mathias */
+;(function(root) {
+
+	// Detect free variables `exports`
+	var freeExports = typeof exports == 'object' && exports;
+
+	// Detect free variable `module`
+	var freeModule = typeof module == 'object' && module &&
+		module.exports == freeExports && module;
+
+	// Detect free variable `global`, from Node.js or Browserified code,
+	// and use it as `root`
+	var freeGlobal = typeof global == 'object' && global;
+	if (freeGlobal.global === freeGlobal || freeGlobal.window === freeGlobal) {
+		root = freeGlobal;
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	var stringFromCharCode = String.fromCharCode;
+
+	// Taken from http://mths.be/punycode
+	function ucs2decode(string) {
+		var output = [];
+		var counter = 0;
+		var length = string.length;
+		var value;
+		var extra;
+		while (counter < length) {
+			value = string.charCodeAt(counter++);
+			if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
+				// high surrogate, and there is a next character
+				extra = string.charCodeAt(counter++);
+				if ((extra & 0xFC00) == 0xDC00) { // low surrogate
+					output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
+				} else {
+					// unmatched surrogate; only append this code unit, in case the next
+					// code unit is the high surrogate of a surrogate pair
+					output.push(value);
+					counter--;
+				}
+			} else {
+				output.push(value);
+			}
+		}
+		return output;
+	}
+
+	// Taken from http://mths.be/punycode
+	function ucs2encode(array) {
+		var length = array.length;
+		var index = -1;
+		var value;
+		var output = '';
+		while (++index < length) {
+			value = array[index];
+			if (value > 0xFFFF) {
+				value -= 0x10000;
+				output += stringFromCharCode(value >>> 10 & 0x3FF | 0xD800);
+				value = 0xDC00 | value & 0x3FF;
+			}
+			output += stringFromCharCode(value);
+		}
+		return output;
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	function createByte(codePoint, shift) {
+		return stringFromCharCode(((codePoint >> shift) & 0x3F) | 0x80);
+	}
+
+	function encodeCodePoint(codePoint) {
+		if ((codePoint & 0xFFFFFF80) == 0) { // 1-byte sequence
+			return stringFromCharCode(codePoint);
+		}
+		var symbol = '';
+		if ((codePoint & 0xFFFFF800) == 0) { // 2-byte sequence
+			symbol = stringFromCharCode(((codePoint >> 6) & 0x1F) | 0xC0);
+		}
+		else if ((codePoint & 0xFFFF0000) == 0) { // 3-byte sequence
+			symbol = stringFromCharCode(((codePoint >> 12) & 0x0F) | 0xE0);
+			symbol += createByte(codePoint, 6);
+		}
+		else if ((codePoint & 0xFFE00000) == 0) { // 4-byte sequence
+			symbol = stringFromCharCode(((codePoint >> 18) & 0x07) | 0xF0);
+			symbol += createByte(codePoint, 12);
+			symbol += createByte(codePoint, 6);
+		}
+		symbol += stringFromCharCode((codePoint & 0x3F) | 0x80);
+		return symbol;
+	}
+
+	function utf8encode(string) {
+		var codePoints = ucs2decode(string);
+
+		// console.log(JSON.stringify(codePoints.map(function(x) {
+		// 	return 'U+' + x.toString(16).toUpperCase();
+		// })));
+
+		var length = codePoints.length;
+		var index = -1;
+		var codePoint;
+		var byteString = '';
+		while (++index < length) {
+			codePoint = codePoints[index];
+			byteString += encodeCodePoint(codePoint);
+		}
+		return byteString;
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	function readContinuationByte() {
+		if (byteIndex >= byteCount) {
+			throw Error('Invalid byte index');
+		}
+
+		var continuationByte = byteArray[byteIndex] & 0xFF;
+		byteIndex++;
+
+		if ((continuationByte & 0xC0) == 0x80) {
+			return continuationByte & 0x3F;
+		}
+
+		// If we end up here, it’s not a continuation byte
+		throw Error('Invalid continuation byte');
+	}
+
+	function decodeSymbol() {
+		var byte1;
+		var byte2;
+		var byte3;
+		var byte4;
+		var codePoint;
+
+		if (byteIndex > byteCount) {
+			throw Error('Invalid byte index');
+		}
+
+		if (byteIndex == byteCount) {
+			return false;
+		}
+
+		// Read first byte
+		byte1 = byteArray[byteIndex] & 0xFF;
+		byteIndex++;
+
+		// 1-byte sequence (no continuation bytes)
+		if ((byte1 & 0x80) == 0) {
+			return byte1;
+		}
+
+		// 2-byte sequence
+		if ((byte1 & 0xE0) == 0xC0) {
+			var byte2 = readContinuationByte();
+			codePoint = ((byte1 & 0x1F) << 6) | byte2;
+			if (codePoint >= 0x80) {
+				return codePoint;
+			} else {
+				throw Error('Invalid continuation byte');
+			}
+		}
+
+		// 3-byte sequence (may include unpaired surrogates)
+		if ((byte1 & 0xF0) == 0xE0) {
+			byte2 = readContinuationByte();
+			byte3 = readContinuationByte();
+			codePoint = ((byte1 & 0x0F) << 12) | (byte2 << 6) | byte3;
+			if (codePoint >= 0x0800) {
+				return codePoint;
+			} else {
+				throw Error('Invalid continuation byte');
+			}
+		}
+
+		// 4-byte sequence
+		if ((byte1 & 0xF8) == 0xF0) {
+			byte2 = readContinuationByte();
+			byte3 = readContinuationByte();
+			byte4 = readContinuationByte();
+			codePoint = ((byte1 & 0x0F) << 0x12) | (byte2 << 0x0C) |
+				(byte3 << 0x06) | byte4;
+			if (codePoint >= 0x010000 && codePoint <= 0x10FFFF) {
+				return codePoint;
+			}
+		}
+
+		throw Error('Invalid UTF-8 detected');
+	}
+
+	var byteArray;
+	var byteCount;
+	var byteIndex;
+	function utf8decode(byteString) {
+		byteArray = ucs2decode(byteString);
+		byteCount = byteArray.length;
+		byteIndex = 0;
+		var codePoints = [];
+		var tmp;
+		while ((tmp = decodeSymbol()) !== false) {
+			codePoints.push(tmp);
+		}
+		return ucs2encode(codePoints);
+	}
+
+	/*--------------------------------------------------------------------------*/
+
+	var utf8 = {
+		'version': '2.0.0',
+		'encode': utf8encode,
+		'decode': utf8decode
+	};
+
+	// Some AMD build optimizers, like r.js, check for specific condition patterns
+	// like the following:
+	if (
+		typeof define == 'function' &&
+		typeof define.amd == 'object' &&
+		define.amd
+	) {
+		define(function() {
+			return utf8;
+		});
+	}	else if (freeExports && !freeExports.nodeType) {
+		if (freeModule) { // in Node.js or RingoJS v0.8.0+
+			freeModule.exports = utf8;
+		} else { // in Narwhal or RingoJS v0.7.0-
+			var object = {};
+			var hasOwnProperty = object.hasOwnProperty;
+			for (var key in utf8) {
+				hasOwnProperty.call(utf8, key) && (freeExports[key] = utf8[key]);
+			}
+		}
+	} else { // in Rhino or a web browser
+		root.utf8 = utf8;
+	}
+
+}(this));
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/utf8/utf8.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/utf8")
+},{"buffer":18,"oMfpAn":21}],407:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module dependencies.
+ */
+
+var global = require('global');
+
+/**
+ * Module exports.
+ *
+ * Logic borrowed from Modernizr:
+ *
+ *   - https://github.com/Modernizr/Modernizr/blob/master/feature-detects/cors.js
+ */
+
+try {
+  module.exports = 'XMLHttpRequest' in global &&
+    'withCredentials' in new global.XMLHttpRequest();
+} catch (err) {
+  // if XMLHttp support is disabled in IE then it will throw
+  // when trying to create
+  module.exports = false;
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/has-cors/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/has-cors")
+},{"buffer":18,"global":408,"oMfpAn":21}],408:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Returns `this`. Execute this without a "context" (i.e. without it being
+ * attached to an object of the left-hand side), and `this` points to the
+ * "global" scope of the current JS execution.
+ */
+
+module.exports = (function () { return this; })();
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/has-cors/node_modules/global/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/has-cors/node_modules/global")
+},{"buffer":18,"oMfpAn":21}],409:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * JSON parse.
+ *
+ * @see Based on jQuery#parseJSON (MIT) and JSON2
+ * @api private
+ */
+
+var rvalidchars = /^[\],:{}\s]*$/;
+var rvalidescape = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+var rvalidtokens = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+var rvalidbraces = /(?:^|:|,)(?:\s*\[)+/g;
+var rtrimLeft = /^\s+/;
+var rtrimRight = /\s+$/;
+
+module.exports = function parsejson(data) {
+  if ('string' != typeof data || !data) {
+    return null;
+  }
+
+  data = data.replace(rtrimLeft, '').replace(rtrimRight, '');
+
+  // Attempt to parse using the native JSON parser first
+  if (global.JSON && JSON.parse) {
+    return JSON.parse(data);
+  }
+
+  if (rvalidchars.test(data.replace(rvalidescape, '@')
+      .replace(rvalidtokens, ']')
+      .replace(rvalidbraces, ''))) {
+    return (new Function('return ' + data))();
+  }
+};
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/parsejson/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/parsejson")
+},{"buffer":18,"oMfpAn":21}],410:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Compiles a querystring
+ * Returns string representation of the object
+ *
+ * @param {Object}
+ * @api private
+ */
+
+exports.encode = function (obj) {
+  var str = '';
+
+  for (var i in obj) {
+    if (obj.hasOwnProperty(i)) {
+      if (str.length) str += '&';
+      str += encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]);
+    }
+  }
+
+  return str;
+};
+
+/**
+ * Parses a simple querystring into an object
+ *
+ * @param {String} qs
+ * @api private
+ */
+
+exports.decode = function(qs){
+  var qry = {};
+  var pairs = qs.split('&');
+  for (var i = 0, l = pairs.length; i < l; i++) {
+    var pair = pairs[i].split('=');
+    qry[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+  }
+  return qry;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/parseqs/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/parseqs")
+},{"buffer":18,"oMfpAn":21}],411:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Parses an URI
+ *
+ * @author Steven Levithan <stevenlevithan.com> (MIT license)
+ * @api private
+ */
+
+var re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
+
+var parts = [
+    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
+];
+
+module.exports = function parseuri(str) {
+    var src = str,
+        b = str.indexOf('['),
+        e = str.indexOf(']');
+
+    if (b != -1 && e != -1) {
+        str = str.substring(0, b) + str.substring(b, e).replace(/:/g, ';') + str.substring(e, str.length);
+    }
+
+    var m = re.exec(str || ''),
+        uri = {},
+        i = 14;
+
+    while (i--) {
+        uri[parts[i]] = m[i] || '';
+    }
+
+    if (b != -1 && e != -1) {
+        uri.source = src;
+        uri.host = uri.host.substring(1, uri.host.length - 1).replace(/;/g, ':');
+        uri.authority = uri.authority.replace('[', '').replace(']', '').replace(/;/g, ':');
+        uri.ipv6uri = true;
+    }
+
+    return uri;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/parseuri/index.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/parseuri")
+},{"buffer":18,"oMfpAn":21}],412:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module dependencies.
+ */
+
+var global = (function() { return this; })();
+
+/**
+ * WebSocket constructor.
+ */
+
+var WebSocket = global.WebSocket || global.MozWebSocket;
+
+/**
+ * Module exports.
+ */
+
+module.exports = WebSocket ? ws : null;
+
+/**
+ * WebSocket constructor.
+ *
+ * The third `opts` options object gets ignored in web browsers, since it's
+ * non-standard, and throws a TypeError if passed to the constructor.
+ * See: https://github.com/einaros/ws/issues/227
+ *
+ * @param {String} uri
+ * @param {Array} protocols (optional)
+ * @param {Object) opts (optional)
+ * @api public
+ */
+
+function ws(uri, protocols, opts) {
+  var instance;
+  if (protocols) {
+    instance = new WebSocket(uri, protocols);
+  } else {
+    instance = new WebSocket(uri);
+  }
+  return instance;
+}
+
+if (WebSocket) ws.prototype = WebSocket.prototype;
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/ws/lib/browser.js","/../../node_modules/socket.io-client/node_modules/engine.io-client/node_modules/ws/lib")
+},{"buffer":18,"oMfpAn":21}],413:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/*
+ * Module requirements.
+ */
+
+var isArray = require('isarray');
+
+/**
+ * Module exports.
+ */
+
+module.exports = hasBinary;
+
+/**
+ * Checks for binary data.
+ *
+ * Right now only Buffer and ArrayBuffer are supported..
+ *
+ * @param {Object} anything
+ * @api public
+ */
+
+function hasBinary(data) {
+
+  function _hasBinary(obj) {
+    if (!obj) return false;
+
+    if ( (global.Buffer && global.Buffer.isBuffer(obj)) ||
+         (global.ArrayBuffer && obj instanceof ArrayBuffer) ||
+         (global.Blob && obj instanceof Blob) ||
+         (global.File && obj instanceof File)
+        ) {
+      return true;
+    }
+
+    if (isArray(obj)) {
+      for (var i = 0; i < obj.length; i++) {
+          if (_hasBinary(obj[i])) {
+              return true;
+          }
+      }
+    } else if (obj && 'object' == typeof obj) {
+      if (obj.toJSON) {
+        obj = obj.toJSON();
+      }
+
+      for (var key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key) && _hasBinary(obj[key])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  return _hasBinary(data);
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/has-binary/index.js","/../../node_modules/socket.io-client/node_modules/has-binary")
+},{"buffer":18,"isarray":414,"oMfpAn":21}],414:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+module.exports = Array.isArray || function (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]';
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/has-binary/node_modules/isarray/index.js","/../../node_modules/socket.io-client/node_modules/has-binary/node_modules/isarray")
+},{"buffer":18,"oMfpAn":21}],415:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/indexof/index.js","/../../node_modules/socket.io-client/node_modules/indexof")
+},{"buffer":18,"oMfpAn":21}],416:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * HOP ref.
+ */
+
+var has = Object.prototype.hasOwnProperty;
+
+/**
+ * Return own keys in `obj`.
+ *
+ * @param {Object} obj
+ * @return {Array}
+ * @api public
+ */
+
+exports.keys = Object.keys || function(obj){
+  var keys = [];
+  for (var key in obj) {
+    if (has.call(obj, key)) {
+      keys.push(key);
+    }
+  }
+  return keys;
+};
+
+/**
+ * Return own values in `obj`.
+ *
+ * @param {Object} obj
+ * @return {Array}
+ * @api public
+ */
+
+exports.values = function(obj){
+  var vals = [];
+  for (var key in obj) {
+    if (has.call(obj, key)) {
+      vals.push(obj[key]);
+    }
+  }
+  return vals;
+};
+
+/**
+ * Merge `b` into `a`.
+ *
+ * @param {Object} a
+ * @param {Object} b
+ * @return {Object} a
+ * @api public
+ */
+
+exports.merge = function(a, b){
+  for (var key in b) {
+    if (has.call(b, key)) {
+      a[key] = b[key];
+    }
+  }
+  return a;
+};
+
+/**
+ * Return length of `obj`.
+ *
+ * @param {Object} obj
+ * @return {Number}
+ * @api public
+ */
+
+exports.length = function(obj){
+  return exports.keys(obj).length;
+};
+
+/**
+ * Check if `obj` is empty.
+ *
+ * @param {Object} obj
+ * @return {Boolean}
+ * @api public
+ */
+
+exports.isEmpty = function(obj){
+  return 0 == exports.length(obj);
+};
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/object-component/index.js","/../../node_modules/socket.io-client/node_modules/object-component")
+},{"buffer":18,"oMfpAn":21}],417:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/**
+ * Parses an URI
+ *
+ * @author Steven Levithan <stevenlevithan.com> (MIT license)
+ * @api private
+ */
+
+var re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
+
+var parts = [
+    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host'
+  , 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
+];
+
+module.exports = function parseuri(str) {
+  var m = re.exec(str || '')
+    , uri = {}
+    , i = 14;
+
+  while (i--) {
+    uri[parts[i]] = m[i] || '';
+  }
+
+  return uri;
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/parseuri/index.js","/../../node_modules/socket.io-client/node_modules/parseuri")
+},{"buffer":18,"oMfpAn":21}],418:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/*global Blob,File*/
+
+/**
+ * Module requirements
+ */
+
+var isArray = require('isarray');
+var isBuf = require('./is-buffer');
+
+/**
+ * Replaces every Buffer | ArrayBuffer in packet with a numbered placeholder.
+ * Anything with blobs or files should be fed through removeBlobs before coming
+ * here.
+ *
+ * @param {Object} packet - socket.io event packet
+ * @return {Object} with deconstructed packet and list of buffers
+ * @api public
+ */
+
+exports.deconstructPacket = function(packet){
+  var buffers = [];
+  var packetData = packet.data;
+
+  function _deconstructPacket(data) {
+    if (!data) return data;
+
+    if (isBuf(data)) {
+      var placeholder = { _placeholder: true, num: buffers.length };
+      buffers.push(data);
+      return placeholder;
+    } else if (isArray(data)) {
+      var newData = new Array(data.length);
+      for (var i = 0; i < data.length; i++) {
+        newData[i] = _deconstructPacket(data[i]);
+      }
+      return newData;
+    } else if ('object' == typeof data && !(data instanceof Date)) {
+      var newData = {};
+      for (var key in data) {
+        newData[key] = _deconstructPacket(data[key]);
+      }
+      return newData;
+    }
+    return data;
+  }
+
+  var pack = packet;
+  pack.data = _deconstructPacket(packetData);
+  pack.attachments = buffers.length; // number of binary 'attachments'
+  return {packet: pack, buffers: buffers};
+};
+
+/**
+ * Reconstructs a binary packet from its placeholder packet and buffers
+ *
+ * @param {Object} packet - event packet with placeholders
+ * @param {Array} buffers - binary buffers to put in placeholder positions
+ * @return {Object} reconstructed packet
+ * @api public
+ */
+
+exports.reconstructPacket = function(packet, buffers) {
+  var curPlaceHolder = 0;
+
+  function _reconstructPacket(data) {
+    if (data && data._placeholder) {
+      var buf = buffers[data.num]; // appropriate buffer (should be natural order anyway)
+      return buf;
+    } else if (isArray(data)) {
+      for (var i = 0; i < data.length; i++) {
+        data[i] = _reconstructPacket(data[i]);
+      }
+      return data;
+    } else if (data && 'object' == typeof data) {
+      for (var key in data) {
+        data[key] = _reconstructPacket(data[key]);
+      }
+      return data;
+    }
+    return data;
+  }
+
+  packet.data = _reconstructPacket(packet.data);
+  packet.attachments = undefined; // no longer useful
+  return packet;
+};
+
+/**
+ * Asynchronously removes Blobs or Files from data via
+ * FileReader's readAsArrayBuffer method. Used before encoding
+ * data as msgpack. Calls callback with the blobless data.
+ *
+ * @param {Object} data
+ * @param {Function} callback
+ * @api private
+ */
+
+exports.removeBlobs = function(data, callback) {
+  function _removeBlobs(obj, curKey, containingObject) {
+    if (!obj) return obj;
+
+    // convert any blob
+    if ((global.Blob && obj instanceof Blob) ||
+        (global.File && obj instanceof File)) {
+      pendingBlobs++;
+
+      // async filereader
+      var fileReader = new FileReader();
+      fileReader.onload = function() { // this.result == arraybuffer
+        if (containingObject) {
+          containingObject[curKey] = this.result;
+        }
+        else {
+          bloblessData = this.result;
+        }
+
+        // if nothing pending its callback time
+        if(! --pendingBlobs) {
+          callback(bloblessData);
+        }
+      };
+
+      fileReader.readAsArrayBuffer(obj); // blob -> arraybuffer
+    } else if (isArray(obj)) { // handle array
+      for (var i = 0; i < obj.length; i++) {
+        _removeBlobs(obj[i], i, obj);
+      }
+    } else if (obj && 'object' == typeof obj && !isBuf(obj)) { // and object
+      for (var key in obj) {
+        _removeBlobs(obj[key], key, obj);
+      }
+    }
+  }
+
+  var pendingBlobs = 0;
+  var bloblessData = data;
+  _removeBlobs(bloblessData);
+  if (!pendingBlobs) {
+    callback(bloblessData);
+  }
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/socket.io-parser/binary.js","/../../node_modules/socket.io-client/node_modules/socket.io-parser")
+},{"./is-buffer":420,"buffer":18,"isarray":421,"oMfpAn":21}],419:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+/**
+ * Module dependencies.
+ */
+
+var debug = require('debug')('socket.io-parser');
+var json = require('json3');
+var isArray = require('isarray');
+var Emitter = require('component-emitter');
+var binary = require('./binary');
+var isBuf = require('./is-buffer');
+
+/**
+ * Protocol version.
+ *
+ * @api public
+ */
+
+exports.protocol = 4;
+
+/**
+ * Packet types.
+ *
+ * @api public
+ */
+
+exports.types = [
+  'CONNECT',
+  'DISCONNECT',
+  'EVENT',
+  'BINARY_EVENT',
+  'ACK',
+  'BINARY_ACK',
+  'ERROR'
+];
+
+/**
+ * Packet type `connect`.
+ *
+ * @api public
+ */
+
+exports.CONNECT = 0;
+
+/**
+ * Packet type `disconnect`.
+ *
+ * @api public
+ */
+
+exports.DISCONNECT = 1;
+
+/**
+ * Packet type `event`.
+ *
+ * @api public
+ */
+
+exports.EVENT = 2;
+
+/**
+ * Packet type `ack`.
+ *
+ * @api public
+ */
+
+exports.ACK = 3;
+
+/**
+ * Packet type `error`.
+ *
+ * @api public
+ */
+
+exports.ERROR = 4;
+
+/**
+ * Packet type 'binary event'
+ *
+ * @api public
+ */
+
+exports.BINARY_EVENT = 5;
+
+/**
+ * Packet type `binary ack`. For acks with binary arguments.
+ *
+ * @api public
+ */
+
+exports.BINARY_ACK = 6;
+
+/**
+ * Encoder constructor.
+ *
+ * @api public
+ */
+
+exports.Encoder = Encoder;
+
+/**
+ * Decoder constructor.
+ *
+ * @api public
+ */
+
+exports.Decoder = Decoder;
+
+/**
+ * A socket.io Encoder instance
+ *
+ * @api public
+ */
+
+function Encoder() {}
+
+/**
+ * Encode a packet as a single string if non-binary, or as a
+ * buffer sequence, depending on packet type.
+ *
+ * @param {Object} obj - packet object
+ * @param {Function} callback - function to handle encodings (likely engine.write)
+ * @return Calls callback with Array of encodings
+ * @api public
+ */
+
+Encoder.prototype.encode = function(obj, callback){
+  debug('encoding packet %j', obj);
+
+  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
+    encodeAsBinary(obj, callback);
+  }
+  else {
+    var encoding = encodeAsString(obj);
+    callback([encoding]);
+  }
+};
+
+/**
+ * Encode packet as string.
+ *
+ * @param {Object} packet
+ * @return {String} encoded
+ * @api private
+ */
+
+function encodeAsString(obj) {
+  var str = '';
+  var nsp = false;
+
+  // first is type
+  str += obj.type;
+
+  // attachments if we have them
+  if (exports.BINARY_EVENT == obj.type || exports.BINARY_ACK == obj.type) {
+    str += obj.attachments;
+    str += '-';
+  }
+
+  // if we have a namespace other than `/`
+  // we append it followed by a comma `,`
+  if (obj.nsp && '/' != obj.nsp) {
+    nsp = true;
+    str += obj.nsp;
+  }
+
+  // immediately followed by the id
+  if (null != obj.id) {
+    if (nsp) {
+      str += ',';
+      nsp = false;
+    }
+    str += obj.id;
+  }
+
+  // json data
+  if (null != obj.data) {
+    if (nsp) str += ',';
+    str += json.stringify(obj.data);
+  }
+
+  debug('encoded %j as %s', obj, str);
+  return str;
+}
+
+/**
+ * Encode packet as 'buffer sequence' by removing blobs, and
+ * deconstructing packet into object with placeholders and
+ * a list of buffers.
+ *
+ * @param {Object} packet
+ * @return {Buffer} encoded
+ * @api private
+ */
+
+function encodeAsBinary(obj, callback) {
+
+  function writeEncoding(bloblessData) {
+    var deconstruction = binary.deconstructPacket(bloblessData);
+    var pack = encodeAsString(deconstruction.packet);
+    var buffers = deconstruction.buffers;
+
+    buffers.unshift(pack); // add packet info to beginning of data list
+    callback(buffers); // write all the buffers
+  }
+
+  binary.removeBlobs(obj, writeEncoding);
+}
+
+/**
+ * A socket.io Decoder instance
+ *
+ * @return {Object} decoder
+ * @api public
+ */
+
+function Decoder() {
+  this.reconstructor = null;
+}
+
+/**
+ * Mix in `Emitter` with Decoder.
+ */
+
+Emitter(Decoder.prototype);
+
+/**
+ * Decodes an ecoded packet string into packet JSON.
+ *
+ * @param {String} obj - encoded packet
+ * @return {Object} packet
+ * @api public
+ */
+
+Decoder.prototype.add = function(obj) {
+  var packet;
+  if ('string' == typeof obj) {
+    packet = decodeString(obj);
+    if (exports.BINARY_EVENT == packet.type || exports.BINARY_ACK == packet.type) { // binary packet's json
+      this.reconstructor = new BinaryReconstructor(packet);
+
+      // no attachments, labeled binary but no binary data to follow
+      if (this.reconstructor.reconPack.attachments === 0) {
+        this.emit('decoded', packet);
+      }
+    } else { // non-binary full packet
+      this.emit('decoded', packet);
+    }
+  }
+  else if (isBuf(obj) || obj.base64) { // raw binary data
+    if (!this.reconstructor) {
+      throw new Error('got binary data when not reconstructing a packet');
+    } else {
+      packet = this.reconstructor.takeBinaryData(obj);
+      if (packet) { // received final buffer
+        this.reconstructor = null;
+        this.emit('decoded', packet);
+      }
+    }
+  }
+  else {
+    throw new Error('Unknown type: ' + obj);
+  }
+};
+
+/**
+ * Decode a packet String (JSON data)
+ *
+ * @param {String} str
+ * @return {Object} packet
+ * @api private
+ */
+
+function decodeString(str) {
+  var p = {};
+  var i = 0;
+
+  // look up type
+  p.type = Number(str.charAt(0));
+  if (null == exports.types[p.type]) return error();
+
+  // look up attachments if type binary
+  if (exports.BINARY_EVENT == p.type || exports.BINARY_ACK == p.type) {
+    var buf = '';
+    while (str.charAt(++i) != '-') {
+      buf += str.charAt(i);
+      if (i == str.length) break;
+    }
+    if (buf != Number(buf) || str.charAt(i) != '-') {
+      throw new Error('Illegal attachments');
+    }
+    p.attachments = Number(buf);
+  }
+
+  // look up namespace (if any)
+  if ('/' == str.charAt(i + 1)) {
+    p.nsp = '';
+    while (++i) {
+      var c = str.charAt(i);
+      if (',' == c) break;
+      p.nsp += c;
+      if (i == str.length) break;
+    }
+  } else {
+    p.nsp = '/';
+  }
+
+  // look up id
+  var next = str.charAt(i + 1);
+  if ('' !== next && Number(next) == next) {
+    p.id = '';
+    while (++i) {
+      var c = str.charAt(i);
+      if (null == c || Number(c) != c) {
+        --i;
+        break;
+      }
+      p.id += str.charAt(i);
+      if (i == str.length) break;
+    }
+    p.id = Number(p.id);
+  }
+
+  // look up json data
+  if (str.charAt(++i)) {
+    try {
+      p.data = json.parse(str.substr(i));
+    } catch(e){
+      return error();
+    }
+  }
+
+  debug('decoded %s as %j', str, p);
+  return p;
+}
+
+/**
+ * Deallocates a parser's resources
+ *
+ * @api public
+ */
+
+Decoder.prototype.destroy = function() {
+  if (this.reconstructor) {
+    this.reconstructor.finishedReconstruction();
+  }
+};
+
+/**
+ * A manager of a binary event's 'buffer sequence'. Should
+ * be constructed whenever a packet of type BINARY_EVENT is
+ * decoded.
+ *
+ * @param {Object} packet
+ * @return {BinaryReconstructor} initialized reconstructor
+ * @api private
+ */
+
+function BinaryReconstructor(packet) {
+  this.reconPack = packet;
+  this.buffers = [];
+}
+
+/**
+ * Method to be called when binary data received from connection
+ * after a BINARY_EVENT packet.
+ *
+ * @param {Buffer | ArrayBuffer} binData - the raw binary data received
+ * @return {null | Object} returns null if more binary data is expected or
+ *   a reconstructed packet object if all buffers have been received.
+ * @api private
+ */
+
+BinaryReconstructor.prototype.takeBinaryData = function(binData) {
+  this.buffers.push(binData);
+  if (this.buffers.length == this.reconPack.attachments) { // done with buffer list
+    var packet = binary.reconstructPacket(this.reconPack, this.buffers);
+    this.finishedReconstruction();
+    return packet;
+  }
+  return null;
+};
+
+/**
+ * Cleans up binary packet reconstruction variables.
+ *
+ * @api private
+ */
+
+BinaryReconstructor.prototype.finishedReconstruction = function() {
+  this.reconPack = null;
+  this.buffers = [];
+};
+
+function error(data){
+  return {
+    type: exports.ERROR,
+    data: 'parser error'
+  };
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/socket.io-parser/index.js","/../../node_modules/socket.io-client/node_modules/socket.io-parser")
+},{"./binary":418,"./is-buffer":420,"buffer":18,"component-emitter":382,"debug":383,"isarray":421,"json3":422,"oMfpAn":21}],420:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+
+module.exports = isBuf;
+
+/**
+ * Returns true if obj is a buffer or an arraybuffer.
+ *
+ * @api private
+ */
+
+function isBuf(obj) {
+  return (global.Buffer && global.Buffer.isBuffer(obj)) ||
+         (global.ArrayBuffer && obj instanceof ArrayBuffer);
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/socket.io-parser/is-buffer.js","/../../node_modules/socket.io-client/node_modules/socket.io-parser")
+},{"buffer":18,"oMfpAn":21}],421:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+module.exports = Array.isArray || function (arr) {
+  return Object.prototype.toString.call(arr) == '[object Array]';
+};
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/isarray/index.js","/../../node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/isarray")
+},{"buffer":18,"oMfpAn":21}],422:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+/*! JSON v3.2.6 | http://bestiejs.github.io/json3 | Copyright 2012-2013, Kit Cambridge | http://kit.mit-license.org */
+;(function (window) {
+  // Convenience aliases.
+  var getClass = {}.toString, isProperty, forEach, undef;
+
+  // Detect the `define` function exposed by asynchronous module loaders. The
+  // strict `define` check is necessary for compatibility with `r.js`.
+  var isLoader = typeof define === "function" && define.amd;
+
+  // Detect native implementations.
+  var nativeJSON = typeof JSON == "object" && JSON;
+
+  // Set up the JSON 3 namespace, preferring the CommonJS `exports` object if
+  // available.
+  var JSON3 = typeof exports == "object" && exports && !exports.nodeType && exports;
+
+  if (JSON3 && nativeJSON) {
+    // Explicitly delegate to the native `stringify` and `parse`
+    // implementations in CommonJS environments.
+    JSON3.stringify = nativeJSON.stringify;
+    JSON3.parse = nativeJSON.parse;
+  } else {
+    // Export for web browsers, JavaScript engines, and asynchronous module
+    // loaders, using the global `JSON` object if available.
+    JSON3 = window.JSON = nativeJSON || {};
+  }
+
+  // Test the `Date#getUTC*` methods. Based on work by @Yaffle.
+  var isExtended = new Date(-3509827334573292);
+  try {
+    // The `getUTCFullYear`, `Month`, and `Date` methods return nonsensical
+    // results for certain dates in Opera >= 10.53.
+    isExtended = isExtended.getUTCFullYear() == -109252 && isExtended.getUTCMonth() === 0 && isExtended.getUTCDate() === 1 &&
+      // Safari < 2.0.2 stores the internal millisecond time value correctly,
+      // but clips the values returned by the date methods to the range of
+      // signed 32-bit integers ([-2 ** 31, 2 ** 31 - 1]).
+      isExtended.getUTCHours() == 10 && isExtended.getUTCMinutes() == 37 && isExtended.getUTCSeconds() == 6 && isExtended.getUTCMilliseconds() == 708;
+  } catch (exception) {}
+
+  // Internal: Determines whether the native `JSON.stringify` and `parse`
+  // implementations are spec-compliant. Based on work by Ken Snyder.
+  function has(name) {
+    if (has[name] !== undef) {
+      // Return cached feature test result.
+      return has[name];
+    }
+
+    var isSupported;
+    if (name == "bug-string-char-index") {
+      // IE <= 7 doesn't support accessing string characters using square
+      // bracket notation. IE 8 only supports this for primitives.
+      isSupported = "a"[0] != "a";
+    } else if (name == "json") {
+      // Indicates whether both `JSON.stringify` and `JSON.parse` are
+      // supported.
+      isSupported = has("json-stringify") && has("json-parse");
+    } else {
+      var value, serialized = '{"a":[1,true,false,null,"\\u0000\\b\\n\\f\\r\\t"]}';
+      // Test `JSON.stringify`.
+      if (name == "json-stringify") {
+        var stringify = JSON3.stringify, stringifySupported = typeof stringify == "function" && isExtended;
+        if (stringifySupported) {
+          // A test function object with a custom `toJSON` method.
+          (value = function () {
+            return 1;
+          }).toJSON = value;
+          try {
+            stringifySupported =
+              // Firefox 3.1b1 and b2 serialize string, number, and boolean
+              // primitives as object literals.
+              stringify(0) === "0" &&
+              // FF 3.1b1, b2, and JSON 2 serialize wrapped primitives as object
+              // literals.
+              stringify(new Number()) === "0" &&
+              stringify(new String()) == '""' &&
+              // FF 3.1b1, 2 throw an error if the value is `null`, `undefined`, or
+              // does not define a canonical JSON representation (this applies to
+              // objects with `toJSON` properties as well, *unless* they are nested
+              // within an object or array).
+              stringify(getClass) === undef &&
+              // IE 8 serializes `undefined` as `"undefined"`. Safari <= 5.1.7 and
+              // FF 3.1b3 pass this test.
+              stringify(undef) === undef &&
+              // Safari <= 5.1.7 and FF 3.1b3 throw `Error`s and `TypeError`s,
+              // respectively, if the value is omitted entirely.
+              stringify() === undef &&
+              // FF 3.1b1, 2 throw an error if the given value is not a number,
+              // string, array, object, Boolean, or `null` literal. This applies to
+              // objects with custom `toJSON` methods as well, unless they are nested
+              // inside object or array literals. YUI 3.0.0b1 ignores custom `toJSON`
+              // methods entirely.
+              stringify(value) === "1" &&
+              stringify([value]) == "[1]" &&
+              // Prototype <= 1.6.1 serializes `[undefined]` as `"[]"` instead of
+              // `"[null]"`.
+              stringify([undef]) == "[null]" &&
+              // YUI 3.0.0b1 fails to serialize `null` literals.
+              stringify(null) == "null" &&
+              // FF 3.1b1, 2 halts serialization if an array contains a function:
+              // `[1, true, getClass, 1]` serializes as "[1,true,],". FF 3.1b3
+              // elides non-JSON values from objects and arrays, unless they
+              // define custom `toJSON` methods.
+              stringify([undef, getClass, null]) == "[null,null,null]" &&
+              // Simple serialization test. FF 3.1b1 uses Unicode escape sequences
+              // where character escape codes are expected (e.g., `\b` => `\u0008`).
+              stringify({ "a": [value, true, false, null, "\x00\b\n\f\r\t"] }) == serialized &&
+              // FF 3.1b1 and b2 ignore the `filter` and `width` arguments.
+              stringify(null, value) === "1" &&
+              stringify([1, 2], null, 1) == "[\n 1,\n 2\n]" &&
+              // JSON 2, Prototype <= 1.7, and older WebKit builds incorrectly
+              // serialize extended years.
+              stringify(new Date(-8.64e15)) == '"-271821-04-20T00:00:00.000Z"' &&
+              // The milliseconds are optional in ES 5, but required in 5.1.
+              stringify(new Date(8.64e15)) == '"+275760-09-13T00:00:00.000Z"' &&
+              // Firefox <= 11.0 incorrectly serializes years prior to 0 as negative
+              // four-digit years instead of six-digit years. Credits: @Yaffle.
+              stringify(new Date(-621987552e5)) == '"-000001-01-01T00:00:00.000Z"' &&
+              // Safari <= 5.1.5 and Opera >= 10.53 incorrectly serialize millisecond
+              // values less than 1000. Credits: @Yaffle.
+              stringify(new Date(-1)) == '"1969-12-31T23:59:59.999Z"';
+          } catch (exception) {
+            stringifySupported = false;
+          }
+        }
+        isSupported = stringifySupported;
+      }
+      // Test `JSON.parse`.
+      if (name == "json-parse") {
+        var parse = JSON3.parse;
+        if (typeof parse == "function") {
+          try {
+            // FF 3.1b1, b2 will throw an exception if a bare literal is provided.
+            // Conforming implementations should also coerce the initial argument to
+            // a string prior to parsing.
+            if (parse("0") === 0 && !parse(false)) {
+              // Simple parsing test.
+              value = parse(serialized);
+              var parseSupported = value["a"].length == 5 && value["a"][0] === 1;
+              if (parseSupported) {
+                try {
+                  // Safari <= 5.1.2 and FF 3.1b1 allow unescaped tabs in strings.
+                  parseSupported = !parse('"\t"');
+                } catch (exception) {}
+                if (parseSupported) {
+                  try {
+                    // FF 4.0 and 4.0.1 allow leading `+` signs and leading
+                    // decimal points. FF 4.0, 4.0.1, and IE 9-10 also allow
+                    // certain octal literals.
+                    parseSupported = parse("01") !== 1;
+                  } catch (exception) {}
+                }
+                if (parseSupported) {
+                  try {
+                    // FF 4.0, 4.0.1, and Rhino 1.7R3-R4 allow trailing decimal
+                    // points. These environments, along with FF 3.1b1 and 2,
+                    // also allow trailing commas in JSON objects and arrays.
+                    parseSupported = parse("1.") !== 1;
+                  } catch (exception) {}
+                }
+              }
+            }
+          } catch (exception) {
+            parseSupported = false;
+          }
+        }
+        isSupported = parseSupported;
+      }
+    }
+    return has[name] = !!isSupported;
+  }
+
+  if (!has("json")) {
+    // Common `[[Class]]` name aliases.
+    var functionClass = "[object Function]";
+    var dateClass = "[object Date]";
+    var numberClass = "[object Number]";
+    var stringClass = "[object String]";
+    var arrayClass = "[object Array]";
+    var booleanClass = "[object Boolean]";
+
+    // Detect incomplete support for accessing string characters by index.
+    var charIndexBuggy = has("bug-string-char-index");
+
+    // Define additional utility methods if the `Date` methods are buggy.
+    if (!isExtended) {
+      var floor = Math.floor;
+      // A mapping between the months of the year and the number of days between
+      // January 1st and the first of the respective month.
+      var Months = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+      // Internal: Calculates the number of days between the Unix epoch and the
+      // first day of the given month.
+      var getDay = function (year, month) {
+        return Months[month] + 365 * (year - 1970) + floor((year - 1969 + (month = +(month > 1))) / 4) - floor((year - 1901 + month) / 100) + floor((year - 1601 + month) / 400);
+      };
+    }
+
+    // Internal: Determines if a property is a direct property of the given
+    // object. Delegates to the native `Object#hasOwnProperty` method.
+    if (!(isProperty = {}.hasOwnProperty)) {
+      isProperty = function (property) {
+        var members = {}, constructor;
+        if ((members.__proto__ = null, members.__proto__ = {
+          // The *proto* property cannot be set multiple times in recent
+          // versions of Firefox and SeaMonkey.
+          "toString": 1
+        }, members).toString != getClass) {
+          // Safari <= 2.0.3 doesn't implement `Object#hasOwnProperty`, but
+          // supports the mutable *proto* property.
+          isProperty = function (property) {
+            // Capture and break the object's prototype chain (see section 8.6.2
+            // of the ES 5.1 spec). The parenthesized expression prevents an
+            // unsafe transformation by the Closure Compiler.
+            var original = this.__proto__, result = property in (this.__proto__ = null, this);
+            // Restore the original prototype chain.
+            this.__proto__ = original;
+            return result;
+          };
+        } else {
+          // Capture a reference to the top-level `Object` constructor.
+          constructor = members.constructor;
+          // Use the `constructor` property to simulate `Object#hasOwnProperty` in
+          // other environments.
+          isProperty = function (property) {
+            var parent = (this.constructor || constructor).prototype;
+            return property in this && !(property in parent && this[property] === parent[property]);
+          };
+        }
+        members = null;
+        return isProperty.call(this, property);
+      };
+    }
+
+    // Internal: A set of primitive types used by `isHostType`.
+    var PrimitiveTypes = {
+      'boolean': 1,
+      'number': 1,
+      'string': 1,
+      'undefined': 1
+    };
+
+    // Internal: Determines if the given object `property` value is a
+    // non-primitive.
+    var isHostType = function (object, property) {
+      var type = typeof object[property];
+      return type == 'object' ? !!object[property] : !PrimitiveTypes[type];
+    };
+
+    // Internal: Normalizes the `for...in` iteration algorithm across
+    // environments. Each enumerated key is yielded to a `callback` function.
+    forEach = function (object, callback) {
+      var size = 0, Properties, members, property;
+
+      // Tests for bugs in the current environment's `for...in` algorithm. The
+      // `valueOf` property inherits the non-enumerable flag from
+      // `Object.prototype` in older versions of IE, Netscape, and Mozilla.
+      (Properties = function () {
+        this.valueOf = 0;
+      }).prototype.valueOf = 0;
+
+      // Iterate over a new instance of the `Properties` class.
+      members = new Properties();
+      for (property in members) {
+        // Ignore all properties inherited from `Object.prototype`.
+        if (isProperty.call(members, property)) {
+          size++;
+        }
+      }
+      Properties = members = null;
+
+      // Normalize the iteration algorithm.
+      if (!size) {
+        // A list of non-enumerable properties inherited from `Object.prototype`.
+        members = ["valueOf", "toString", "toLocaleString", "propertyIsEnumerable", "isPrototypeOf", "hasOwnProperty", "constructor"];
+        // IE <= 8, Mozilla 1.0, and Netscape 6.2 ignore shadowed non-enumerable
+        // properties.
+        forEach = function (object, callback) {
+          var isFunction = getClass.call(object) == functionClass, property, length;
+          var hasProperty = !isFunction && typeof object.constructor != 'function' && isHostType(object, 'hasOwnProperty') ? object.hasOwnProperty : isProperty;
+          for (property in object) {
+            // Gecko <= 1.0 enumerates the `prototype` property of functions under
+            // certain conditions; IE does not.
+            if (!(isFunction && property == "prototype") && hasProperty.call(object, property)) {
+              callback(property);
+            }
+          }
+          // Manually invoke the callback for each non-enumerable property.
+          for (length = members.length; property = members[--length]; hasProperty.call(object, property) && callback(property));
+        };
+      } else if (size == 2) {
+        // Safari <= 2.0.4 enumerates shadowed properties twice.
+        forEach = function (object, callback) {
+          // Create a set of iterated properties.
+          var members = {}, isFunction = getClass.call(object) == functionClass, property;
+          for (property in object) {
+            // Store each property name to prevent double enumeration. The
+            // `prototype` property of functions is not enumerated due to cross-
+            // environment inconsistencies.
+            if (!(isFunction && property == "prototype") && !isProperty.call(members, property) && (members[property] = 1) && isProperty.call(object, property)) {
+              callback(property);
+            }
+          }
+        };
+      } else {
+        // No bugs detected; use the standard `for...in` algorithm.
+        forEach = function (object, callback) {
+          var isFunction = getClass.call(object) == functionClass, property, isConstructor;
+          for (property in object) {
+            if (!(isFunction && property == "prototype") && isProperty.call(object, property) && !(isConstructor = property === "constructor")) {
+              callback(property);
+            }
+          }
+          // Manually invoke the callback for the `constructor` property due to
+          // cross-environment inconsistencies.
+          if (isConstructor || isProperty.call(object, (property = "constructor"))) {
+            callback(property);
+          }
+        };
+      }
+      return forEach(object, callback);
+    };
+
+    // Public: Serializes a JavaScript `value` as a JSON string. The optional
+    // `filter` argument may specify either a function that alters how object and
+    // array members are serialized, or an array of strings and numbers that
+    // indicates which properties should be serialized. The optional `width`
+    // argument may be either a string or number that specifies the indentation
+    // level of the output.
+    if (!has("json-stringify")) {
+      // Internal: A map of control characters and their escaped equivalents.
+      var Escapes = {
+        92: "\\\\",
+        34: '\\"',
+        8: "\\b",
+        12: "\\f",
+        10: "\\n",
+        13: "\\r",
+        9: "\\t"
+      };
+
+      // Internal: Converts `value` into a zero-padded string such that its
+      // length is at least equal to `width`. The `width` must be <= 6.
+      var leadingZeroes = "000000";
+      var toPaddedString = function (width, value) {
+        // The `|| 0` expression is necessary to work around a bug in
+        // Opera <= 7.54u2 where `0 == -0`, but `String(-0) !== "0"`.
+        return (leadingZeroes + (value || 0)).slice(-width);
+      };
+
+      // Internal: Double-quotes a string `value`, replacing all ASCII control
+      // characters (characters with code unit values between 0 and 31) with
+      // their escaped equivalents. This is an implementation of the
+      // `Quote(value)` operation defined in ES 5.1 section 15.12.3.
+      var unicodePrefix = "\\u00";
+      var quote = function (value) {
+        var result = '"', index = 0, length = value.length, isLarge = length > 10 && charIndexBuggy, symbols;
+        if (isLarge) {
+          symbols = value.split("");
+        }
+        for (; index < length; index++) {
+          var charCode = value.charCodeAt(index);
+          // If the character is a control character, append its Unicode or
+          // shorthand escape sequence; otherwise, append the character as-is.
+          switch (charCode) {
+            case 8: case 9: case 10: case 12: case 13: case 34: case 92:
+              result += Escapes[charCode];
+              break;
+            default:
+              if (charCode < 32) {
+                result += unicodePrefix + toPaddedString(2, charCode.toString(16));
+                break;
+              }
+              result += isLarge ? symbols[index] : charIndexBuggy ? value.charAt(index) : value[index];
+          }
+        }
+        return result + '"';
+      };
+
+      // Internal: Recursively serializes an object. Implements the
+      // `Str(key, holder)`, `JO(value)`, and `JA(value)` operations.
+      var serialize = function (property, object, callback, properties, whitespace, indentation, stack) {
+        var value, className, year, month, date, time, hours, minutes, seconds, milliseconds, results, element, index, length, prefix, result;
+        try {
+          // Necessary for host object support.
+          value = object[property];
+        } catch (exception) {}
+        if (typeof value == "object" && value) {
+          className = getClass.call(value);
+          if (className == dateClass && !isProperty.call(value, "toJSON")) {
+            if (value > -1 / 0 && value < 1 / 0) {
+              // Dates are serialized according to the `Date#toJSON` method
+              // specified in ES 5.1 section 15.9.5.44. See section 15.9.1.15
+              // for the ISO 8601 date time string format.
+              if (getDay) {
+                // Manually compute the year, month, date, hours, minutes,
+                // seconds, and milliseconds if the `getUTC*` methods are
+                // buggy. Adapted from @Yaffle's `date-shim` project.
+                date = floor(value / 864e5);
+                for (year = floor(date / 365.2425) + 1970 - 1; getDay(year + 1, 0) <= date; year++);
+                for (month = floor((date - getDay(year, 0)) / 30.42); getDay(year, month + 1) <= date; month++);
+                date = 1 + date - getDay(year, month);
+                // The `time` value specifies the time within the day (see ES
+                // 5.1 section 15.9.1.2). The formula `(A % B + B) % B` is used
+                // to compute `A modulo B`, as the `%` operator does not
+                // correspond to the `modulo` operation for negative numbers.
+                time = (value % 864e5 + 864e5) % 864e5;
+                // The hours, minutes, seconds, and milliseconds are obtained by
+                // decomposing the time within the day. See section 15.9.1.10.
+                hours = floor(time / 36e5) % 24;
+                minutes = floor(time / 6e4) % 60;
+                seconds = floor(time / 1e3) % 60;
+                milliseconds = time % 1e3;
+              } else {
+                year = value.getUTCFullYear();
+                month = value.getUTCMonth();
+                date = value.getUTCDate();
+                hours = value.getUTCHours();
+                minutes = value.getUTCMinutes();
+                seconds = value.getUTCSeconds();
+                milliseconds = value.getUTCMilliseconds();
+              }
+              // Serialize extended years correctly.
+              value = (year <= 0 || year >= 1e4 ? (year < 0 ? "-" : "+") + toPaddedString(6, year < 0 ? -year : year) : toPaddedString(4, year)) +
+                "-" + toPaddedString(2, month + 1) + "-" + toPaddedString(2, date) +
+                // Months, dates, hours, minutes, and seconds should have two
+                // digits; milliseconds should have three.
+                "T" + toPaddedString(2, hours) + ":" + toPaddedString(2, minutes) + ":" + toPaddedString(2, seconds) +
+                // Milliseconds are optional in ES 5.0, but required in 5.1.
+                "." + toPaddedString(3, milliseconds) + "Z";
+            } else {
+              value = null;
+            }
+          } else if (typeof value.toJSON == "function" && ((className != numberClass && className != stringClass && className != arrayClass) || isProperty.call(value, "toJSON"))) {
+            // Prototype <= 1.6.1 adds non-standard `toJSON` methods to the
+            // `Number`, `String`, `Date`, and `Array` prototypes. JSON 3
+            // ignores all `toJSON` methods on these objects unless they are
+            // defined directly on an instance.
+            value = value.toJSON(property);
+          }
+        }
+        if (callback) {
+          // If a replacement function was provided, call it to obtain the value
+          // for serialization.
+          value = callback.call(object, property, value);
+        }
+        if (value === null) {
+          return "null";
+        }
+        className = getClass.call(value);
+        if (className == booleanClass) {
+          // Booleans are represented literally.
+          return "" + value;
+        } else if (className == numberClass) {
+          // JSON numbers must be finite. `Infinity` and `NaN` are serialized as
+          // `"null"`.
+          return value > -1 / 0 && value < 1 / 0 ? "" + value : "null";
+        } else if (className == stringClass) {
+          // Strings are double-quoted and escaped.
+          return quote("" + value);
+        }
+        // Recursively serialize objects and arrays.
+        if (typeof value == "object") {
+          // Check for cyclic structures. This is a linear search; performance
+          // is inversely proportional to the number of unique nested objects.
+          for (length = stack.length; length--;) {
+            if (stack[length] === value) {
+              // Cyclic structures cannot be serialized by `JSON.stringify`.
+              throw TypeError();
+            }
+          }
+          // Add the object to the stack of traversed objects.
+          stack.push(value);
+          results = [];
+          // Save the current indentation level and indent one additional level.
+          prefix = indentation;
+          indentation += whitespace;
+          if (className == arrayClass) {
+            // Recursively serialize array elements.
+            for (index = 0, length = value.length; index < length; index++) {
+              element = serialize(index, value, callback, properties, whitespace, indentation, stack);
+              results.push(element === undef ? "null" : element);
+            }
+            result = results.length ? (whitespace ? "[\n" + indentation + results.join(",\n" + indentation) + "\n" + prefix + "]" : ("[" + results.join(",") + "]")) : "[]";
+          } else {
+            // Recursively serialize object members. Members are selected from
+            // either a user-specified list of property names, or the object
+            // itself.
+            forEach(properties || value, function (property) {
+              var element = serialize(property, value, callback, properties, whitespace, indentation, stack);
+              if (element !== undef) {
+                // According to ES 5.1 section 15.12.3: "If `gap` {whitespace}
+                // is not the empty string, let `member` {quote(property) + ":"}
+                // be the concatenation of `member` and the `space` character."
+                // The "`space` character" refers to the literal space
+                // character, not the `space` {width} argument provided to
+                // `JSON.stringify`.
+                results.push(quote(property) + ":" + (whitespace ? " " : "") + element);
+              }
+            });
+            result = results.length ? (whitespace ? "{\n" + indentation + results.join(",\n" + indentation) + "\n" + prefix + "}" : ("{" + results.join(",") + "}")) : "{}";
+          }
+          // Remove the object from the traversed object stack.
+          stack.pop();
+          return result;
+        }
+      };
+
+      // Public: `JSON.stringify`. See ES 5.1 section 15.12.3.
+      JSON3.stringify = function (source, filter, width) {
+        var whitespace, callback, properties, className;
+        if (typeof filter == "function" || typeof filter == "object" && filter) {
+          if ((className = getClass.call(filter)) == functionClass) {
+            callback = filter;
+          } else if (className == arrayClass) {
+            // Convert the property names array into a makeshift set.
+            properties = {};
+            for (var index = 0, length = filter.length, value; index < length; value = filter[index++], ((className = getClass.call(value)), className == stringClass || className == numberClass) && (properties[value] = 1));
+          }
+        }
+        if (width) {
+          if ((className = getClass.call(width)) == numberClass) {
+            // Convert the `width` to an integer and create a string containing
+            // `width` number of space characters.
+            if ((width -= width % 1) > 0) {
+              for (whitespace = "", width > 10 && (width = 10); whitespace.length < width; whitespace += " ");
+            }
+          } else if (className == stringClass) {
+            whitespace = width.length <= 10 ? width : width.slice(0, 10);
+          }
+        }
+        // Opera <= 7.54u2 discards the values associated with empty string keys
+        // (`""`) only if they are used directly within an object member list
+        // (e.g., `!("" in { "": 1})`).
+        return serialize("", (value = {}, value[""] = source, value), callback, properties, whitespace, "", []);
+      };
+    }
+
+    // Public: Parses a JSON source string.
+    if (!has("json-parse")) {
+      var fromCharCode = String.fromCharCode;
+
+      // Internal: A map of escaped control characters and their unescaped
+      // equivalents.
+      var Unescapes = {
+        92: "\\",
+        34: '"',
+        47: "/",
+        98: "\b",
+        116: "\t",
+        110: "\n",
+        102: "\f",
+        114: "\r"
+      };
+
+      // Internal: Stores the parser state.
+      var Index, Source;
+
+      // Internal: Resets the parser state and throws a `SyntaxError`.
+      var abort = function() {
+        Index = Source = null;
+        throw SyntaxError();
+      };
+
+      // Internal: Returns the next token, or `"$"` if the parser has reached
+      // the end of the source string. A token may be a string, number, `null`
+      // literal, or Boolean literal.
+      var lex = function () {
+        var source = Source, length = source.length, value, begin, position, isSigned, charCode;
+        while (Index < length) {
+          charCode = source.charCodeAt(Index);
+          switch (charCode) {
+            case 9: case 10: case 13: case 32:
+              // Skip whitespace tokens, including tabs, carriage returns, line
+              // feeds, and space characters.
+              Index++;
+              break;
+            case 123: case 125: case 91: case 93: case 58: case 44:
+              // Parse a punctuator token (`{`, `}`, `[`, `]`, `:`, or `,`) at
+              // the current position.
+              value = charIndexBuggy ? source.charAt(Index) : source[Index];
+              Index++;
+              return value;
+            case 34:
+              // `"` delimits a JSON string; advance to the next character and
+              // begin parsing the string. String tokens are prefixed with the
+              // sentinel `@` character to distinguish them from punctuators and
+              // end-of-string tokens.
+              for (value = "@", Index++; Index < length;) {
+                charCode = source.charCodeAt(Index);
+                if (charCode < 32) {
+                  // Unescaped ASCII control characters (those with a code unit
+                  // less than the space character) are not permitted.
+                  abort();
+                } else if (charCode == 92) {
+                  // A reverse solidus (`\`) marks the beginning of an escaped
+                  // control character (including `"`, `\`, and `/`) or Unicode
+                  // escape sequence.
+                  charCode = source.charCodeAt(++Index);
+                  switch (charCode) {
+                    case 92: case 34: case 47: case 98: case 116: case 110: case 102: case 114:
+                      // Revive escaped control characters.
+                      value += Unescapes[charCode];
+                      Index++;
+                      break;
+                    case 117:
+                      // `\u` marks the beginning of a Unicode escape sequence.
+                      // Advance to the first character and validate the
+                      // four-digit code point.
+                      begin = ++Index;
+                      for (position = Index + 4; Index < position; Index++) {
+                        charCode = source.charCodeAt(Index);
+                        // A valid sequence comprises four hexdigits (case-
+                        // insensitive) that form a single hexadecimal value.
+                        if (!(charCode >= 48 && charCode <= 57 || charCode >= 97 && charCode <= 102 || charCode >= 65 && charCode <= 70)) {
+                          // Invalid Unicode escape sequence.
+                          abort();
+                        }
+                      }
+                      // Revive the escaped character.
+                      value += fromCharCode("0x" + source.slice(begin, Index));
+                      break;
+                    default:
+                      // Invalid escape sequence.
+                      abort();
+                  }
+                } else {
+                  if (charCode == 34) {
+                    // An unescaped double-quote character marks the end of the
+                    // string.
+                    break;
+                  }
+                  charCode = source.charCodeAt(Index);
+                  begin = Index;
+                  // Optimize for the common case where a string is valid.
+                  while (charCode >= 32 && charCode != 92 && charCode != 34) {
+                    charCode = source.charCodeAt(++Index);
+                  }
+                  // Append the string as-is.
+                  value += source.slice(begin, Index);
+                }
+              }
+              if (source.charCodeAt(Index) == 34) {
+                // Advance to the next character and return the revived string.
+                Index++;
+                return value;
+              }
+              // Unterminated string.
+              abort();
+            default:
+              // Parse numbers and literals.
+              begin = Index;
+              // Advance past the negative sign, if one is specified.
+              if (charCode == 45) {
+                isSigned = true;
+                charCode = source.charCodeAt(++Index);
+              }
+              // Parse an integer or floating-point value.
+              if (charCode >= 48 && charCode <= 57) {
+                // Leading zeroes are interpreted as octal literals.
+                if (charCode == 48 && ((charCode = source.charCodeAt(Index + 1)), charCode >= 48 && charCode <= 57)) {
+                  // Illegal octal literal.
+                  abort();
+                }
+                isSigned = false;
+                // Parse the integer component.
+                for (; Index < length && ((charCode = source.charCodeAt(Index)), charCode >= 48 && charCode <= 57); Index++);
+                // Floats cannot contain a leading decimal point; however, this
+                // case is already accounted for by the parser.
+                if (source.charCodeAt(Index) == 46) {
+                  position = ++Index;
+                  // Parse the decimal component.
+                  for (; position < length && ((charCode = source.charCodeAt(position)), charCode >= 48 && charCode <= 57); position++);
+                  if (position == Index) {
+                    // Illegal trailing decimal.
+                    abort();
+                  }
+                  Index = position;
+                }
+                // Parse exponents. The `e` denoting the exponent is
+                // case-insensitive.
+                charCode = source.charCodeAt(Index);
+                if (charCode == 101 || charCode == 69) {
+                  charCode = source.charCodeAt(++Index);
+                  // Skip past the sign following the exponent, if one is
+                  // specified.
+                  if (charCode == 43 || charCode == 45) {
+                    Index++;
+                  }
+                  // Parse the exponential component.
+                  for (position = Index; position < length && ((charCode = source.charCodeAt(position)), charCode >= 48 && charCode <= 57); position++);
+                  if (position == Index) {
+                    // Illegal empty exponent.
+                    abort();
+                  }
+                  Index = position;
+                }
+                // Coerce the parsed value to a JavaScript number.
+                return +source.slice(begin, Index);
+              }
+              // A negative sign may only precede numbers.
+              if (isSigned) {
+                abort();
+              }
+              // `true`, `false`, and `null` literals.
+              if (source.slice(Index, Index + 4) == "true") {
+                Index += 4;
+                return true;
+              } else if (source.slice(Index, Index + 5) == "false") {
+                Index += 5;
+                return false;
+              } else if (source.slice(Index, Index + 4) == "null") {
+                Index += 4;
+                return null;
+              }
+              // Unrecognized token.
+              abort();
+          }
+        }
+        // Return the sentinel `$` character if the parser has reached the end
+        // of the source string.
+        return "$";
+      };
+
+      // Internal: Parses a JSON `value` token.
+      var get = function (value) {
+        var results, hasMembers;
+        if (value == "$") {
+          // Unexpected end of input.
+          abort();
+        }
+        if (typeof value == "string") {
+          if ((charIndexBuggy ? value.charAt(0) : value[0]) == "@") {
+            // Remove the sentinel `@` character.
+            return value.slice(1);
+          }
+          // Parse object and array literals.
+          if (value == "[") {
+            // Parses a JSON array, returning a new JavaScript array.
+            results = [];
+            for (;; hasMembers || (hasMembers = true)) {
+              value = lex();
+              // A closing square bracket marks the end of the array literal.
+              if (value == "]") {
+                break;
+              }
+              // If the array literal contains elements, the current token
+              // should be a comma separating the previous element from the
+              // next.
+              if (hasMembers) {
+                if (value == ",") {
+                  value = lex();
+                  if (value == "]") {
+                    // Unexpected trailing `,` in array literal.
+                    abort();
+                  }
+                } else {
+                  // A `,` must separate each array element.
+                  abort();
+                }
+              }
+              // Elisions and leading commas are not permitted.
+              if (value == ",") {
+                abort();
+              }
+              results.push(get(value));
+            }
+            return results;
+          } else if (value == "{") {
+            // Parses a JSON object, returning a new JavaScript object.
+            results = {};
+            for (;; hasMembers || (hasMembers = true)) {
+              value = lex();
+              // A closing curly brace marks the end of the object literal.
+              if (value == "}") {
+                break;
+              }
+              // If the object literal contains members, the current token
+              // should be a comma separator.
+              if (hasMembers) {
+                if (value == ",") {
+                  value = lex();
+                  if (value == "}") {
+                    // Unexpected trailing `,` in object literal.
+                    abort();
+                  }
+                } else {
+                  // A `,` must separate each object member.
+                  abort();
+                }
+              }
+              // Leading commas are not permitted, object property names must be
+              // double-quoted strings, and a `:` must separate each property
+              // name and value.
+              if (value == "," || typeof value != "string" || (charIndexBuggy ? value.charAt(0) : value[0]) != "@" || lex() != ":") {
+                abort();
+              }
+              results[value.slice(1)] = get(lex());
+            }
+            return results;
+          }
+          // Unexpected token encountered.
+          abort();
+        }
+        return value;
+      };
+
+      // Internal: Updates a traversed object member.
+      var update = function(source, property, callback) {
+        var element = walk(source, property, callback);
+        if (element === undef) {
+          delete source[property];
+        } else {
+          source[property] = element;
+        }
+      };
+
+      // Internal: Recursively traverses a parsed JSON object, invoking the
+      // `callback` function for each value. This is an implementation of the
+      // `Walk(holder, name)` operation defined in ES 5.1 section 15.12.2.
+      var walk = function (source, property, callback) {
+        var value = source[property], length;
+        if (typeof value == "object" && value) {
+          // `forEach` can't be used to traverse an array in Opera <= 8.54
+          // because its `Object#hasOwnProperty` implementation returns `false`
+          // for array indices (e.g., `![1, 2, 3].hasOwnProperty("0")`).
+          if (getClass.call(value) == arrayClass) {
+            for (length = value.length; length--;) {
+              update(value, length, callback);
+            }
+          } else {
+            forEach(value, function (property) {
+              update(value, property, callback);
+            });
+          }
+        }
+        return callback.call(source, property, value);
+      };
+
+      // Public: `JSON.parse`. See ES 5.1 section 15.12.2.
+      JSON3.parse = function (source, callback) {
+        var result, value;
+        Index = 0;
+        Source = "" + source;
+        result = get(lex());
+        // If a JSON string contains multiple tokens, it is invalid.
+        if (lex() != "$") {
+          abort();
+        }
+        // Reset the parser state.
+        Index = Source = null;
+        return callback && getClass.call(callback) == functionClass ? walk((value = {}, value[""] = result, value), "", callback) : result;
+      };
+    }
+  }
+
+  // Export for asynchronous module loaders.
+  if (isLoader) {
+    define(function () {
+      return JSON3;
+    });
+  }
+}(this));
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/json3/lib/json3.js","/../../node_modules/socket.io-client/node_modules/socket.io-parser/node_modules/json3/lib")
+},{"buffer":18,"oMfpAn":21}],423:[function(require,module,exports){
+(function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
+module.exports = toArray
+
+function toArray(list, index) {
+    var array = []
+
+    index = index || 0
+
+    for (var i = index || 0; i < list.length; i++) {
+        array[i - index] = list[i]
+    }
+
+    return array
+}
+
+}).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/socket.io-client/node_modules/to-array/index.js","/../../node_modules/socket.io-client/node_modules/to-array")
+},{"buffer":18,"oMfpAn":21}],424:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 /**
  * Module dependencies.
@@ -50917,7 +55974,7 @@ request.put = function(url, data, fn){
 module.exports = request;
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/superagent/lib/client.js","/../../node_modules/superagent/lib")
-},{"buffer":14,"emitter":375,"oMfpAn":17,"reduce":376}],375:[function(require,module,exports){
+},{"buffer":18,"emitter":425,"oMfpAn":21,"reduce":426}],425:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 
 /**
@@ -51085,7 +56142,7 @@ Emitter.prototype.hasListeners = function(event){
 };
 
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/superagent/node_modules/component-emitter/index.js","/../../node_modules/superagent/node_modules/component-emitter")
-},{"buffer":14,"oMfpAn":17}],376:[function(require,module,exports){
+},{"buffer":18,"oMfpAn":21}],426:[function(require,module,exports){
 (function (process,global,Buffer,__argument0,__argument1,__argument2,__argument3,__filename,__dirname){
 
 /**
@@ -51112,4 +56169,4 @@ module.exports = function(arr, fn, initial){
   return curr;
 };
 }).call(this,require("oMfpAn"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer,arguments[3],arguments[4],arguments[5],arguments[6],"/../../node_modules/superagent/node_modules/reduce-component/index.js","/../../node_modules/superagent/node_modules/reduce-component")
-},{"buffer":14,"oMfpAn":17}]},{},[5])
+},{"buffer":18,"oMfpAn":21}]},{},[5])
