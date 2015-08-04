@@ -21,11 +21,11 @@ Making teaching as easy as learning
 
 #### Libraries:
 
-1. [Cordova](https://github.com/apache/cordova-js)
-2. [Material-UI](https://github.com/callemall/material-ui)
-3. [Material Design Icons](https://github.com/templarian/MaterialDesign/)
-4. [React](https://github.com/facebook/react)
-5. [React Router](https://github.com/rackt/react-router)
-6. [React-YouTube](https://github.com/compedit/react-youtube)
-7. [Socket.IO](https://github.com/socketio/socket.io-client)
-8. [Superagent](https://github.com/visionmedia/superagent)
+* [Cordova](https://github.com/apache/cordova-js)
+* [Material-UI](https://github.com/callemall/material-ui)
+* [Material Design Icons](https://github.com/templarian/MaterialDesign/)
+* [React](https://github.com/facebook/react)
+* [React Router](https://github.com/rackt/react-router)
+* [React-YouTube](https://github.com/compedit/react-youtube)
+* [Socket.IO](https://github.com/socketio/socket.io-client)
+* [Superagent](https://github.com/visionmedia/superagent)

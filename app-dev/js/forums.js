@@ -5,29 +5,22 @@ var React = require('react'),
     superagent = require('superagent'),
     TopicNormal = require('./topicNormal.js'),
     Loader = require('./loader.js'),
+    LazyRender = require('react-lazy-render'),
 
     List = mui.List,
+    ListItem = mui.ListItem,
     IconButton = mui.IconButton
+
+var topics = []
 
 var Forums = React.createClass({
     mixins: [material, Router.Navigation],
 
-    handleTouch: function(topic) {
-        localStorage.setItem('lectureTopicTitle', topic.topic)
-        localStorage.setItem('lectureTopicDesc', topic.description)
-        this.transitionTo('generalTopic', {topicId: topic.tid})
-        console.log(topic)
-    },
     newForum: function(){
         localStorage.setItem('topicId', '1')
         this.transitionTo('newGeneralForum')
     },
 
-    getInitialState: function(){
-        return {
-            topics: [{data: 'null'}]
-        }
-    },
     componentDidMount: function() {
         var self = this
         self.refs.loader.showLoader()
@@ -39,19 +32,18 @@ var Forums = React.createClass({
             .end(function(err, res){
                 self.refs.loader.hideLoader()
                 if(err){
-                    superagent.abort()
                     if(err.timeout==10000)
-                        console.log('Timeout')
+                        self.transitionTo('offline')
                 }
-                else if(res.body[0].data != "null")
-                    self.setState({
-                        topics: res.body
-                    })
-                else
-                    self.setState({
-                        topics: 'Nothing to show'
-                    })
+                else{
+                    topics = res.body
+                    self.forceUpdate()
+                }
             })
+    },
+    shouldComponentUpdate: function(nextProps, nextState) {
+        console.log(this.state.topics, nextState.topics)
+        return nextState.topics != this.state.topics;
     },
     render: function(){
         var self = this,
@@ -63,28 +55,25 @@ var Forums = React.createClass({
             borderRadius: '50%',
             boxShadow: '0px 0px 5px #727272'
         }
+
+        // <List style={{paddingLeft: '20px', paddingBottom: '100px'}}>
         return (
             <div style={{height: '70vh', overflowY: 'scroll'}}>
-            <List style={{paddingLeft: '20px', paddingBottom: '100px'}}>
-                {
-                    (this.state.topics[0].data == 'null')
-                    ? <div style={{paddingTop: '20px', textAlign: 'center', fontFamily: 'RobotoRegular'}}>No forums available</div>
-                    : self.state.topics.map(function(element, index){
-                        return (
-                            <div>
-                                <TopicNormal text={element.topic} onTouchTap={self.handleTouch.bind(this, element)} replies={element.numPosts}/>
-                            </div>
-                        )
-                    })
-
-                }
-            </List>
-            <Loader ref="loader" />
-            <IconButton
-                onTouchTap={this.newForum}
-                iconStyle={{color: 'white'}}
-                style={FABStyle}
-                iconClassName="mdi mdi-plus" />
+                <List style={{paddingLeft: '20px', paddingBottom: '100px'}}>
+                    {
+                        topics.map(function(element, index) {
+                            return (
+                                <TopicNormal data={element} />
+                            )
+                        })
+                    }
+                </List>
+                <Loader ref="loader" />
+                <IconButton
+                    onTouchTap={this.newForum}
+                    iconStyle={{color: 'white'}}
+                    style={FABStyle}
+                    iconClassName="mdi mdi-plus" />
             </div>
         )
     }

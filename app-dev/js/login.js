@@ -49,6 +49,7 @@ module.exports = React.createClass({
                 else {
                     localStorage.setItem('token', res.body.token);
                     localStorage.setItem('uid', res.body.uid);
+                    localStorage.setItem('selectedTab', 1)
                     self.transitionTo('lectures')
                 }
             })

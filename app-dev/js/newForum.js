@@ -32,7 +32,7 @@ var newTopicForum = React.createClass({
                .end(function(err, res){
                    if(err){
                        if(err.timeout==10000)
-                           console.log('Timeout')
+                           self.transitionTo('offline')
                    }
                    else{
                        this.goBack()

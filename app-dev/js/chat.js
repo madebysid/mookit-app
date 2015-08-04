@@ -1,6 +1,7 @@
 var React = require('react'),
     material = require('./material.js'),
     mui = require('material-ui'),
+    Router = require('react-router'),
     superagent = require('superagent'),
     socket = require('socket.io-client'),
     io = socket.connect(localStorage.getItem('mainUrl')),
@@ -109,6 +110,7 @@ var Outgoing = React.createClass({
 })
 
 var ChatContainer = React.createClass({
+    mixins: [Router.Navigation],
 
     loadPrevious: function(){
         var self = this
@@ -123,7 +125,7 @@ var ChatContainer = React.createClass({
                 self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        console.log('Timeout')
+                        self.transitionTo('offline')
                 }
                 else{
                     newChat = res.body.reverse().concat(self.state.chats)
@@ -157,7 +159,7 @@ var ChatContainer = React.createClass({
                 self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        console.log('Timeout')
+                        self.transitionTo('offline')
                 }
                 else{
                     self.setState({

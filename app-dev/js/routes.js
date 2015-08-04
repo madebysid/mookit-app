@@ -11,13 +11,13 @@ var React = require('react'),
     ExpandedTopic = require('./topicExpanded.js'),
     newForum = require('./newForum.js'),
     Resources = require('./resources.js'),
-    Loader = require('./loader.js')
+    Offline = require('./offline.js')
 
 var routes = (
     <Route>
 
         <Route name="login" path="/" handler={Login}></Route>
-        <Route name="loader" path="/loader" handler={Loader}></Route>
+        <Route name="offline" path="/offline" handler={Offline}></Route>
 
         <Route handler={App}>
             <Route name="home" path="course" handler={Course}>

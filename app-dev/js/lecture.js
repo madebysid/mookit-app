@@ -20,7 +20,6 @@ var Lecture = React.createClass({
         localStorage.setItem('lectureTopicTitle', topic.lectureTitle)
         localStorage.setItem('lectureTopicDesc', topic.description)
         this.transitionTo('lectureTopic', {lectureId: this.getParams().lectureId, topicId: topic.tid})
-        // console.log(topic)
     },
     newForum: function(){
         localStorage.setItem('topicId', this.getParams().lectureId)
@@ -47,7 +46,7 @@ var Lecture = React.createClass({
                 if(err){
                     superagent.abort()
                     if(err.timeout==10000)
-                        console.log('Timeout')
+                        self.transitionTo('offline')
                 }
                 else {
                     if(res.body[0].data != "null")
@@ -111,7 +110,8 @@ var Lecture = React.createClass({
                         self.state.topics.map(function(element, index){
                             return (
                                 <div>
-                                    <TopicNormal text={element.topic} onTouchTap={self.handleTouch.bind(this, element)} replies={element.numPosts}/>
+                                    <TopicNormal
+                                        data={element}/>
                                 </div>
                             )
                         })

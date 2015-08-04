@@ -12,6 +12,12 @@ var Course = React.createClass({
 
     activeTab: function(tab){
         this.transitionTo(tab.props.label.toLowerCase())
+        if (tab.props.label.toLowerCase() == 'forums')
+            localStorage.setItem('selectedTab', '0')
+        if (tab.props.label.toLowerCase() == 'lectures')
+            localStorage.setItem('selectedTab', '1')
+        if (tab.props.label.toLowerCase() == 'resources')
+            localStorage.setItem('selectedTab', '2')
     },
 
     render: function(){
@@ -42,7 +48,7 @@ var Course = React.createClass({
                     {localStorage.getItem('courseTitle')}
                 </div>
 
-                <Tabs tabItemContainerStyle={TabStyle} initialSelectedIndex={1}>
+                <Tabs tabItemContainerStyle={TabStyle} initialSelectedIndex={parseInt(localStorage.getItem('selectedTab'))}>
                     <Tab onActive={this.activeTab} style={TabInsideStyle} label="FORUMS" >
                         <div>
                             <div style={ExtraDivStyle}></div>

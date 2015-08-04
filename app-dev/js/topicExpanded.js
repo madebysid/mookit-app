@@ -12,7 +12,7 @@ var React = require('react'),
     TextField = mui.TextField
 
 var TopicExpanded = React.createClass({
-    mixins: [Router.State],
+    mixins: [Router.State, Router.Navigation],
 
     fetch: function(){
         var self = this
@@ -27,7 +27,7 @@ var TopicExpanded = React.createClass({
                 self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000){
-                        console.log('Timeout')
+                        self.transitionTo('offline')
                     }
                 }
                 else{

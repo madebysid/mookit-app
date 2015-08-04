@@ -3,6 +3,7 @@ var React = require('react'),
     mui = require('material-ui'),
     superagent = require('superagent'),
     Loader = require('./loader.js'),
+    Router = require('react-router'),
 
     IconButton = mui.IconButton,
     ListItem = mui.ListItem,
@@ -10,6 +11,7 @@ var React = require('react'),
     Avatar = mui.Avatar
 
 var NotificationContainer = React.createClass({
+    mixins: [Router.Navigation],
 
     getInitialState: function(){
         return {
@@ -28,7 +30,7 @@ var NotificationContainer = React.createClass({
                 self.refs.loader.hideLoader()
                 if(err){
                     if(err.timeout==10000)
-                        console.log('Timeout')
+                        self.transitionTo('offline')
                 }
                 else{
                     self.setState({

@@ -1,4 +1,4 @@
-var React = require('react'),
+var React = require('react/addons'),
     material = require('./material.js'),
     mui = require('material-ui'),
     superagent = require('superagent'),
@@ -6,6 +6,7 @@ var React = require('react'),
     Gems = require('./gems.js'),
     RouteHandler = Router.RouteHandler,
     Route = Router.Route,
+    CSSTransitionGroup = React.addons.CSSTransitionGroup,
 
     AppBar = mui.AppBar,
     Dialog = mui.Dialog
@@ -59,7 +60,10 @@ var App = React.createClass({
                     actions={confirmActions}>
                 Are you sure you want to log out?
                 </Dialog>
-                <RouteHandler />
+
+                <CSSTransitionGroup transitionName="newPage">
+                    <RouteHandler />
+                </CSSTransitionGroup>
             </div>
         )
     }

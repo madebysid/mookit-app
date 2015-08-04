@@ -3,6 +3,7 @@ var React = require('react/addons'),
     material = require('./material.js'),
     superagent = require('superagent'),
     Loader = require('./loader.js'),
+    Router = require('react-router'),
 
     IconButton = mui.IconButton,
     CircularProgress = mui.CircularProgress,
@@ -12,6 +13,7 @@ var React = require('react/addons'),
     Avatar = mui.Avatar
 
 var Resources = React.createClass({
+    mixins: [Router.Navigation],
 
     getInitialState: function(){
         return {
@@ -31,7 +33,7 @@ var Resources = React.createClass({
                 if(err){
                     superagent.abort()
                     if(err.timeout==10000)
-                        console.log('Timeout')
+                        self.transitionTo('offline')
                 }
                 else{
                     self.setState({

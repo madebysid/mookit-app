@@ -58,6 +58,7 @@ gulp.task('default', function(){
 
 //Build tasks
 gulp.task('build-config-check', function(){
+    process.env.NODE_ENV = 'production';
     gulp.src('./buildConfig.json')
         .pipe(jeditor(function(json) {
             json.title = config.appName.replace(/ /g,'').toLowerCase()
@@ -99,10 +100,11 @@ gulp.task('build-apk', ['build-compile'], function(){
                     'mkdir resources &&' +
                     'cp ../resources/*.* ./resources && ' +
                     'ionic resources &&' +
+                    'cordova plugin add cordova-plugin-crosswalk-webview && ' +
                     'cordova build && ' +
-                    'cp ./platforms/android/build/outputs/apk/android-debug.apk ../ && ' +
+                    'cp ./platforms/android/build/outputs/apk/android-armv7-debug.apk ../ && ' +
                     'cd .. && ' +
-                    'mv ./android-debug.apk ./"' + config.appName + '".apk && ' +
+                    'mv ./android-armv7-debug.apk ./"' + config.appName + '".apk && ' +
                     'rm -r ./"' + config.title + '" && ' +
                     'echo -------------------------ALL DONE------------------------- &&' +
                     'echo Thank you for using the build tool. &&' +

@@ -210,8 +210,8 @@ var Lectures = React.createClass({
             .end(function(err, res) {
                 self.refs.loader.hideLoader()
                 if(err) {
-                    if(err.timeout == 10000)
-                        console.log('Timeout')
+                    if(err.timeout == 10000) {}
+                        self.transitionTo('offline')
                 }
                 else {
                     self.setState({
