@@ -1,0 +1,88 @@
+@font-face{
+    font-family: 'RobotoBold';
+    src: url('fonts/Roboto-Bold.ttf')
+}
+
+@font-face{
+    font-family: 'RobotoLight';
+    src: url('fonts/Roboto-Light.ttf')
+}
+
+@font-face{
+    font-family: 'RobotoRegular';
+    src: url('fonts/Roboto-Regular.ttf')
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    font-family: 'RobotoLight';
+    overflow: hidden;
+    outline: 0;
+}
+
+/*
+    ANIMATIONS
+*/
+
+.newPage-enter {
+    animation: newPage 0.3s;
+}
+
+@keyframes newPage {
+    0%{
+        opacity: 0;
+        transform: translateY(10vh);
+    }
+    100%{
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes newPage {
+    0%{
+        opacity: 0;
+        -webkit-transform: translateY(10vh);
+    }
+    100%{
+        opacity: 1;
+    }
+}
+
+@keyframes flyInFromBottom {
+    0%{
+        opacity: 0;
+        transform: translateY(100vh);
+    }
+    100%{
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes flyInFromBottom {
+    0%{
+        opacity: 0;
+        -webkit-transform: translateY(100vh);
+    }
+    100%{
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    0%{
+        opacity: 0;
+    }
+    100%{
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeIn {
+    0%{
+        opacity: 0;
+    }
+    100%{
+        opacity: 1;
+    }
+}
